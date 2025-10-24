@@ -24,7 +24,8 @@ jobs:
           echo "No projects yet — skipping restore for now. Then: dotnet restore"
 
       - name: Build project
-        run: dotnet build --no-restore --configuration Release
+        run: |
+          echo "No projects yet — skipping build execution. Then: dotnet build --no-restore --configuration Release"
 
       - name: Run tests (placeholder)
         run: |
