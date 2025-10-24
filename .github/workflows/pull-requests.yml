@@ -20,11 +20,12 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Restore dependencies
-        run: dotnet restore
+        run: |
+          echo "No projects yet — skipping restore for now. Then: dotnet restore"
 
       - name: Build project
         run: dotnet build --no-restore --configuration Release
 
       - name: Run tests (placeholder)
         run: |
-          echo "No test projects yet — skipping test execution."
+          echo "No test projects yet — skipping test execution. Then: dotnet test --no-build --configuration Release --verbosity normal"
