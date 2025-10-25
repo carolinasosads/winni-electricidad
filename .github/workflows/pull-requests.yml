@@ -26,7 +26,7 @@ jobs:
       - name: SonarCloud Begin Analysis
         run: |
           dotnet tool install --global dotnet-sonarscanner
-          dotnet sonarscanner begin /k:"${{ secrets.SONAR_PROJECT_KEY }}" /o:"${{ secrets.SONAR_ORG }}" /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+          dotnet sonarscanner begin /k:"winnielectricidad" /o:"carolinasosads" /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
   
       - name: Build project
         run: |
