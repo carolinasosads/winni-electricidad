@@ -46,12 +46,12 @@ jobs:
 
       - name: Run tests
         run: |
-          echo "No test projects yet — skipping test execution. Then: dotnet test --no-build --configuration Release --verbosity normal"
+          echo "No test projects yet — skipping test execution. Then: dotnet test --no-build --configuration Release --logger 'trx;LogFileName=test_results.trx' --collect:'XPlat Code Coverage'"
         continue-on-error: true
           
       - name: Publish test results
+        if: ${{ always() && (github.workspace != '' && (github.workspace == 'TestResults')) }}
         uses: dorny/test-reporter@v1
-        if: always()
         with:
           name: Test Results
           path: '**/TestResults/*.trx'
