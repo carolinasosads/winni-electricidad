@@ -30,3 +30,10 @@ jobs:
       - name: Run tests (placeholder)
         run: |
           echo "No test projects yet — skipping test execution. Then: dotnet test --no-build --configuration Release --verbosity normal"
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v2.12.0
+        with:
+          projectKey: ${{ secrets.SONAR_PROJECT_KEY }}
+          organization: ${{ secrets.SONAR_ORG }}
+          token: ${{ secrets.SONAR_TOKEN }}
