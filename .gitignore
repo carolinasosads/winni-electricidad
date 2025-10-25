@@ -1,134 +1,122 @@
-# ============================
-# JetBrains Rider / IntelliJ
-# ============================
+###############################################
+# 🟦 SECCIÓN 1: BACKEND (.NET / Rider)
+###############################################
 
-# Directorios del IDE
-.idea/
-.idea_modules/
-*.iml
-*.ipr
-*.iws
-
-# Cache y configuración temporal
-out/
-cmake-build-*/
-workspace.xml
-tasks.xml
-usage.statistics.xml
-dictionaries
-shelf/
-.vscode/
-*.sublime-project
-*.sublime-workspace
-
-# ============================
-# Archivos del sistema
-# ============================
-
-# Windows
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
-
-# Linux
-*~
-.nfs*
-
-# ============================
-# Archivos de compilación / build
-# ============================
-
+# Compilación y binarios
 bin/
 obj/
 [Bb]uild/
-[Bb]in/
-[Oo]bj/
-[Ll]og/
-[Ll]ogs/
+[Rr]elease/
+[Dd]ebug/
+*.pdb
+*.exe
+*.dll
+*.cache
+*.dbmdl
+*.appx
+*.log
 
-# ============================
-# Archivos temporales y backups
-# ============================
-
-*.tmp
-*.temp
-*.bak
-*.old
-*.swp
-*.swo
-
-# ============================
-# Archivos de usuario / Rider
-# ============================
-
-# Preferencias personales
+# Configuración del IDE (Rider)
+.idea/
+.idea_modules/
 .idea/httpRequests/
-.idea/caches/
 .idea/workspace.xml
 .idea/tasks.xml
-.idea/dictionaries/
-.idea/dataSources/
-.idea/gradle.xml
-.idea/libraries/
+.idea/dictionaries
+*.DotSettings
+*.DotSettings.user
 
-# ============================
-# Configuración y paquetes .NET
-# ============================
+# Archivos temporales
+*.tmp
+*.bak
+*.swp
+*.swo
+*.old
+
+# Pruebas y cobertura
+[Tt]est[Rr]esult*/
+*.coverage
+*.coveragexml
+*.trx
+coverage-report/
 
 # Paquetes NuGet
 *.nupkg
 *.snupkg
-*.nuspec
-# Cache de paquetes
+.nuget/
 packages/
-# Archivos de dependencias locales
 project.lock.json
 project.fragment.lock.json
-artifacts/
-TestResults/
-*.VisualState.xml
-*.user
-*.rsuser
-*.suo
-*.userosscache
-*.sln.docstates
 
-# ============================
-# Configuración de entorno
-# ============================
+###############################################
+# 🟩 SECCIÓN 2: FRONTEND (AZUL / JS / TS)
+###############################################
 
-# Variables de entorno / secretos
-.env
-.env.*
-.env.local
-*.secret.json
-secrets.json
+# Dependencias
+node_modules/
 
-# ============================
-# Otros
-# ============================
+# Builds y distribuciones
+dist/
+build/
+out/
 
-*.log
+# Cachés y coverage
+.cache/
 coverage/
-ReSharperReports/
-*.coverage
-*.coveragexml
-*.dbmdl
-*.jfm
-*.pdb
+*.tsbuildinfo
 
-# ============================
-# Rider Plugins (opcional)
-# ============================
+# Archivos de entorno
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-.idea/.idea.*
-.idea/**/workspace.xml
-.idea/**/tasks.xml
-.idea/**/usage.statistics.xml
-.idea/**/dictionaries
-.idea/**/shelf
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Lock files (si se regeneran automáticamente en CI)
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Frameworks comunes (Vite, React, Angular)
+.next/
+.sass-cache/
+.pnp.*
+.pnp.js
+
+###############################################
+# 🟨 SECCIÓN 3: SISTEMA / OTROS
+###############################################
+
+# macOS / Windows
+.DS_Store
+Thumbs.db
+
+# Archivos comprimidos / backups
+*.zip
+*.rar
+*.7z
+*.tar
+*.gz
+*.bak
+
+# Git y parches
+*.orig
+*.rej
+*.patch
+*.diff
+
+###############################################
+# 🟧 SECCIÓN 4: HERRAMIENTAS Y ANALIZADORES
+###############################################
+
+# SonarCloud / SonarQube
+.scannerwork/
+
+# Cobertura o reportes adicionales
+coverage-report/
+reports/
