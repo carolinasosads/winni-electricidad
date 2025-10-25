@@ -63,4 +63,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          echo "No projects yet — skipping SonarCloud End Analysis execution. Then: dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+          echo "No projects yet — skipping SonarCloud End Analysis execution. Then: dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}""
