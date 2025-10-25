@@ -23,17 +23,19 @@ jobs:
         run: |
           echo "No projects yet — skipping restore for now. Then: dotnet restore"
 
+      - name: SonarCloud Begin Analysis
+        run: |
+          dotnet tool install --global dotnet-sonarscanner
+          dotnet sonarscanner begin /k:"${{ secrets.SONAR_PROJECT_KEY }}" /o:"${{ SONAR_ORG }}" /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+  
       - name: Build project
         run: |
           echo "No projects yet — skipping build execution. Then: dotnet build --no-restore --configuration Release"
 
-      - name: Run tests (placeholder)
+      - name: Run tests
         run: |
           echo "No test projects yet — skipping test execution. Then: dotnet test --no-build --configuration Release --verbosity normal"
 
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
-        with:
-          projectKey: ${{ secrets.SONAR_PROJECT_KEY }}
-          organization: ${{ secrets.SONAR_ORG }}
-          token: ${{ secrets.SONAR_TOKEN }}
+      - name: SonarCloud End Analysis
+        run: |
+          dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
