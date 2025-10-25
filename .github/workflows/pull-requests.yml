@@ -23,10 +23,19 @@ jobs:
         run: |
           echo "No projects yet — skipping restore for now. Then: dotnet restore"
 
+      - name: SonarCloud Begin Analysis
+        run: |
+          dotnet tool install --global dotnet-sonarscanner
+          dotnet sonarscanner begin /k:"winnielectricidad" /o:"winnielectricidad" /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+  
       - name: Build project
         run: |
           echo "No projects yet — skipping build execution. Then: dotnet build --no-restore --configuration Release"
 
-      - name: Run tests (placeholder)
+      - name: Run tests
         run: |
           echo "No test projects yet — skipping test execution. Then: dotnet test --no-build --configuration Release --verbosity normal"
+
+      - name: SonarCloud End Analysis
+        run: |
+          echo "No projects yet — skipping SonarCloud End Analysis execution. Then: dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}""
