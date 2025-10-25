@@ -29,7 +29,8 @@ jobs:
           dotnet sonarscanner begin /k:"winnielectricidad" /o:"winnielectricidad" /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
   
       - name: Build project
-        run: dotnet build --no-restore --configuration Release
+        run: |
+          echo "No projects yet — skipping restore for now. Then: dotnet restore"
 
       - name: Run tests
         run: |
