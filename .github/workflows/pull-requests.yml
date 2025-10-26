@@ -13,6 +13,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -26,7 +28,17 @@ jobs:
       - name: SonarCloud Begin Analysis
         run: |
           dotnet tool install --global dotnet-sonarscanner
-          dotnet sonarscanner begin /k:"winnielectricidad" /o:"winnielectricidad" /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+          dotnet sonarscanner begin /k:"winnielectricidad" /o:"winnielectricidad" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
+            /d:sonar.host.url="https://sonarcloud.io" \
+            /d:sonar.pullrequest.provider=GitHub \
+            /d:sonar.pullrequest.github.repository=${{ github.repository }} \
+            /d:sonar.pullrequest.key=${{ github.event.pull_request.number }} \
+            /d:sonar.pullrequest.branch=${{ github.head_ref }} \
+            /d:sonar.pullrequest.base=${{ github.base_ref }} \
+            /d:sonar.cs.vstest.reportsPaths=**/TestResults/*.trx \
+            /d:sonar.cs.opencover.reportsPaths=**/coverage.cobertura.xml \
+            /d:sonar.coverage.exclusions=**/Migrations/**,**/*.Tests/** \
+            /d:sonar.qualitygate.wait=true
   
       - name: Build project
         run: |
@@ -34,8 +46,21 @@ jobs:
 
       - name: Run tests
         run: |
-          echo "No test projects yet — skipping test execution. Then: dotnet test --no-build --configuration Release --verbosity normal"
-
+          echo "No test projects yet — skipping test execution. Then: dotnet test --no-build --configuration Release --logger 'trx;LogFileName=test_results.trx' --collect:'XPlat Code Coverage'"
+        continue-on-error: true
+          
+      - name: Publish test results
+        if: ${{ always() && (github.workspace != '' && (github.workspace == 'TestResults')) }}
+        uses: dorny/test-reporter@v1
+        with:
+          name: Test Results
+          path: '**/TestResults/*.trx'
+          reporter: dotnet-trx
+          fail-on-error: false                       
+          
       - name: SonarCloud End Analysis
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           echo "No projects yet — skipping SonarCloud End Analysis execution. Then: dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}""
