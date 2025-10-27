@@ -12,4 +12,8 @@
       <Folder Include="Repositorios\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\WinniElectricidad.LogicaNegocio\WinniElectricidad.LogicaNegocio.csproj" />
+    </ItemGroup>
+
 </Project>

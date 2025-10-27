@@ -11,4 +11,9 @@
       <Folder Include="Servicios\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\WinniElectricidad.AccesoDatos\WinniElectricidad.AccesoDatos.csproj" />
+      <ProjectReference Include="..\WinniElectricidad.Compartido\WinniElectricidad.Compartido.csproj" />
+    </ItemGroup>
+
 </Project>
