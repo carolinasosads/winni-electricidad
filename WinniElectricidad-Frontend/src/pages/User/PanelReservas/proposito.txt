@@ -1,0 +1,2 @@
+Los usuarios van a poder ver todas sus reservas y editar o cancelar hasta 48hrs antes las reservas confirmadas y pendientes.
+Pueden ver su estado.

@@ -1,0 +1,6 @@
+Ver todas las reservas futuras, podra aprobarlas, rechazarlas o sugerir modificaciones de las no confirmadas. 
+Podra cancelar o sugerir modificaciones de las confirmadas. 
+
+Ver todas las reservas pasadas, editarles el presupuesto y cosas asi
+
+Aca va a estar el calendario tambien.
