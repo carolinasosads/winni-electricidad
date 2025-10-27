@@ -1,0 +1,4 @@
+Catalogo de todos los servicios publico para todos los usuarios, pero si esta logueado el boton Solicitar presupuesto lo lleva a la agenda de citas y si no, 
+al registro con un mensaje de info
+
+Si es admin, que le aparezca al lado de cada servicio un boton de editar

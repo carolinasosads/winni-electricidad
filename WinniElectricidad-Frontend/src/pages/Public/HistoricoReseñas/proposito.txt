@@ -1,0 +1,7 @@
+Tiene que haber un boton de Deja tu reseña y que si esta autenticado permita dejarla y si no, reenvia al login con un mensaje de info
+
+Las reseñas se pueden compartir en redes sociales, cualquiera puede hacerlo
+
+Filtro x servicio y calificacion. Habra un promedio de reseñas. 
+
+Todo esto es moderado por IA
