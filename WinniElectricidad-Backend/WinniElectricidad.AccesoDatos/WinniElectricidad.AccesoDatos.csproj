@@ -7,12 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Inserts\" />
-      <Folder Include="Migrations\" />
-      <Folder Include="Repositorios\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\WinniElectricidad.LogicaNegocio\WinniElectricidad.LogicaNegocio.csproj" />
     </ItemGroup>
 
