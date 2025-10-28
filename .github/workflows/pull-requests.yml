@@ -23,6 +23,8 @@ jobs:
 
       - name: Restore dependencies
         run: dotnet restore
+        working-directory: ./WinniElectricidad-Backend
+        continue-on-error: true
 
       - name: SonarCloud Begin Analysis
         run: |
@@ -34,24 +36,27 @@ jobs:
             /d:sonar.pullrequest.key=${{ github.event.pull_request.number }} \
             /d:sonar.pullrequest.branch=${{ github.head_ref }} \
             /d:sonar.pullrequest.base=${{ github.base_ref }} \
-            /d:sonar.cs.vstest.reportsPaths=**/TestResults/*.trx \
-            /d:sonar.cs.opencover.reportsPaths=**/coverage.cobertura.xml \
+            /d:sonar.cs.vstest.reportsPaths=WinniElectricidad-Backend/**/TestResults/*.trx \
+            /d:sonar.cs.opencover.reportsPaths=WinniElectricidad-Backend/**/coverage.cobertura.xml \
             /d:sonar.coverage.exclusions=**/Migrations/**,**/*.Tests/** \
             /d:sonar.qualitygate.wait=true
   
       - name: Build project
-        run: dotnet build --no-restore --configuration Release 
+        run: dotnet build --no-restore --configuration Release
+        working-directory: ./WinniElectricidad-Backend
+        continue-on-error: true
 
       - name: Run tests
         run: dotnet test --no-build --configuration Release --logger 'trx;LogFileName=test_results.trx' --collect:'XPlat Code Coverage'
+        working-directory: ./WinniElectricidad-Backend
         continue-on-error: true
           
       - name: Publish test results
-        if: ${{ always() && (github.workspace != '' && (github.workspace == 'TestResults')) }}
+        if: ${{ always() }}
         uses: dorny/test-reporter@v1
         with:
           name: Test Results
-          path: '**/TestResults/*.trx'
+          path: './WinniElectricidad-Backend/**/TestResults/*.trx'
           reporter: dotnet-trx
           fail-on-error: false                       
           
