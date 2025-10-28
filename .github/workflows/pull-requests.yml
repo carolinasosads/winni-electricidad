@@ -40,7 +40,7 @@ jobs:
             /d:sonar.pullrequest.github.repository=${{ github.repository }} \
             /d:sonar.pullrequest.key=${{ github.event.pull_request.number }} \
             /d:sonar.pullrequest.branch=${{ github.head_ref }} \
-            /d:sonar.pullrequest.base=${{ github.base_ref }} \
+            /d:sonar.pullrequest.base=develop \
             /d:sonar.cs.vstest.reportsPaths=WinniElectricidad-Backend/**/TestResults/*.trx \
             /d:sonar.cs.opencover.reportsPaths=WinniElectricidad-Backend/**/coverage.cobertura.xml \
             /d:sonar.coverage.exclusions=**/Migrations/**,**/*.Tests/** \
