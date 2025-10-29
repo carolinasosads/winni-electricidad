@@ -24,8 +24,8 @@ jobs:
       - name: SonarCloud Analysis (Develop)
         run: |
           dotnet sonarscanner begin \
-            /k:"carolinasosads_winni-electricidad" \
-            /o:"carolinasosads" \
+            /k:"winnielectricidad" \
+            /o:"winnielectricidad" \
             /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.cs.vstest.reportsPaths=WinniElectricidad-Backend/**/TestResults/*.trx \
