@@ -11,7 +11,7 @@ public class UsuarioCliente : UsuarioBase
 
     #endregion
     
-    public UsuarioCliente(string nombreCompleto, string email, string telefono, IEnumerable<Direccion> direcciones) : base(nombreCompleto, email, telefono)
+    public UsuarioCliente(string nombreCompleto, string passwordHash, string email, string telefono, IEnumerable<Direccion> direcciones) : base(nombreCompleto, passwordHash, email, telefono)
     {
         Direcciones = direcciones;
         Reservas = new List<Reserva>();
