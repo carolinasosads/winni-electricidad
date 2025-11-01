@@ -1,8 +1,11 @@
-﻿namespace WinniElectricidad.LogicaNegocio.Entidades;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace WinniElectricidad.LogicaNegocio.Entidades;
 
 public class Direccion
 {
     #region Propiedades
+    [Key]
     public int IdDireccion { get; set; }
     public string Calle { get; set; }
     public string Esquina { get; set; }
