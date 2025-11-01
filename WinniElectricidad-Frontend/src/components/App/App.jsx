@@ -1,13 +1,21 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+//import { useState } from 'react'
+//import reactLogo from './assets/react.svg'
+//import viteLogo from '/vite.svg'
 
-function App() {
-  const [count, setCount] = useState(0)
+/*import './App.css'*/
+import React from "react";
+import { Routes, Route, Navigate} from "react-router-dom";
 
-  return (
+import Registro from "../../pages/Public/Registro/Registro.jsx";
+import Login from "../../pages/Public/Login/Login.jsx";
+
+
+/*function App() {
+ const [count, setCount] = useState(0)
+
+ return (
     <>
+
       <div>
         <a href="https://vite.dev" target="_blank">
           <img src={viteLogo} className="logo" alt="Vite logo" />
@@ -31,5 +39,38 @@ function App() {
     </>
   )
 }
+*/
+/*
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Registro />} />
 
-export default App
+      <Route path="/login" element={<Login />} />
+    </Routes>
+  );
+}
+*/
+
+export default function App() {
+  return (
+    <Routes>
+      {/* si entra a la raíz, lo mando al registro */}
+      <Route path="/" element={<Navigate to="/login" replace />} />
+
+      {/* tus páginas */}
+      <Route path="/registro" element={<Registro />} />
+      <Route path="/login" element={<Login />} />
+
+ 
+      {/* catch-all por si entra a algo que no existe */}
+      <Route path="*" element={<Navigate to="/registro" replace />} />
+    </Routes>
+  )
+}
+/*
+function App() {
+  return <Login />;
+}
+*/
+//export default App;
