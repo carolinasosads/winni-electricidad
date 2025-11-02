@@ -11,6 +11,10 @@ import { styled } from '@mui/material/styles';
 import ForgotPassword from './ForgotPassword';
 import { SitemarkIcon } from '../../../components/CustomIcons/CustomIcons.jsx';
 import { Link as RouterLink } from 'react-router-dom'; 
+import Alert from '@mui/material/Alert';
+import { login } from '../../../services/authService.js';
+import ApiError from "../../../services/ApiError";
+
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
@@ -36,6 +40,11 @@ export default function SignInCard() {
   const [passwordError, setPasswordError] = React.useState(false);
   const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
   const [open, setOpen] = React.useState(false);
+  const [email, setEmail] = React.useState("");
+  const [password, setPassord] =  React.useState("");
+  const [loginError, setLoginError] = React.useState(false);
+  const [loginErrorMessage, setLoginErrorMessage] = React.useState('');
+
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -45,16 +54,27 @@ export default function SignInCard() {
     setOpen(false);
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     if (emailError || passwordError) {
-      event.preventDefault();
       return;
     }
+
     const data = new FormData(event.currentTarget);
+    {/*TODO: Capaz que deberiamos sacar este console.log*/}
     console.log({
       email: data.get('email'),
       password: data.get('password'),
     });
+
+    try{
+      const loginP = await login(email, password);
+    }catch(error){
+      if(error instanceof ApiError){
+        setLoginError(true);
+        setLoginErrorMessage(error.message);
+      }
+    }
   };
 
   const validateInputs = () => {
@@ -65,7 +85,7 @@ export default function SignInCard() {
 
     if (!email.value || !/\S+@\S+\.\S+/.test(email.value)) {
       setEmailError(true);
-      setEmailErrorMessage('Please enter a valid email address.');
+      setEmailErrorMessage('Por favor ingrese un mail válido.');
       isValid = false;
     } else {
       setEmailError(false);
@@ -74,7 +94,7 @@ export default function SignInCard() {
 
     if (!password.value || password.value.length < 6) {
       setPasswordError(true);
-      setPasswordErrorMessage('Password must be at least 6 characters long.');
+      setPasswordErrorMessage('La contraseña debe tener mínimo 6 caracteres.');
       isValid = false;
     } else {
       setPasswordError(false);
@@ -110,6 +130,7 @@ export default function SignInCard() {
             id="email"
             type="email"
             name="email"
+            value={email}
             placeholder="your@email.com"
             autoComplete="email"
             autoFocus
@@ -117,6 +138,7 @@ export default function SignInCard() {
             fullWidth
             variant="outlined"
             color={emailError ? 'error' : 'primary'}
+            onChange={(e) => setEmail(e.target.value)}
           />
         </FormControl>
         <FormControl>
@@ -139,12 +161,14 @@ export default function SignInCard() {
             placeholder="••••••"
             type="password"
             id="password"
+            value={password}
             autoComplete="current-password"
             autoFocus
             required
             fullWidth
             variant="outlined"
             color={passwordError ? 'error' : 'primary'}
+            onChange={(e) => setPassord(e.target.value)}
           />
         </FormControl>
     
@@ -152,6 +176,13 @@ export default function SignInCard() {
         <Button type="submit" fullWidth variant="contained" onClick={validateInputs}>
           Iniciar sesión
         </Button>
+
+        {loginError && (
+        <Alert variant="outlined" severity="error">
+          Email o contraseña incorrectos
+        </Alert>
+        )}
+
         <Typography sx={{ textAlign: 'center' }}>
             No tienes una cuenta?{' '}
             <Link component={RouterLink} to="/registro">

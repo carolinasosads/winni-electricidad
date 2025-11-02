@@ -9,6 +9,16 @@ using WinniElectricidad.LogicaNegocio.InterfacesRepositorios;
 
 var builder = WebApplication.CreateBuilder(args);
 
+//TODO: BORRAR ESTO PARA PRODUCCION
+builder.Services.AddCors(o =>
+{
+    o.AddPolicy("Dev", p =>
+        p
+            .AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod());
+});
+
 // Add services to the container.
 
 // Autenticación
@@ -68,6 +78,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+//TODO: borrar antes de subir a prod
+app.UseCors("Dev");
 
 app.UseAuthorization();
 
