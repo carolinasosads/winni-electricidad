@@ -14,8 +14,6 @@ import { Link as RouterLink } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
 import { login } from '../../../services/authService.js';
 import ApiError from "../../../services/ApiError";
-
-//prueba
 import { useNavigate } from 'react-router-dom';
 
 
@@ -47,7 +45,6 @@ export default function SignInCard() {
   const [password, setPassord] =  React.useState("");
   const [loginError, setLoginError] = React.useState(false);
   const [loginErrorMessage, setLoginErrorMessage] = React.useState('');
-  //prueba
   const navigate = useNavigate();
 
 
@@ -78,7 +75,8 @@ export default function SignInCard() {
 
     try{
       await login(email, password);
-      navigate("/principal");
+      console.log("Entre al login y funcione bien ")
+      navigate("/principal", { replace: true });
 
     }catch(error){
       if(error instanceof ApiError){

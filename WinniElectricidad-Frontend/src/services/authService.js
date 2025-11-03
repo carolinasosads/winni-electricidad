@@ -1,7 +1,7 @@
 import ApiError from "./ApiError";
 
 //Login, Logout, Registro y recuperacion de contraseñas
-const urlAPI = "https://localhost:7059/WinniElectricidadApi/Usuario/"
+const urlAPI = "http://localhost:5269/WinniElectricidadApi/Usuario/"
 
 export const login = async (email, password) => {
     const response = await fetch(`${urlAPI}login`,{
@@ -22,11 +22,13 @@ export const login = async (email, password) => {
 
     const data = await response.json();
 
-    // Guarda el token localmente (Tiene que ser el mismo nombre del back?)
-    localStorage.setItem("Token", data.Token); //No estoy segura si va con mayuscula o minuscula
-    localStorage.setItem("Rol", data.Rol);
+    const { token, role } = data;
 
+    localStorage.setItem("token", token);
+    localStorage.setItem("role", role);
+    
     return data;
+  
 }
 
 //TODO: A chequear si funciona y si guardamos el rol
