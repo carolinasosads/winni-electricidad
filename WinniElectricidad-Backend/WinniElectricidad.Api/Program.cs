@@ -2,6 +2,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using WinniElectricidad.AccesoDatos.Repositorios.EF;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios;
 using WinniElectricidad.LogicaAplicacion.Servicios;
@@ -55,7 +56,44 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    var xmlFilename = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "API Winni Electricidad",
+        Version = "v1",
+        Description = "API del proyecto integrador para gestión de Winni Electricidad."
+    });
+    
+    // Configurar el esquema de seguridad JWT
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Description = "Ingrese 'Bearer' seguido de un espacio y el token JWT.",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT"
+    });
+
+    // Agregar requerimiento de seguridad global
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type=ReferenceType.SecurityScheme,
+                    Id="Bearer"
+                }
+            },
+            []
+        }
+    });
+});
 
 builder.Services.AddDbContext<WinniElectricidadContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("ConexionWinniElectricidad")));
 

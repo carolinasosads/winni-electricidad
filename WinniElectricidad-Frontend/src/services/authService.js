@@ -1,7 +1,7 @@
 import ApiError from "./ApiError";
 
 //Login, Logout, Registro y recuperacion de contraseñas
-const urlAPI = "http://localhost:5269/WinniElectricidadApi/Usuario/"
+const urlAPI = "https://localhost:7059/WinniElectricidadApi/Usuario/"
 
 export const login = async (email, password) => {
     const response = await fetch(`${urlAPI}login`,{

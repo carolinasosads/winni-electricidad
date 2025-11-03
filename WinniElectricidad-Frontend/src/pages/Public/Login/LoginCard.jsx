@@ -179,7 +179,7 @@ export default function SignInCard() {
 
         {loginError && (
         <Alert variant="outlined" severity="error">
-          Email o contraseña incorrectos
+          {loginErrorMessage}
         </Alert>
         )}
 

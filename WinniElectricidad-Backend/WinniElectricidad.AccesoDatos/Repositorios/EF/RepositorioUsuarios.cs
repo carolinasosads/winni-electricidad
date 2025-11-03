@@ -40,7 +40,7 @@ public class RepositorioUsuarios : IRepositorioUsuario
 
     public async Task<UsuarioBase?> FindbyEmail(string email)
     {
-        var usuario = await _db.Usuarios.FirstOrDefaultAsync(x => x.Email == email);
+        var usuario = await _db.Usuarios.Where(x => x.Email == email).FirstOrDefaultAsync();
         return usuario;
     }
 
