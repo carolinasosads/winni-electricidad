@@ -15,6 +15,9 @@ import Alert from '@mui/material/Alert';
 import { login } from '../../../services/authService.js';
 import ApiError from "../../../services/ApiError";
 
+//prueba
+import { useNavigate } from 'react-router-dom';
+
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
@@ -44,6 +47,8 @@ export default function SignInCard() {
   const [password, setPassord] =  React.useState("");
   const [loginError, setLoginError] = React.useState(false);
   const [loginErrorMessage, setLoginErrorMessage] = React.useState('');
+  //prueba
+  const navigate = useNavigate();
 
 
   const handleClickOpen = () => {
@@ -56,6 +61,10 @@ export default function SignInCard() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    const ok = validateInputs();
+    if (!ok) return;
+
     if (emailError || passwordError) {
       return;
     }
@@ -68,7 +77,9 @@ export default function SignInCard() {
     });
 
     try{
-      const loginP = await login(email, password);
+      await login(email, password);
+      navigate("/principal");
+
     }catch(error){
       if(error instanceof ApiError){
         setLoginError(true);
@@ -173,7 +184,7 @@ export default function SignInCard() {
         </FormControl>
     
         <ForgotPassword open={open} handleClose={handleClose} />
-        <Button type="submit" fullWidth variant="contained" onClick={validateInputs}>
+        <Button type="submit" fullWidth variant="contained">
           Iniciar sesión
         </Button>
 
