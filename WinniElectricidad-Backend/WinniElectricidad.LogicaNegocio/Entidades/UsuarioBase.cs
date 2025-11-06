@@ -15,8 +15,9 @@ public abstract class UsuarioBase
     public abstract string Rol {  get; }
     #endregion
 
-    public UsuarioBase(){}
-    public UsuarioBase(string nombreCompleto, string passwordHash, string email, string telefono)
+    protected UsuarioBase(){}
+
+    protected UsuarioBase(string nombreCompleto, string passwordHash, string email, string telefono)
     {
         NombreCompleto = nombreCompleto;
         PasswordHash = passwordHash;
