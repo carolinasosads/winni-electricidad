@@ -64,7 +64,7 @@ function ForgotPassword({ open, handleClose }) {
             <FormControl fullWidth>
               <InputLabel htmlFor="email">Correo electrónico</InputLabel>
               <OutlinedInput id="email" type="email" label="Correo electrónico" value={email}
-                            onChange={(e)=>setEmail(e.target.value)} />
+                            onChange={(e)=>setEmail(e.target.value)} required={true}/>
             </FormControl> 
 
             {error && <Alert variant="outlined" severity="error">{error}</Alert>}
