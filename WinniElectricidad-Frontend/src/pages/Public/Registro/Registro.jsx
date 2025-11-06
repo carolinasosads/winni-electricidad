@@ -210,7 +210,7 @@ export default function SignUp(props) {
             {/* hCaptcha */}
             <FormControl>
               <HCaptcha
-                sitekey="76082ca4-d6c8-4058-98c2-b8ca210a6bec" //Creo que el error ahora me da opruqe es un entorno de desarrollo pero no se mucho
+                sitekey=""
                 onVerify={(token) => {
                   setCaptchaToken(token);
                   setCaptchaError('');
