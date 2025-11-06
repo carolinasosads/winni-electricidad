@@ -60,7 +60,7 @@ public class UsuarioController : ControllerBase
             
             if (usuarioLogueadoDto is null)
             {
-                return Unauthorized();
+                return Unauthorized("Credenciales inválidas.");
             }
         
             var token = _token.GenerarToken(usuarioLogueadoDto.Id, usuarioLogueadoDto.Email, usuarioLogueadoDto.Rol);

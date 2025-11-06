@@ -10,7 +10,7 @@ import { PrivateRoute } from "../routes/PrivateRoute.jsx";
 export default function App() {
   return (
     <Routes>
-      {/* si no tiiene nada va al login */}
+      {/* si no tiene nada va al login */}
       <Route path="/" element={<Navigate to="/login" replace />} />
 
       {/*Paginas publicas */}

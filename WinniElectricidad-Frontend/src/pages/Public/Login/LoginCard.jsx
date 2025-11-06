@@ -42,7 +42,7 @@ export default function SignInCard() {
   const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
   const [open, setOpen] = React.useState(false);
   const [email, setEmail] = React.useState("");
-  const [password, setPassord] =  React.useState("");
+  const [password, setPassword] =  React.useState("");
   const [loginError, setLoginError] = React.useState(false);
   const [loginErrorMessage, setLoginErrorMessage] = React.useState('');
   const navigate = useNavigate();
@@ -67,11 +67,6 @@ export default function SignInCard() {
     }
 
     const data = new FormData(event.currentTarget);
-    {/*TODO: Capaz que deberiamos sacar este console.log*/}
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-    });
 
     try{
       await login(email, password);
@@ -177,7 +172,7 @@ export default function SignInCard() {
             fullWidth
             variant="outlined"
             color={passwordError ? 'error' : 'primary'}
-            onChange={(e) => setPassord(e.target.value)}
+            onChange={(e) => setPassword(e.target.value)}
           />
         </FormControl>
     

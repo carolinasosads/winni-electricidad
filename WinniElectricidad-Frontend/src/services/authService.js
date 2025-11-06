@@ -34,5 +34,5 @@ export const login = async (email, password) => {
 //TODO: A chequear si funciona y si guardamos el rol
 export const logout = () => {
   localStorage.removeItem("token");
-  localStorage.removeItem("rol");
+  localStorage.removeItem("role");
 };
