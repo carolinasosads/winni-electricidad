@@ -86,7 +86,7 @@ public class UsuarioController : ControllerBase
             };
         
             return  Ok(usuarioLogueadoTokenDto);
-        } catch (Exception e)
+        } catch (Exception)
         {
             return StatusCode(500, new { message = "Error inesperado."});
         }
@@ -127,11 +127,11 @@ public class UsuarioController : ControllerBase
             await _recuperarContrasena.EnviarCorreoRecuperacion(usuarioForgotPassword.Email, ct);
             return Ok(new { message = "Si el correo existe, te enviamos un enlace para restablecer tu contraseña." });
         } 
-        catch (EmailNotificacionException e)
+        catch (EmailNotificacionException)
         {
             return StatusCode(500, new { message = "Error al enviar el correo. Intenta nuevamente más tarde."});
         } 
-        catch (Exception e)
+        catch (Exception)
         {
             return StatusCode(500, new { message = "Error inesperado."} );
         }
@@ -176,11 +176,11 @@ public class UsuarioController : ControllerBase
             await _recuperarContrasena.ResetearContrasena(usuarioResetPassword.Password, usuarioResetPassword.TokenPlain,ct);
             return Ok( new { message = "La contraseña fue modificada con éxito."});
         } 
-        catch (OneTimeTokenException e)
+        catch (OneTimeTokenException)
         {
             return BadRequest(new { message = "El link ya expiró."});
         } 
-        catch (Exception e)
+        catch (Exception)
         {
             return StatusCode(500, new { message = "Error inesperado."});
         }

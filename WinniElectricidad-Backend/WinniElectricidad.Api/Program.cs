@@ -115,7 +115,6 @@ builder.Services.AddDbContext<WinniElectricidadContext>(options => options.UseSq
 // Servicios
 builder.Services.AddScoped<ILoginUsuario, LoginUsuario>();
 builder.Services.AddScoped<IServicioToken, ServicioToken>();
-builder.Services.AddScoped<IServicioToken, ServicioToken>();
 builder.Services.AddScoped<IRecuperarContrasena, RecuperarContrasena>();
 builder.Services.AddScoped<IServicioOneTimeToken, ServicioOneTimeToken>();
 
