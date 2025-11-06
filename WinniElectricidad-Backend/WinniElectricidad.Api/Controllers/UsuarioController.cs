@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WinniElectricidad.Compartido.DTOs.Usuarios;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios;
+using WinniElectricidad.LogicaNegocio.ExcepcionesPersonalizadas.Usuarios;
 
 namespace WinniElectricidad.Api.Controllers;
 
@@ -13,16 +14,19 @@ public class UsuarioController : ControllerBase
 {
     private readonly ILoginUsuario _loginUsuario;
     private readonly IServicioToken _token;
-
+    private readonly IRegistroUsuario _registroUsuario; 
+    private readonly IHCaptchaVerifier _captcha;
     /// <summary>
     /// Inicializa una nueva instancia del <see cref="UsuarioController"/> con las dependencias necesarias.
     /// </summary>
     /// <param name="loginUsuario">Servicio de autenticación de usuarios.</param>
     /// <param name="token">Servicio para generación de tokens JWT.</param>
-    public UsuarioController(ILoginUsuario loginUsuario, IServicioToken token)
+    public UsuarioController(ILoginUsuario loginUsuario, IServicioToken token, IRegistroUsuario registroUsuario, IHCaptchaVerifier captcha)
     {
         _loginUsuario = loginUsuario;
         _token = token;
+        _registroUsuario = registroUsuario;
+        _captcha = captcha;
     }
 
     /// <summary>
@@ -76,7 +80,55 @@ public class UsuarioController : ControllerBase
             return  Ok(usuarioLogueadoTokenDto);
         } catch (Exception e)
         {
-            return StatusCode(500, "Error inesperado.");
+            return StatusCode(500, new{message = "Error inesperado." });
+        }
+    }
+    
+     /// <summary>
+    /// Registra un nuevo usuario (valida hCaptcha) y devuelve token JWT + rol.
+    /// </summary>
+    /// <response code="201">Usuario creado. Devuelve token y rol.</response>
+    /// <response code="400">Datos inválidos o captcha no verificado.</response>
+    /// <response code="409">El email ya está en uso.</response>
+    /// <response code="500">Error inesperado.</response>
+    [HttpPost("registro")]
+    public async Task<IActionResult> Registro([FromBody] UsuarioRegistroDto usuarioRegistroDto)
+    {
+        try
+        {
+            var remoteIp = HttpContext.Connection.RemoteIpAddress?.ToString();
+            var captchaOk = await _captcha.VerifyAsync(usuarioRegistroDto.HCaptchaToken, remoteIp);
+            if (!captchaOk)
+            {
+                return BadRequest(new { message = "Captcha no verificado." });
+            }
+
+            var creado = await _registroUsuario.Registro(usuarioRegistroDto);
+            if (creado is null)
+            {
+                return StatusCode(500, new{message = "No se pudo crear el usuario."});
+
+            }
+
+            // genera token igual que en login
+            var jwt = _token.GenerarToken(creado.Id, creado.Email, creado.Rol);
+
+            var usuarioLogueadoTokenDto = new UsuarioLogueadoTokenDto
+            {
+                Id = creado.Id,
+                Email = creado.Email,
+                Rol = creado.Rol,
+                Token = jwt
+            };
+            return Ok(usuarioLogueadoTokenDto);
+        }
+        catch (EmailEnUsoException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new{message = "Error inesperado." });
         }
     }
 }

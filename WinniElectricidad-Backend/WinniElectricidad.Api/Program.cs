@@ -4,11 +4,17 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using WinniElectricidad.AccesoDatos.Repositorios.EF;
+using WinniElectricidad.Api.Servicio;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios;
 using WinniElectricidad.LogicaAplicacion.Servicios;
 using WinniElectricidad.LogicaNegocio.InterfacesRepositorios;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.Configure<HCaptchaOptions>(
+    builder.Configuration.GetSection("HCaptcha"));
+
+builder.Services.AddHttpClient<IHCaptchaVerifier, HCaptchaServicio>();
 
 //TODO: BORRAR ESTO PARA PRODUCCION
 builder.Services.AddCors(o =>
@@ -102,6 +108,8 @@ builder.Services.AddDbContext<WinniElectricidadContext>(options => options.UseSq
 // Servicios
 builder.Services.AddScoped<ILoginUsuario, LoginUsuario>();
 builder.Services.AddScoped<IServicioToken, ServicioToken>();
+builder.Services.AddScoped<IRegistroUsuario, RegistroUsuario>();
+builder.Services.AddHttpClient<IHCaptchaVerifier, HCaptchaServicio>();
 
 // Repositorios
 builder.Services.AddScoped<IRepositorioUsuario, RepositorioUsuarios>();
@@ -120,6 +128,7 @@ app.UseHttpsRedirection();
 //TODO: borrar antes de subir a prod
 app.UseCors("Dev");
 
+//app.UseAuthentication();  
 app.UseAuthorization();
 
 app.MapControllers();
