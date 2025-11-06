@@ -6,7 +6,7 @@ namespace WinniElectricidad.AccesoDatos.Repositorios.EF;
 
 public class RepositorioUsuarios : IRepositorioUsuario
 {
-    private WinniElectricidadContext _db;
+    private readonly WinniElectricidadContext _db;
 
     public RepositorioUsuarios(WinniElectricidadContext db)
     {

@@ -6,7 +6,7 @@ namespace WinniElectricidad.AccesoDatos.Repositorios.EF;
 
 public class RepositorioOneTimeTokens : IRepositorioOneTimeToken
 {
-    private WinniElectricidadContext _db;
+    private readonly WinniElectricidadContext _db;
 
     public RepositorioOneTimeTokens(WinniElectricidadContext db)
     {

@@ -55,7 +55,7 @@ public class RecuperarContrasena : IRecuperarContrasena
                 <p>Hola {usuarioEncontrado.NombreCompleto},</p>
                 <p>Hacé clic en el siguiente enlace para restablecer tu contraseña:</p>
                 <p>
-                    {urlRecuperacionContrasena}
+                    <a href=""{{urlRecuperacionContrasena}}"">Restablecer contraseña</a>
                 </p>
                 <p>Ten en cuenta que este link es válido únicamente por los siguientes 30 minutos.</p>
                 <p>Si no solicitaste este cambio, podés ignorar este mensaje.</p>
