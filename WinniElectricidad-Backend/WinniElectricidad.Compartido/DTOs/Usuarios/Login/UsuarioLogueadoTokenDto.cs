@@ -1,4 +1,4 @@
-﻿namespace WinniElectricidad.Compartido.DTOs.Usuarios;
+﻿namespace WinniElectricidad.Compartido.DTOs.Usuarios.Login;
 
 public class UsuarioLogueadoTokenDto : UsuarioLogueadoDto
 {

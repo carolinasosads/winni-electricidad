@@ -11,4 +11,8 @@
       <ProjectReference Include="..\WinniElectricidad.Compartido\WinniElectricidad.Compartido.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Resend" Version="0.1.7" />
+    </ItemGroup>
+
 </Project>

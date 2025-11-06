@@ -1,5 +1,5 @@
 ﻿using WinniElectricidad.Compartido.DTOs.Mappers;
-using WinniElectricidad.Compartido.DTOs.Usuarios;
+using WinniElectricidad.Compartido.DTOs.Usuarios.Login;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios;
 using WinniElectricidad.LogicaNegocio.InterfacesRepositorios;
 
@@ -13,16 +13,17 @@ public class LoginUsuario : ILoginUsuario
     {
         _repositorioUsuario = repositorioUsuario;
     }
-    public async Task<UsuarioLogueadoDto?> Login(string email, string password)
+    public async Task<UsuarioLogueadoDto?> Login(string email, string password, CancellationToken ct = default)
     {
-        var usuarioLogueado = await _repositorioUsuario.Login(email, password);
+        if(email is null || password is null){ return null; }
         
-        if (usuarioLogueado is not null)
-        {
-            UsuarioLogueadoDto usuarioLogueadoDto = UsuarioMapper.MappeoAUsuarioLogueadoDto(usuarioLogueado);
-            return usuarioLogueadoDto;
-        }
+        var usuarioLogueado = await _repositorioUsuario.Login(email, password, ct);
 
-        return null;
+        if (usuarioLogueado is null) return null;
+        
+        UsuarioLogueadoDto usuarioLogueadoDto = UsuarioMapper.MappeoAUsuarioLogueadoDto(usuarioLogueado);
+        
+        return usuarioLogueadoDto;
+
     }
 }

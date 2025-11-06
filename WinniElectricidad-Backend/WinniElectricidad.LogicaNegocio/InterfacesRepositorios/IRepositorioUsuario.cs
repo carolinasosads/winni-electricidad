@@ -4,6 +4,7 @@ namespace WinniElectricidad.LogicaNegocio.InterfacesRepositorios;
 
 public interface IRepositorioUsuario : IRepositorio<UsuarioBase>
 {
-    public Task<UsuarioBase?> FindbyEmail(string email);
-    public Task<UsuarioBase?> Login (string email, string password);
+    Task<UsuarioBase?> FindbyEmail(string email, CancellationToken ct = default);
+    Task<UsuarioBase?> Login (string email, string password, CancellationToken ct = default);
+    Task ChangePassword(int idUsuario, string password, CancellationToken ct = default);
 }

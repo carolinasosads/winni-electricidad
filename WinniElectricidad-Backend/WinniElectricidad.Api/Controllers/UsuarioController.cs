@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using WinniElectricidad.Compartido.DTOs.Usuarios;
+using WinniElectricidad.Compartido.DTOs.Usuarios.Login;
+using WinniElectricidad.Compartido.DTOs.Usuarios.RecuperacionContrasena;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios;
+using WinniElectricidad.LogicaNegocio.ExcepcionesPersonalizadas.Notificaciones;
+using WinniElectricidad.LogicaNegocio.ExcepcionesPersonalizadas.Tokens;
 
 namespace WinniElectricidad.Api.Controllers;
 
@@ -13,16 +16,21 @@ public class UsuarioController : ControllerBase
 {
     private readonly ILoginUsuario _loginUsuario;
     private readonly IServicioToken _token;
+    
+    private readonly IRecuperarContrasena _recuperarContrasena;
+
 
     /// <summary>
     /// Inicializa una nueva instancia del <see cref="UsuarioController"/> con las dependencias necesarias.
     /// </summary>
     /// <param name="loginUsuario">Servicio de autenticación de usuarios.</param>
     /// <param name="token">Servicio para generación de tokens JWT.</param>
-    public UsuarioController(ILoginUsuario loginUsuario, IServicioToken token)
+    /// <param name="recuperarContrasena">Servicio de recuperación de contraseña.</param>
+    public UsuarioController(ILoginUsuario loginUsuario, IServicioToken token, IRecuperarContrasena recuperarContrasena)
     {
         _loginUsuario = loginUsuario;
         _token = token;
+        _recuperarContrasena = recuperarContrasena;
     }
 
     /// <summary>
@@ -43,6 +51,7 @@ public class UsuarioController : ControllerBase
     /// - `500 Internal Server Error` → Error inesperado en el servidor.
     /// </remarks>
     /// <param name="usuarioLogin">Objeto que contiene el correo electrónico y la contraseña del usuario.</param>
+    /// <param name="ct">Token de cancelación para abortar la operación si es necesario.</param>
     /// <returns>
     /// Una respuesta HTTP con el resultado de la autenticación.
     /// 
@@ -52,11 +61,14 @@ public class UsuarioController : ControllerBase
     /// <response code="401">Credenciales inválidas o usuario no encontrado.</response>
     /// <response code="500">Error inesperado del servidor.</response>
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] UsuarioLoginDto usuarioLogin)
+    [ProducesResponseType(typeof(UsuarioLogueadoTokenDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> Login([FromBody] UsuarioLoginDto usuarioLogin, CancellationToken ct)
     {
         try
         {
-            UsuarioLogueadoDto? usuarioLogueadoDto = await _loginUsuario.Login(usuarioLogin.Email, usuarioLogin.Password);
+            UsuarioLogueadoDto? usuarioLogueadoDto = await _loginUsuario.Login(usuarioLogin.Email, usuarioLogin.Password, ct);
             
             if (usuarioLogueadoDto is null)
             {
@@ -76,7 +88,101 @@ public class UsuarioController : ControllerBase
             return  Ok(usuarioLogueadoTokenDto);
         } catch (Exception e)
         {
-            return StatusCode(500, "Error inesperado.");
+            return StatusCode(500, new { message = "Error inesperado."});
+        }
+    }
+
+    /// <summary>
+    /// Inicia el proceso de recuperación de contraseña para un usuario registrado.
+    /// </summary>
+    /// <remarks>
+    /// Este endpoint envía un correo electrónico con las instrucciones para restablecer la contraseña.
+    ///
+    /// **Flujo:**
+    /// 1. Verifica si el correo pertenece a un usuario registrado mediante <see cref="IRecuperarContrasena"/>.
+    /// 2. Si existe, genera un enlace temporal de recuperación y lo envía por correo.
+    /// 3. Por motivos de seguridad, la respuesta siempre es la misma.
+    ///
+    /// **Códigos de respuesta:**
+    /// - `200 OK` → Solicitud procesada (si el correo existe, se envían las instrucciones).
+    /// - `500 Internal Server Error` → Error al enviar el correo o error inesperado.
+    /// </remarks>
+    /// <param name="usuarioForgotPassword">
+    /// Objeto que contiene el correo electrónico del usuario que solicita la recuperación.
+    /// </param>
+    /// <param name="ct">Token de cancelación para abortar la operación si es necesario.</param>
+    /// 
+    /// <returns>
+    /// Una respuesta HTTP que indica el resultado del proceso de recuperación.
+    /// </returns>
+    /// <response code="200">Solicitud procesada correctamente.</response>
+    /// <response code="500">Error al enviar el correo o error inesperado del servidor.</response>
+    [HttpPost("forgot-password")]
+    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> ForgotPassword([FromBody] UsuarioForgotPasswordDto usuarioForgotPassword, CancellationToken ct)
+    {
+        try
+        {
+            await _recuperarContrasena.EnviarCorreoRecuperacion(usuarioForgotPassword.Email, ct);
+            return Ok(new { message = "Si el correo existe, te enviamos un enlace para restablecer tu contraseña." });
+        } 
+        catch (EmailNotificacionException e)
+        {
+            return StatusCode(500, new { message = "Error al enviar el correo. Intenta nuevamente más tarde."});
+        } 
+        catch (Exception e)
+        {
+            return StatusCode(500, new { message = "Error inesperado."} );
+        }
+    }
+
+    /// <summary>
+    /// Restablece la contraseña de un usuario a partir de un token válido de recuperación.
+    /// </summary>
+    /// <remarks>
+    /// Este endpoint permite al usuario establecer una nueva contraseña, siempre que el token de recuperación sea válido y no haya expirado.
+    /// 
+    /// **Flujo:**
+    /// 1. El usuario accede al enlace recibido por correo, el cual contiene un token de un solo uso.  
+    /// 2. Envía el token y la nueva contraseña al servidor.  
+    /// 3. El sistema valida el token mediante <see cref="IRecuperarContrasena"/>.  
+    /// 4. Si el token es válido, se actualiza la contraseña del usuario y se invalida el token.
+    /// 
+    /// **Códigos de respuesta:**
+    /// - `200 OK` → La contraseña fue restablecida exitosamente.  
+    /// - `400 Bad Request` → El token es inválido o ya expiró.  
+    /// - `500 Internal Server Error` → Error inesperado en el servidor.
+    /// </remarks>
+    /// <param name="usuarioResetPassword">
+    /// Objeto que contiene la nueva contraseña y el token de recuperación.
+    /// </param>
+    /// <param name="ct">Token de cancelación para abortar la operación si es necesario.</param>
+    /// <returns>
+    /// Una respuesta HTTP que indica el resultado del proceso de restablecimiento.
+    /// </returns>
+    /// <response code="200">Contraseña restablecida correctamente.</response>
+    /// <response code="400">El token ya expiró o es inválido.</response>
+    /// <response code="500">Error inesperado del servidor.</response>
+    [HttpPost("reset-password")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> ResetPassword([FromBody] UsuarioResetPasswordDto usuarioResetPassword,
+        CancellationToken ct)
+    {
+        try
+        {
+            await _recuperarContrasena.ResetearContrasena(usuarioResetPassword.Password, usuarioResetPassword.TokenPlain,ct);
+            return Ok( new { message = "La contraseña fue modificada con éxito."});
+        } 
+        catch (OneTimeTokenException e)
+        {
+            return BadRequest(new { message = "El link ya expiró."});
+        } 
+        catch (Exception e)
+        {
+            return StatusCode(500, new { message = "Error inesperado."});
         }
     }
 }
