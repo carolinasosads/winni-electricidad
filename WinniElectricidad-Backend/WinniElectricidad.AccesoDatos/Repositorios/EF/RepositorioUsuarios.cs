@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using WinniElectricidad.LogicaNegocio.Entidades;
+using WinniElectricidad.LogicaNegocio.ExcepcionesPersonalizadas.Usuarios;
 using WinniElectricidad.LogicaNegocio.InterfacesRepositorios;
 
 namespace WinniElectricidad.AccesoDatos.Repositorios.EF;
@@ -55,6 +56,14 @@ public class RepositorioUsuarios : IRepositorioUsuario
         
         return null;
     }
+    public async Task<UsuarioCliente?> Registro(UsuarioCliente usuarioCliente)
+    {
+        await _db.Usuarios.AddAsync(usuarioCliente);
+        await _db.SaveChangesAsync();
+
+        return usuarioCliente;
+    }
+
 
     public async Task ChangePassword(int idUsuario, string passwordHash, CancellationToken ct = default)
     {
