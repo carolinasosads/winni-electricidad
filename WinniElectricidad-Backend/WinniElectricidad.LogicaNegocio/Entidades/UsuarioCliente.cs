@@ -8,6 +8,7 @@ public class UsuarioCliente : UsuarioBase
     public IEnumerable<Reserva> Reservas { get; set; } = new List<Reserva>();
     public IEnumerable<Pago>  Pagos { get; set; } = new List<Pago>();
     //public IEnumerable<Presupuesto>  Presupuestos { get; set; } = new List<Presupuesto>();
+    public override string Rol => "Cliente";
 
     #endregion
     

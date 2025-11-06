@@ -2,7 +2,7 @@
 
 namespace WinniElectricidad.LogicaNegocio.Entidades;
 
-public class UsuarioBase
+public abstract class UsuarioBase
 {
     #region Propiedades
     [Key]
@@ -12,10 +12,12 @@ public class UsuarioBase
     public required string Email { get; set; }
     public required string Telefono { get; set; }
     public IEnumerable<Notificacion> NotificacionesRecibidas  { get; set; } = new List<Notificacion>();
+    public abstract string Rol {  get; }
     #endregion
 
-    public UsuarioBase(){}
-    public UsuarioBase(string nombreCompleto, string passwordHash, string email, string telefono)
+    protected UsuarioBase(){}
+
+    protected UsuarioBase(string nombreCompleto, string passwordHash, string email, string telefono)
     {
         NombreCompleto = nombreCompleto;
         PasswordHash = passwordHash;

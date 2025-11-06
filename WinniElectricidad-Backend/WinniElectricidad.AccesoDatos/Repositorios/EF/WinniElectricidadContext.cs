@@ -13,4 +13,13 @@ public class WinniElectricidadContext : DbContext
     //public DbSet<Presupuesto>  Presupuestos { get; set; }
     public DbSet<Pago>  Pagos { get; set; }
     public DbSet<Notificacion>  Notificaciones { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+        modelBuilder.Entity<UsuarioBase>()
+            .HasDiscriminator<string>("Discriminator")
+            .HasValue<UsuarioAdministrador>("UsuarioAdministrador")
+            .HasValue<UsuarioCliente>("UsuarioCliente");
+    }
 }
