@@ -36,3 +36,55 @@ export const logout = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("role");
 };
+
+export const sendPasswordRecoveryEmail  = async (email) => {
+    try {
+    const response = await fetch(`${urlAPI}forgot-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new ApiError(errorText || "Error desconocido al enviar el correo.", response.status);
+    }
+
+    const data = await response.json();
+    return data;
+
+  } catch (err) {
+    if (err instanceof TypeError) {
+      throw new Error("No se pudo conectar con el servidor. Verifica tu conexión o inténtalo más tarde.");
+    }
+
+    throw err;
+  }
+};
+
+export const resetPassword  = async (password, tokenPlain) => {
+    try {
+    const response = await fetch(`${urlAPI}reset-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ password, tokenPlain }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new ApiError(errorText || "Error desconocido.", response.status);
+    }
+
+    return await response.json();
+
+  } catch (err) {
+    if (err instanceof TypeError) {
+      throw new Error("No se pudo conectar con el servidor. Inténtalo más tarde.");
+    }
+    throw err;
+  }
+};

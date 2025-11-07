@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Resend;
 using WinniElectricidad.AccesoDatos.Repositorios.EF;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios;
 using WinniElectricidad.LogicaAplicacion.Servicios;
@@ -20,7 +21,19 @@ builder.Services.AddCors(o =>
             .AllowAnyMethod());
 });
 
-// Add services to the container.
+// Resend
+builder.Configuration
+    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables();
+
+builder.Services.AddOptions();
+builder.Services.AddHttpClient<ResendClient>();
+
+builder.Services.Configure<ResendClientOptions>(
+    builder.Configuration.GetSection("Resend")
+);
+
+builder.Services.AddTransient<IResend, ResendClient>();
 
 // Autenticación
 var jwtSettings = builder.Configuration.GetSection("Jwt");
@@ -102,9 +115,13 @@ builder.Services.AddDbContext<WinniElectricidadContext>(options => options.UseSq
 // Servicios
 builder.Services.AddScoped<ILoginUsuario, LoginUsuario>();
 builder.Services.AddScoped<IServicioToken, ServicioToken>();
+builder.Services.AddScoped<IRecuperarContrasena, RecuperarContrasena>();
+builder.Services.AddScoped<IServicioOneTimeToken, ServicioOneTimeToken>();
 
 // Repositorios
 builder.Services.AddScoped<IRepositorioUsuario, RepositorioUsuarios>();
+builder.Services.AddScoped<IRepositorioOneTimeToken, RepositorioOneTimeTokens>();
+
 
 var app = builder.Build();
 

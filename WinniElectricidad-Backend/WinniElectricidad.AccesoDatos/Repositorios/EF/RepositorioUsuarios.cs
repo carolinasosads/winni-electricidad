@@ -6,47 +6,47 @@ namespace WinniElectricidad.AccesoDatos.Repositorios.EF;
 
 public class RepositorioUsuarios : IRepositorioUsuario
 {
-    private WinniElectricidadContext _db;
+    private readonly WinniElectricidadContext _db;
 
     public RepositorioUsuarios(WinniElectricidadContext db)
     {
         _db = db;
     }
     
-    public void Add(UsuarioBase obj)
+    public Task Add(UsuarioBase obj, CancellationToken ct = default)
     {
         throw new NotImplementedException();
     }
 
-    public UsuarioBase FindById(int id)
+    public Task<UsuarioBase?> FindById(int id, CancellationToken ct = default)
     {
         throw new NotImplementedException();
     }
 
-    public void Update(UsuarioBase obj)
+    public Task Update(UsuarioBase obj, CancellationToken ct = default)
     {
         throw new NotImplementedException();
     }
 
-    public void Delete(int id)
+    public Task Delete(int id, CancellationToken ct = default)
     {
         throw new NotImplementedException();
     }
 
-    public IEnumerable<UsuarioBase> FindAll()
+    public Task<IReadOnlyList<UsuarioBase>> FindAll(CancellationToken ct = default)
     {
         throw new NotImplementedException();
     }
 
-    public async Task<UsuarioBase?> FindbyEmail(string email)
+    public async Task<UsuarioBase?> FindbyEmail(string email, CancellationToken ct = default)
     {
-        var usuario = await _db.Usuarios.Where(x => x.Email == email).FirstOrDefaultAsync();
+        var usuario = await _db.Usuarios.Where(x => x.Email == email).FirstOrDefaultAsync(ct);
         return usuario;
     }
 
-    public async Task<UsuarioBase?> Login(string email, string password)
+    public async Task<UsuarioBase?> Login(string email, string password, CancellationToken ct = default)
     {
-        var usuarioBuscado = await FindbyEmail(email);
+        var usuarioBuscado = await FindbyEmail(email, ct);
         
         if (usuarioBuscado is not null && usuarioBuscado.PasswordHash == password)
         {
@@ -54,5 +54,15 @@ public class RepositorioUsuarios : IRepositorioUsuario
         }
         
         return null;
+    }
+
+    public async Task ChangePassword(int idUsuario, string passwordHash, CancellationToken ct = default)
+    {
+        await _db.Usuarios
+            .Where(u => u.IdUsuario == idUsuario)
+            .ExecuteUpdateAsync(
+                s => s.SetProperty(u => u.PasswordHash, passwordHash),
+                ct
+            );
     }
 }

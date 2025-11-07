@@ -155,7 +155,7 @@ export default function SignInCard() {
               variant="body2"
               sx={{ alignSelf: 'baseline' }}
             >
-              Olvidaste tu contraseña?{/*ACA VA EL DE RECUPERACION DE CONTRASEÑA!!!! */}
+              ¿Olvidaste tu contraseña?
             </Link>
           </Box>
           <TextField
@@ -188,7 +188,7 @@ export default function SignInCard() {
         )}
 
         <Typography sx={{ textAlign: 'center' }}>
-            No tienes una cuenta?{' '}
+            ¿No tienes una cuenta?{' '}
             <Link component={RouterLink} to="/registro">
                 Regístrate
             </Link>

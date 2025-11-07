@@ -6,7 +6,7 @@ public abstract class UsuarioBase
 {
     #region Propiedades
     [Key]
-    public int IdUsuario { get; set; } // TODO: ver como hacer que sea autoincremental
+    public int IdUsuario { get; set; }
     public required string PasswordHash { get; set; }
     public required string NombreCompleto { get; set; }
     public required string Email { get; set; }

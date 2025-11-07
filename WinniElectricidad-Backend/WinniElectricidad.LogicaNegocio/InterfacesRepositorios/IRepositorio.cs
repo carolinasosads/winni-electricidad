@@ -2,9 +2,9 @@
 
 public interface IRepositorio<T> where T : class
 {
-    public void Add(T obj);
-    public T FindById(int id);
-    public void Update(T obj);
-    public void Delete(int id);
-    public IEnumerable<T> FindAll();
+    Task Add(T obj, CancellationToken ct = default);
+    Task<T?> FindById(int id, CancellationToken ct = default);
+    Task Update(T obj, CancellationToken ct = default);
+    Task Delete(int id, CancellationToken ct = default);
+    Task<IReadOnlyList<T>> FindAll(CancellationToken ct = default);
 } 

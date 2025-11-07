@@ -1,4 +1,4 @@
-﻿using WinniElectricidad.Compartido.DTOs.Usuarios;
+﻿using WinniElectricidad.Compartido.DTOs.Usuarios.Login;
 using WinniElectricidad.LogicaNegocio.Entidades;
 
 namespace WinniElectricidad.Compartido.DTOs.Mappers;
