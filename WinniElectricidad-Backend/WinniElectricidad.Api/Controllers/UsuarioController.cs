@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using WinniElectricidad.Compartido.DTOs.Usuarios;
 using WinniElectricidad.Compartido.DTOs.Usuarios.Login;
 using WinniElectricidad.Compartido.DTOs.Usuarios.RecuperacionContrasena;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios;
