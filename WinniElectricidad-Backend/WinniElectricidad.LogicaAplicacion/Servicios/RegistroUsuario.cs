@@ -1,5 +1,6 @@
 ﻿using WinniElectricidad.Compartido.DTOs.Mappers;
 using WinniElectricidad.Compartido.DTOs.Usuarios;
+using WinniElectricidad.Compartido.DTOs.Usuarios.Login;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios;
 using WinniElectricidad.LogicaNegocio.Entidades;
 using WinniElectricidad.LogicaNegocio.ExcepcionesPersonalizadas.Usuarios;

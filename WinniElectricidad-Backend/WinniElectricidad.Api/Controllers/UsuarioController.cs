@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using WinniElectricidad.Compartido.DTOs.Usuarios;
 using WinniElectricidad.Compartido.DTOs.Usuarios.Login;
 using WinniElectricidad.Compartido.DTOs.Usuarios.RecuperacionContrasena;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios;
@@ -28,7 +29,9 @@ public class UsuarioController : ControllerBase
     /// </summary>
     /// <param name="loginUsuario">Servicio de autenticación de usuarios.</param>
     /// <param name="token">Servicio para generación de tokens JWT.</param>
+    /// <param name="captcha">Servicio de verificación de captcha.</param>
     /// <param name="recuperarContrasena">Servicio de recuperación de contraseña.</param>
+    /// <param name="registroUsuario">Servicio de registro de usuarios.</param>
     public UsuarioController(ILoginUsuario loginUsuario, IServicioToken token, IRegistroUsuario registroUsuario, IHCaptchaVerifier captcha, IRecuperarContrasena recuperarContrasena)
     {
         _loginUsuario = loginUsuario;
