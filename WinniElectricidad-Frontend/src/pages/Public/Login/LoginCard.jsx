@@ -70,7 +70,6 @@ export default function SignInCard() {
 
     try{
       await login(email, password);
-      console.log("Entre al login y funcione bien ")
       navigate("/principal", { replace: true });
 
     }catch(error){

@@ -96,7 +96,7 @@ function normalizarDireccion(d) {
 
 export const logout = () => {
   localStorage.removeItem("token");
-  localStorage.removeItem("role");
+  localStorage.removeItem("rol");
 };
 
 export const sendPasswordRecoveryEmail  = async (email) => {
