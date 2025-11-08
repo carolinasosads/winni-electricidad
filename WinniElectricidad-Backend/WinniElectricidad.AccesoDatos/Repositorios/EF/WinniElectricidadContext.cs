@@ -23,6 +23,17 @@ public class WinniElectricidadContext : DbContext
             .HasDiscriminator<string>("Discriminator")
             .HasValue<UsuarioAdministrador>("UsuarioAdministrador")
             .HasValue<UsuarioCliente>("UsuarioCliente");
+        
+        modelBuilder.Entity<Direccion>(e =>
+        {
+            e.HasOne(d => d.UsuarioCliente)
+                .WithMany(u => u.Direcciones)
+                .HasForeignKey(d => d.IdUsuarioCliente)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            e.Property(d => d.IdUsuarioCliente)
+                .HasColumnName("IdUsuario");
+        });
 
         modelBuilder.Entity<OneTimeToken>(e =>
         {

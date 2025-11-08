@@ -1,6 +1,5 @@
 import ApiError from "./ApiError";
 
-//Login, Logout, Registro y recuperacion de contraseñas
 const urlAPI = "http://localhost:5269/WinniElectricidadApi/Usuario/"
 
 export const login = async (email, password) => {
@@ -22,19 +21,82 @@ export const login = async (email, password) => {
 
     const data = await response.json();
 
-    const { token, role } = data;
+    const { token, rol } = data;
 
     localStorage.setItem("token", token);
-    localStorage.setItem("role", role);
-    
+    localStorage.setItem("rol", rol);
+
     return data;
-  
 }
 
-//TODO: A chequear si funciona y si guardamos el rol
+export const registro = async (p) => {
+  const payload = {
+    nombreCompleto: p.name,             
+    email: p.email,
+    password: p.password,
+    telefono: normalizarTelefono(p.telefono), 
+    hcaptchaToken: p.hcaptchaToken,      
+    direcciones: [
+      normalizarDireccion(p.direccionPrincipal),
+      ...(Array.isArray(p.direcciones) ? p.direcciones.map(d => normalizarDireccion(d)) : []),
+    ].filter(d => d.calle || d.esquina || d.numero || d.apto),
+  };
+
+  console.log("payload registro", payload);
+  const resp = await fetch(`${urlAPI}registro`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  if (!resp.ok) {
+    if (resp.status === 409) {
+      throw new ApiError("El email ya está en uso.", 409);
+    }
+
+    if (resp.status === 400) {
+      const data = await handleJsonOrText(resp);
+      throw new ApiError(data?.message || "Datos inválidos o captcha no verificado.", 400);
+    }
+
+    const data = await handleJsonOrText(resp);
+    throw new ApiError(data?.message || "Error al registrarse.", resp.status);
+  }
+
+  const data = await resp.json();
+  if (data?.token) localStorage.setItem("token", data.token);
+  if (data?.rol) localStorage.setItem("rol", data.rol);
+  return data;
+};
+
+async function handleJsonOrText(resp) {
+  const ct = resp.headers.get("content-type") || "";
+  if (ct.includes("application/json")) return await resp.json();
+  const t = await resp.text();
+  try { return JSON.parse(t); } catch { return { message: t || null }; }
+}
+
+function normalizarTelefono(t) {
+  return (t ?? "")
+    .toString()
+    .replace(/\D/g, "") // sólo dígitos
+    .slice(0, 15); // límite 15 dígitos
+}
+
+function normalizarDireccion(d) {
+  if (!d) return { calle: "", esquina: "", numero: null, apto: null };
+
+  return {
+    calle: d.calle?.trim() || "",
+    esquina: d.esquina?.trim() || "",
+    numero: d.numero?.toString().trim() || null,
+    apto: d.apto?.toString().trim() || null
+  };
+}
+
 export const logout = () => {
   localStorage.removeItem("token");
-  localStorage.removeItem("role");
+  localStorage.removeItem("rol");
 };
 
 export const sendPasswordRecoveryEmail  = async (email) => {
