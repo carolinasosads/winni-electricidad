@@ -233,7 +233,7 @@ public class UsuarioController : ControllerBase
         }
         catch (EmailEnUsoException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return Conflict(new { message = ex.Message });
         }
         catch (Exception)
         {

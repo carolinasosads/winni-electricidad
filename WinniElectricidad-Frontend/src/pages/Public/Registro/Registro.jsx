@@ -134,7 +134,7 @@ export default function SignUp(props) {
 
     if (!telefono.value || !/^\d{7,15}$/.test(telefono.value)) {
       setTelefonoError(true);
-      setTelefonoErrorMessage('Por favor entra un numero de telefono valido (7–15 dígitos).');
+      setTelefonoErrorMessage('Por favor ingresa un número de teléfono válido (7–15 dígitos).');
       isValid = false;
     } else {
       setTelefonoError(false);
@@ -200,22 +200,20 @@ export default function SignUp(props) {
         password: data.get('password'),
         hcaptchaToken: captchaToken,
         // Un solo array de direcciones 
-        direcciones: [
-          {
-            calle: dirPrincipal.calle.trim(),
-            esquina: dirPrincipal.esquina.trim(),
-            numero: (dirPrincipal.numero || '').trim() || null,
-            apto: (dirPrincipal.apto || '').trim() || null,
-          },
-          ...direccionesExtra
-            .map(d => ({
-              calle: (d.calle || '').trim(),
-              esquina: (d.esquina || '').trim(),
-              numero: (d.numero || '').trim() || null,
-              apto: (d.apto || '').trim() || null,
-            }))
-            .filter(d => d.calle || d.esquina || d.numero || d.apto),
-        ].filter(d => d.calle || d.esquina || d.numero || d.apto),
+        direccionPrincipal: {
+          calle: dirPrincipal.calle.trim(),
+          esquina: dirPrincipal.esquina.trim(),
+          numero: (dirPrincipal.numero || '').trim() || null,
+          apto: (dirPrincipal.apto || '').trim() || null,
+        },
+        direcciones: direccionesExtra
+          .map(d => ({
+            calle: (d.calle || '').trim(),
+            esquina: (d.esquina || '').trim(),
+            numero: (d.numero || '').trim() || null,
+            apto: (d.apto || '').trim() || null,
+          }))
+          .filter(d => d.calle || d.esquina || d.numero || d.apto),
       };
 
       await registro(p);

@@ -37,8 +37,8 @@ export const registro = async (p) => {
     telefono: normalizarTelefono(p.telefono), 
     hcaptchaToken: p.hcaptchaToken,      
     direcciones: [
-      normalizarDireccion(p.direccionPrincipal, true),
-      ...(Array.isArray(p.direcciones) ? p.direcciones.map(d => normalizarDireccion(d, false)) : []),
+      normalizarDireccion(p.direccionPrincipal),
+      ...(Array.isArray(p.direcciones) ? p.direcciones.map(d => normalizarDireccion(d)) : []),
     ].filter(d => d.calle || d.esquina || d.numero || d.apto),
   };
 

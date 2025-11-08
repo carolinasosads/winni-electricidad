@@ -36,8 +36,7 @@ public abstract class UsuarioBase
     
     private void ValidarNombreCompleto(string nombreCompleto)
     {
-        if (string.IsNullOrEmpty(nombreCompleto.Trim()))
-        {
+        if (string.IsNullOrWhiteSpace(nombreCompleto))        {
             throw new Exception("Ingrese nombre completo");
         }
     }
