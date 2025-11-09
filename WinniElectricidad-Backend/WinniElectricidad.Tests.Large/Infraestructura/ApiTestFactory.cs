@@ -10,12 +10,12 @@ namespace WinniElectricidad.Tests.Large.Infraestructura;
 
 /// <summary>
 /// Fábrica que inicializa la aplicación WinniElectricidad.Api
-/// en un entorno de pruebas en memoria, utilizando <c>appsettings.Test.json</c>.
+/// en un entorno de pruebas en memoria, utilizando <c>appsettings.Testing.json</c>.
 /// </summary>
 /// <remarks>
 /// <para>
 /// Esta clase configura un entorno aislado para los tests end-to-end:
-/// carga las configuraciones desde <c>appsettings.Test.json</c>,
+/// carga las configuraciones desde <c>appsettings.Testing.json</c>,
 /// reemplaza la base de datos por una versión SQLite en memoria,
 /// y permite registrar dependencias fake (por ejemplo, servicios externos de correo).
 /// </para>
@@ -33,7 +33,9 @@ public class ApiTestFactory : WebApplicationFactory<Program>
 
         builder.ConfigureAppConfiguration((context, config) =>
         {
-            config.AddJsonFile("appsettings.Test.json", optional: false);
+            config.Sources.Clear();
+            config.AddJsonFile("appsettings.Testing.json", optional: true);
+            config.AddEnvironmentVariables();
         });
 
         builder.ConfigureServices(services =>
