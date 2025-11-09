@@ -28,15 +28,15 @@ public class Servicio
     
     private void ValidarTitulo(string titulo)
     {
-        if (string.IsNullOrWhiteSpace(titulo))        {
-            throw new Exception("Ingrese un título válido.");
+        if (string.IsNullOrWhiteSpace(titulo)) {
+            throw new ArgumentException("Ingrese un título válido.", nameof(titulo));
         }
     }
 
     private void ValidarDescripcion(string? descripcion)
     {
-        if (descripcion is not null && descripcion.Length <= 15)        {
-            throw new Exception("Ingrese una descripción más detallada.");
+        if (descripcion is not null && descripcion.Length <= 15) {
+            throw new ArgumentException("Ingrese una descripción más detallada.", nameof(descripcion));
         }
     }
 }

@@ -43,7 +43,8 @@ builder.Services.AddTransient<IResend, ResendClient>();
 
 // Autenticación
 var jwtSettings = builder.Configuration.GetSection("Jwt");
-var key = jwtSettings["Key"];
+var key = jwtSettings["Key"]
+          ?? Environment.GetEnvironmentVariable("JWT_KEY");
 var issuer = jwtSettings["Issuer"];
 var audience = jwtSettings["Audience"];
 
