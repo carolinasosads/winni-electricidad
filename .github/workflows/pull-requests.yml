@@ -41,9 +41,9 @@ jobs:
             /d:sonar.pullrequest.key=${{ github.event.pull_request.number }} \
             /d:sonar.pullrequest.branch=${{ github.head_ref }} \
             /d:sonar.pullrequest.base=develop \
-            /d:sonar.cs.vstest.reportsPaths=WinniElectricidad-Backend/**/TestResults/*.trx \
-            /d:sonar.cs.opencover.reportsPaths=WinniElectricidad-Backend/**/coverage.cobertura.xml \
-            /d:sonar.coverage.exclusions=**/Migrations/**,**/*.Tests/** \
+            /d:sonar.cs.vstest.reportsPaths=**/TestResults/*.trx \
+            /d:sonar.cs.opencover.reportsPaths=**/coverage.opencover.xml \
+            /d:sonar.coverage.exclusions=**/Migrations/**,**/*.Tests*/**,**/Program.cs \
             /d:sonar.qualitygate.wait=true
         working-directory: ./WinniElectricidad-Backend
   
@@ -53,9 +53,14 @@ jobs:
         continue-on-error: true
 
       - name: Run tests
-        run: dotnet test --no-build --configuration Release --logger 'trx;LogFileName=test_results.trx' --collect:'XPlat Code Coverage'
+        id: run_tests
+        run: |
+          dotnet test --no-build --configuration Release \
+          --logger 'trx;LogFileName=test_results.trx' \
+          /p:CollectCoverage=true \
+          /p:CoverletOutput=./TestResults/coverage.opencover.xml \
+          /p:CoverletOutputFormat=opencover
         working-directory: ./WinniElectricidad-Backend
-        continue-on-error: true
           
       - name: Publish test results
         if: ${{ always() }}
@@ -67,9 +72,14 @@ jobs:
           fail-on-error: false                       
           
       - name: SonarCloud End Analysis
+        if: ${{ always() }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
         working-directory: ./WinniElectricidad-Backend
         continue-on-error: true
+
+      - name: Fail workflow if tests failed
+        if: steps.run_tests.outcome != 'success'
+        run: exit 1

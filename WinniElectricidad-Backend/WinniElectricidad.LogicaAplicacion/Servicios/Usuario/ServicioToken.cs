@@ -18,7 +18,7 @@ public class ServicioToken : IServicioToken
     
     public string GenerarToken(int idUsuario, string email, string rol)
     {
-        var key = _configuration["Jwt:Key"];
+        var key = _configuration["Jwt:Key"] ?? Environment.GetEnvironmentVariable("JWT_KEY");
         var issuer = _configuration["Jwt:Issuer"];
         var audience = _configuration["Jwt:Audience"];
         

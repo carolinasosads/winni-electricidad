@@ -6,7 +6,9 @@ using Microsoft.OpenApi.Models;
 using Resend;
 using WinniElectricidad.AccesoDatos.Repositorios.EF;
 using WinniElectricidad.Api.Servicio;
+using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Servicio;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Usuario;
+using WinniElectricidad.LogicaAplicacion.Servicios.Servicio;
 using WinniElectricidad.LogicaAplicacion.Servicios.Usuario;
 using WinniElectricidad.LogicaNegocio.InterfacesRepositorios;
 
@@ -28,6 +30,7 @@ builder.Services.AddCors(o =>
 // Resend
 builder.Configuration
     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
     .AddEnvironmentVariables();
 
 builder.Services.AddOptions();
@@ -41,7 +44,8 @@ builder.Services.AddTransient<IResend, ResendClient>();
 
 // Autenticación
 var jwtSettings = builder.Configuration.GetSection("Jwt");
-var key = jwtSettings["Key"];
+var key = jwtSettings["Key"]
+          ?? Environment.GetEnvironmentVariable("JWT_KEY");
 var issuer = jwtSettings["Issuer"];
 var audience = jwtSettings["Audience"];
 
@@ -123,11 +127,12 @@ builder.Services.AddScoped<IRegistroUsuario, RegistroUsuario>();
 builder.Services.AddHttpClient<IHCaptchaVerifier, HCaptchaServicio>();
 builder.Services.AddScoped<IRecuperarContrasena, RecuperarContrasena>();
 builder.Services.AddScoped<IServicioOneTimeToken, ServicioOneTimeToken>();
+builder.Services.AddScoped<IObtenerServiciosActivos, ObtenerServiciosActivos>();
 
 // Repositorios
 builder.Services.AddScoped<IRepositorioUsuario, RepositorioUsuarios>();
 builder.Services.AddScoped<IRepositorioOneTimeToken, RepositorioOneTimeTokens>();
-
+builder.Services.AddScoped<IRepositorioServicio, RepositorioServicios>();
 
 var app = builder.Build();
 
@@ -148,3 +153,9 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+/// <summary>
+/// Clase parcial utilizada exclusivamente para habilitar el acceso al punto de entrada de la aplicación
+/// desde los proyectos de testing.
+/// </summary>
+public partial class Program { }
