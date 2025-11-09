@@ -14,8 +14,6 @@ permissions:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    env:
-      JWT_KEY: ${{ secrets.JWT_KEY }}
     
     steps:
       - name: Checkout repository
@@ -44,7 +42,7 @@ jobs:
             /d:sonar.pullrequest.branch=${{ github.head_ref }} \
             /d:sonar.pullrequest.base=develop \
             /d:sonar.cs.vstest.reportsPaths=WinniElectricidad-Backend/**/TestResults/*.trx \
-            /d:sonar.cs.opencover.reportsPaths=WinniElectricidad-Backend/**/coverage.opencover.xml \
+            /d:sonar.cs.opencover.reportsPaths="**/TestResults/coverage.opencover.xml" \
             /d:sonar.coverage.exclusions=**/Migrations/**,**/*.Tests*/**,**/Program.cs \
             /d:sonar.qualitygate.wait=true
         working-directory: ./WinniElectricidad-Backend
@@ -55,10 +53,9 @@ jobs:
         continue-on-error: true
 
       - name: Run tests
-        env:
-          JWT_KEY: ${{ secrets.JWT_KEY }}
         run: |
-          dotnet test --no-build --configuration Release \
+          dotnet test WinniElectricidad-Backend/WinniElectricidad.sln \
+          --no-build --configuration Release \
           --logger 'trx;LogFileName=test_results.trx' \
           /p:CollectCoverage=true \
           /p:CoverletOutput=./TestResults/coverage.opencover.xml \
