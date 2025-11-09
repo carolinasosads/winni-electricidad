@@ -3,13 +3,13 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using WinniElectricidad.LogicaAplicacion.InterfacesServicios;
+using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Usuario;
 
-namespace WinniElectricidad.LogicaAplicacion.Servicios;
+namespace WinniElectricidad.LogicaAplicacion.Servicios.Usuario;
 
 public class ServicioToken : IServicioToken
 {
-    private readonly IConfiguration _configuration; // para leer appsettings
+    private readonly IConfiguration _configuration;
 
     public ServicioToken(IConfiguration configuration)
     {

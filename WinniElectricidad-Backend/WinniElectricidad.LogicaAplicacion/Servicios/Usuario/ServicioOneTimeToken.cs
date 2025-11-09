@@ -1,8 +1,8 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
-using WinniElectricidad.LogicaAplicacion.InterfacesServicios;
+using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Usuario;
 
-namespace WinniElectricidad.LogicaAplicacion.Servicios;
+namespace WinniElectricidad.LogicaAplicacion.Servicios.Usuario;
 
 public class ServicioOneTimeToken : IServicioOneTimeToken
 {

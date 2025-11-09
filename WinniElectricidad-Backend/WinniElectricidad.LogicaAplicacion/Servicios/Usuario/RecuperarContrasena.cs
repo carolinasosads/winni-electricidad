@@ -1,11 +1,11 @@
 ﻿using Resend;
-using WinniElectricidad.LogicaAplicacion.InterfacesServicios;
+using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Usuario;
 using WinniElectricidad.LogicaNegocio.Entidades;
 using WinniElectricidad.LogicaNegocio.ExcepcionesPersonalizadas.Notificaciones;
 using WinniElectricidad.LogicaNegocio.ExcepcionesPersonalizadas.Tokens;
 using WinniElectricidad.LogicaNegocio.InterfacesRepositorios;
 
-namespace WinniElectricidad.LogicaAplicacion.Servicios;
+namespace WinniElectricidad.LogicaAplicacion.Servicios.Usuario;
 
 public class RecuperarContrasena : IRecuperarContrasena
 {
@@ -74,7 +74,7 @@ public class RecuperarContrasena : IRecuperarContrasena
         }
     }
 
-    public async Task ResetearContrasena(string password, string tokenPlain, CancellationToken ct)
+    public async Task ResetearContrasena(string password, string tokenPlain, CancellationToken ct = default)
     {
         if (password is null || tokenPlain is null) return;
 

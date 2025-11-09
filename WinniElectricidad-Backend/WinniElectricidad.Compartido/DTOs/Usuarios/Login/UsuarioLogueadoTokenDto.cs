@@ -1,6 +1,6 @@
 ﻿namespace WinniElectricidad.Compartido.DTOs.Usuarios.Login;
 
-public class UsuarioLogueadoTokenDto : UsuarioLogueadoDto
+public record UsuarioLogueadoTokenDto : UsuarioLogueadoDto
 {
-    public required string Token { get; set; }
+    public required string Token { get; init; }
 }

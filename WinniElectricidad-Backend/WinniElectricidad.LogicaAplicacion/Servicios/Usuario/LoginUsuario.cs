@@ -1,9 +1,9 @@
 ﻿using WinniElectricidad.Compartido.DTOs.Mappers;
 using WinniElectricidad.Compartido.DTOs.Usuarios.Login;
-using WinniElectricidad.LogicaAplicacion.InterfacesServicios;
+using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Usuario;
 using WinniElectricidad.LogicaNegocio.InterfacesRepositorios;
 
-namespace WinniElectricidad.LogicaAplicacion.Servicios;
+namespace WinniElectricidad.LogicaAplicacion.Servicios.Usuario;
 
 public class LoginUsuario : ILoginUsuario
 {
