@@ -41,8 +41,8 @@ jobs:
             /d:sonar.pullrequest.key=${{ github.event.pull_request.number }} \
             /d:sonar.pullrequest.branch=${{ github.head_ref }} \
             /d:sonar.pullrequest.base=develop \
-            /d:sonar.cs.vstest.reportsPaths=WinniElectricidad-Backend/**/TestResults/*.trx \
-            /d:sonar.cs.opencover.reportsPaths=WinniElectricidad-Backend/**/coverage.opencover.xml \
+            /d:sonar.cs.vstest.reportsPaths=**/TestResults/*.trx \
+            /d:sonar.cs.opencover.reportsPaths=**/coverage.opencover.xml \
             /d:sonar.coverage.exclusions=**/Migrations/**,**/*.Tests*/**,**/Program.cs \
             /d:sonar.qualitygate.wait=true
         working-directory: ./WinniElectricidad-Backend
