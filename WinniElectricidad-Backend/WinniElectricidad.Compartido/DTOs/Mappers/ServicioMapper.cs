@@ -8,6 +8,6 @@ public class ServicioMapper
     public static ICollection<ServicioActivoDto> MapearServiciosADtos(
         IEnumerable<Servicio> serviciosActivos)
     {
-        return serviciosActivos.Select(servicio => new ServicioActivoDto() { Id = servicio.Id, Titulo = servicio.Titulo, }).ToList();
+        return serviciosActivos.Select(servicio => new ServicioActivoDto() { Id = servicio.Id, Titulo = servicio.Titulo }).ToList();
     }
 }

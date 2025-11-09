@@ -40,6 +40,6 @@ public class RepositorioServicios : IRepositorioServicio
     
     public async Task<IReadOnlyList<Servicio>> FindAllActive(CancellationToken ct = default)
     {
-        return await _db.Servicios.Where(s => s.Activo == true).ToListAsync(ct);
+        return await _db.Servicios.Where(s => s.Activo).ToListAsync(ct);
     }
 }

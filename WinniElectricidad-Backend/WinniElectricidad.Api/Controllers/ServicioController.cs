@@ -21,7 +21,7 @@ public class ServicioController : ControllerBase
     {
         _obtenerServiciosActivos = obtenerServiciosActivos;
     }
-  
+    
     /// <summary>
     /// Obtiene la lista de servicios técnicos actualmente activos en la plataforma.
     /// </summary>
