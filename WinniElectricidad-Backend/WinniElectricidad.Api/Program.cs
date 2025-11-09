@@ -125,7 +125,7 @@ builder.Services.AddScoped<IRegistroUsuario, RegistroUsuario>();
 builder.Services.AddHttpClient<IHCaptchaVerifier, HCaptchaServicio>();
 builder.Services.AddScoped<IRecuperarContrasena, RecuperarContrasena>();
 builder.Services.AddScoped<IServicioOneTimeToken, ServicioOneTimeToken>();
-builder.Services.AddScoped<IObtenerServiciosDisponibles, ObtenerServiciosDisponibles>();
+builder.Services.AddScoped<IObtenerServiciosActivos, ObtenerServiciosActivos>();
 
 // Repositorios
 builder.Services.AddScoped<IRepositorioUsuario, RepositorioUsuarios>();
@@ -151,3 +151,9 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+/// <summary>
+/// Clase parcial utilizada exclusivamente para habilitar el acceso al punto de entrada de la aplicación
+/// desde los proyectos de testing.
+/// </summary>
+public partial class Program { }

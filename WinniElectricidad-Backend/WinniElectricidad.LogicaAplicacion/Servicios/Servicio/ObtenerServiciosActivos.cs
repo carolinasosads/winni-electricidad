@@ -5,19 +5,19 @@ using WinniElectricidad.LogicaNegocio.InterfacesRepositorios;
 
 namespace WinniElectricidad.LogicaAplicacion.Servicios.Servicio;
 
-public class ObtenerServiciosDisponibles : IObtenerServiciosDisponibles
+public class ObtenerServiciosActivos : IObtenerServiciosActivos
 {
     private readonly IRepositorioServicio _repositorioServicio;
 
-    public ObtenerServiciosDisponibles(IRepositorioServicio repositorioServicio)
+    public ObtenerServiciosActivos(IRepositorioServicio repositorioServicio)
     {
         _repositorioServicio = repositorioServicio;
     }
-    public async Task<IEnumerable<ServicioDisponibleDto>> Ejecutar(CancellationToken ct = default)
+    public async Task<IEnumerable<ServicioActivoDto>> Ejecutar(CancellationToken ct = default)
     {
         var serviciosDisponibles = await _repositorioServicio.FindAllActive(ct);
         
-        if (serviciosDisponibles == null) return new List<ServicioDisponibleDto>();
+        if (serviciosDisponibles == null) return new List<ServicioActivoDto>();
         var serviciosDisponiblesDto = ServicioMapper.MapearServiciosADtos(serviciosDisponibles);
         
         return serviciosDisponiblesDto;

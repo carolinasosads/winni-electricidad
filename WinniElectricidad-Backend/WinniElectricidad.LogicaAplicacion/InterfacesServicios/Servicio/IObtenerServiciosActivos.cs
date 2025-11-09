@@ -2,7 +2,7 @@
 
 namespace WinniElectricidad.LogicaAplicacion.InterfacesServicios.Servicio;
 
-public interface IObtenerServiciosDisponibles
+public interface IObtenerServiciosActivos
 {
-    Task<IEnumerable<ServicioDisponibleDto>> Ejecutar(CancellationToken ct = default);
+    Task<IEnumerable<ServicioActivoDto>> Ejecutar(CancellationToken ct = default);
 }
