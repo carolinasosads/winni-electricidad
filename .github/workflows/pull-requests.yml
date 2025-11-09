@@ -55,6 +55,8 @@ jobs:
         continue-on-error: true
 
       - name: Run tests
+        env:
+          JWT_KEY: ${{ secrets.JWT_KEY }}
         run: |
           dotnet test --no-build --configuration Release \
           --logger 'trx;LogFileName=test_results.trx' \
