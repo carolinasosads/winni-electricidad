@@ -6,7 +6,9 @@ using Microsoft.OpenApi.Models;
 using Resend;
 using WinniElectricidad.AccesoDatos.Repositorios.EF;
 using WinniElectricidad.Api.Servicio;
+using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Servicio;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Usuario;
+using WinniElectricidad.LogicaAplicacion.Servicios.Servicio;
 using WinniElectricidad.LogicaAplicacion.Servicios.Usuario;
 using WinniElectricidad.LogicaNegocio.InterfacesRepositorios;
 
@@ -123,11 +125,12 @@ builder.Services.AddScoped<IRegistroUsuario, RegistroUsuario>();
 builder.Services.AddHttpClient<IHCaptchaVerifier, HCaptchaServicio>();
 builder.Services.AddScoped<IRecuperarContrasena, RecuperarContrasena>();
 builder.Services.AddScoped<IServicioOneTimeToken, ServicioOneTimeToken>();
+builder.Services.AddScoped<IObtenerServiciosDisponibles, ObtenerServiciosDisponibles>();
 
 // Repositorios
 builder.Services.AddScoped<IRepositorioUsuario, RepositorioUsuarios>();
 builder.Services.AddScoped<IRepositorioOneTimeToken, RepositorioOneTimeTokens>();
-
+builder.Services.AddScoped<IRepositorioServicio, RepositorioServicios>();
 
 var app = builder.Build();
 
