@@ -6,8 +6,8 @@ using Microsoft.OpenApi.Models;
 using Resend;
 using WinniElectricidad.AccesoDatos.Repositorios.EF;
 using WinniElectricidad.Api.Servicio;
-using WinniElectricidad.LogicaAplicacion.InterfacesServicios;
-using WinniElectricidad.LogicaAplicacion.Servicios;
+using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Usuario;
+using WinniElectricidad.LogicaAplicacion.Servicios.Usuario;
 using WinniElectricidad.LogicaNegocio.InterfacesRepositorios;
 
 var builder = WebApplication.CreateBuilder(args);

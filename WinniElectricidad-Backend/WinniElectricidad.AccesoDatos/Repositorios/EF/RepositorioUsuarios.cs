@@ -55,10 +55,10 @@ public class RepositorioUsuarios : IRepositorioUsuario
         
         return null;
     }
-    public async Task<UsuarioCliente?> Registro(UsuarioCliente usuarioCliente)
+    public async Task<UsuarioCliente?> Registro(UsuarioCliente usuarioCliente, CancellationToken ct = default)
     {
-        await _db.Usuarios.AddAsync(usuarioCliente);
-        await _db.SaveChangesAsync();
+        await _db.Usuarios.AddAsync(usuarioCliente, ct);
+        await _db.SaveChangesAsync(ct);
 
         return usuarioCliente;
     }

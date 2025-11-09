@@ -2,7 +2,7 @@
 using WinniElectricidad.Compartido.DTOs.Usuarios;
 using WinniElectricidad.Compartido.DTOs.Usuarios.Login;
 using WinniElectricidad.Compartido.DTOs.Usuarios.RecuperacionContrasena;
-using WinniElectricidad.LogicaAplicacion.InterfacesServicios;
+using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Usuario;
 using WinniElectricidad.LogicaNegocio.ExcepcionesPersonalizadas.Usuarios;
 using WinniElectricidad.LogicaNegocio.ExcepcionesPersonalizadas.Notificaciones;
 using WinniElectricidad.LogicaNegocio.ExcepcionesPersonalizadas.Tokens;
@@ -29,6 +29,7 @@ public class UsuarioController : ControllerBase
     /// </summary>
     /// <param name="loginUsuario">Servicio de autenticación de usuarios.</param>
     /// <param name="token">Servicio para generación de tokens JWT.</param>
+    /// <param name="captcha">Servicio de captcha para validar registro.</param>
     /// <param name="recuperarContrasena">Servicio de recuperación de contraseña.</param>
     /// <param name="registroUsuario">Servicio para registrar usuarios.</param>
     public UsuarioController(ILoginUsuario loginUsuario, IServicioToken token, IRegistroUsuario registroUsuario, IHCaptchaVerifier captcha, IRecuperarContrasena recuperarContrasena)
@@ -201,7 +202,7 @@ public class UsuarioController : ControllerBase
     /// <response code="409">El email ya está en uso.</response>
     /// <response code="500">Error inesperado.</response>
     [HttpPost("registro")]
-    public async Task<IActionResult> Registro([FromBody] UsuarioRegistroDto usuarioRegistroDto)
+    public async Task<IActionResult> Registro([FromBody] UsuarioRegistroDto usuarioRegistroDto, CancellationToken ct)
     {
         try
         {
@@ -212,7 +213,7 @@ public class UsuarioController : ControllerBase
                 return BadRequest(new { message = "Captcha no verificado." });
             }
 
-            var creado = await _registroUsuario.Registro(usuarioRegistroDto);
+            var creado = await _registroUsuario.Registro(usuarioRegistroDto, ct);
             if (creado is null)
             {
                 return StatusCode(500, new{message = "No se pudo crear el usuario."});

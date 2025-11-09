@@ -1,4 +1,4 @@
-﻿namespace WinniElectricidad.LogicaAplicacion.InterfacesServicios;
+﻿namespace WinniElectricidad.LogicaAplicacion.InterfacesServicios.Usuario;
 
 public interface IServicioToken
 {
