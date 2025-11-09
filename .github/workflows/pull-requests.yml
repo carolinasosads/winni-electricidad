@@ -53,6 +53,7 @@ jobs:
         continue-on-error: true
 
       - name: Run tests
+        id: run_tests
         run: |
           dotnet test --no-build --configuration Release \
           --logger 'trx;LogFileName=test_results.trx' \
@@ -60,7 +61,6 @@ jobs:
           /p:CoverletOutput=./TestResults/coverage.opencover.xml \
           /p:CoverletOutputFormat=opencover
         working-directory: ./WinniElectricidad-Backend
-        continue-on-error: true
           
       - name: Publish test results
         if: ${{ always() }}
@@ -72,9 +72,14 @@ jobs:
           fail-on-error: false                       
           
       - name: SonarCloud End Analysis
+        if: ${{ always() }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
         working-directory: ./WinniElectricidad-Backend
         continue-on-error: true
+
+      - name: Fail workflow if tests failed
+        if: steps.run_tests.outcome != 'success'
+        run: exit 1

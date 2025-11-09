@@ -17,7 +17,6 @@ public class ObtenerServiciosActivos : IObtenerServiciosActivos
     {
         var serviciosDisponibles = await _repositorioServicio.FindAllActive(ct);
         
-        if (serviciosDisponibles == null) return new List<ServicioActivoDto>();
         var serviciosDisponiblesDto = ServicioMapper.MapearServiciosADtos(serviciosDisponibles);
         
         return serviciosDisponiblesDto;

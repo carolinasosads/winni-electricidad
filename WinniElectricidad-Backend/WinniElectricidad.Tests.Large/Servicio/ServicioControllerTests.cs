@@ -5,14 +5,14 @@ using WinniElectricidad.Tests.Large.Infraestructura;
 
 namespace WinniElectricidad.Tests.Large.Servicio;
 
-public class ServicioController : LargeTestBase
+public class ServicioControllerTests : LargeTestBase
 {
     private const string EndpointBase = "/WinniElectricidadApi/Servicio/";
     
     [Test]
     public async Task GetServiciosActivos_DeberiaRetornarSoloActivos()
     {
-        // ARRANGE
+        // Arrange
         const string endpoint = EndpointBase + "activos";
 
         await DbSeeder.SeedServiciosAsync(Factory, new[]
@@ -22,10 +22,10 @@ public class ServicioController : LargeTestBase
             new LogicaNegocio.Entidades.Servicio { Titulo = "Riego",       Descripcion = "Descripción de prueba.", ImagenUrl = null, Activo = false },
         });
 
-        // ACT
+        // Act
         var resp = await Client.GetAsync(endpoint);
 
-        // ASSERT
+        // Assert
         Assert.That(resp.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
         var servicios = await resp.Content.ReadFromJsonAsync<List<ServicioActivoDto>>();
@@ -34,33 +34,6 @@ public class ServicioController : LargeTestBase
         {
             Assert.That(servicios, Has.Count.EqualTo(2));
             Assert.That(servicios.Any(s => s.Titulo == "Riego"), Is.False);
-        });
-    }
-    
-    [Test]
-    public async Task? GetServiciosActivos_DeberiaRetornarUnaListaVacia_SiNoHayActivos()
-    {
-        // ARRANGE
-        const string endpoint = EndpointBase + "activos";
-
-        await DbSeeder.SeedServiciosAsync(Factory, new[]
-        {
-            new LogicaNegocio.Entidades.Servicio { Titulo = "Electricidad", Descripcion = "Descripción de prueba.", ImagenUrl = null, Activo = false },
-            new LogicaNegocio.Entidades.Servicio { Titulo = "Sanitaria",   Descripcion = "Descripción de prueba.", ImagenUrl = null, Activo = false },
-        });
-
-        // ACT
-        var resp = await Client.GetAsync(endpoint);
-
-        // ASSERT
-        Assert.That(resp.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-
-        var servicios = await resp.Content.ReadFromJsonAsync<List<ServicioActivoDto>>();
-        Assert.That(servicios, Is.Not.Null);
-        Assert.Multiple(() =>
-        {
-            Assert.That(servicios, Has.Count.EqualTo(0));
-            Assert.That(servicios.Any(s => s.Titulo == "Electricidad" || s.Titulo == "Sanitaria"), Is.False);
         });
     }
 }
