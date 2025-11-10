@@ -254,7 +254,7 @@ public class UsuarioController : ControllerBase
     /// 
     /// **Flujo:**
     /// 1. Recibe el identificador único del usuario como parámetro de ruta.  
-    /// 2. Consulta la base de datos mediante el servicio <see cref="_obtenerDirecciones"/>.  
+    /// 2. Consulta la base de datos mediante el servicio <see cref="IObtenerDirecciones"/>.  
     /// 3. Devuelve una colección de objetos <see cref="DireccionDetalleDto"/> con la información de cada dirección.
     /// 
     /// **Códigos de respuesta:**
@@ -279,6 +279,11 @@ public class UsuarioController : ControllerBase
     {
         try
         {
+            if (idUsuario <= 0)
+            {
+                return BadRequest(new { message = "El id de usuario debe ser un valor positivo." });
+            }
+            
             IEnumerable<DireccionDetalleDto> direcciones = await _obtenerDirecciones.Ejecutar(idUsuario, ct);
             return Ok(direcciones);
         } catch (Exception)

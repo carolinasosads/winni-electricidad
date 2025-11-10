@@ -3,8 +3,8 @@
 public class DireccionDetalleDto
 {
     public int Id { get; set; }
-    public string Calle { get; set; }
-    public string Esquina { get; set; }
+    public required string Calle { get; set; }
+    public required string Esquina { get; set; }
     public string? Numero { get; set; }
     public string? Apto { get; set; }
 }
