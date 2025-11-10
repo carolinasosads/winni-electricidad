@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using WinniElectricidad.Compartido.DTOs.Direcciones;
 using WinniElectricidad.Compartido.DTOs.Usuarios;
 using WinniElectricidad.Compartido.DTOs.Usuarios.Login;
 using WinniElectricidad.Compartido.DTOs.Usuarios.RecuperacionContrasena;
@@ -22,6 +23,7 @@ public class UsuarioController : ControllerBase
     private readonly IHCaptchaVerifier _captcha;
     
     private readonly IRecuperarContrasena _recuperarContrasena;
+    private readonly IObtenerDirecciones _obtenerDirecciones;
 
 
     /// <summary>
@@ -32,13 +34,15 @@ public class UsuarioController : ControllerBase
     /// <param name="captcha">Servicio de captcha para validar registro.</param>
     /// <param name="recuperarContrasena">Servicio de recuperación de contraseña.</param>
     /// <param name="registroUsuario">Servicio para registrar usuarios.</param>
-    public UsuarioController(ILoginUsuario loginUsuario, IServicioToken token, IRegistroUsuario registroUsuario, IHCaptchaVerifier captcha, IRecuperarContrasena recuperarContrasena)
+    /// <param name="obtenerDirecciones">Servicio para obtener las direcciones de un usuario.</param>
+    public UsuarioController(ILoginUsuario loginUsuario, IServicioToken token, IRegistroUsuario registroUsuario, IHCaptchaVerifier captcha, IRecuperarContrasena recuperarContrasena, IObtenerDirecciones obtenerDirecciones)
     {
         _loginUsuario = loginUsuario;
         _token = token;
         _registroUsuario = registroUsuario;
         _captcha = captcha;
         _recuperarContrasena = recuperarContrasena;
+        _obtenerDirecciones = obtenerDirecciones;
     }
 
     /// <summary>
@@ -237,6 +241,47 @@ public class UsuarioController : ControllerBase
             return Conflict(new { message = ex.Message });
         }
         catch (Exception)
+        {
+            return StatusCode(500, new{message = "Error inesperado." });
+        }
+    }
+
+    /// <summary>
+    /// Obtiene todas las direcciones registradas por un usuario específico.
+    /// </summary>
+    /// <remarks>
+    /// Este endpoint devuelve el listado de direcciones asociadas al usuario identificado por su ID.
+    /// 
+    /// **Flujo:**
+    /// 1. Recibe el identificador único del usuario como parámetro de ruta.  
+    /// 2. Consulta la base de datos mediante el servicio <see cref="_obtenerDirecciones"/>.  
+    /// 3. Devuelve una colección de objetos <see cref="DireccionDetalleDto"/> con la información de cada dirección.
+    /// 
+    /// **Códigos de respuesta:**
+    /// - `200 OK` → Lista de direcciones obtenida correctamente.  
+    /// - `500 Internal Server Error` → Error inesperado durante la consulta.
+    /// </remarks>
+    /// <param name="idUsuario">
+    /// Identificador único del usuario cuyas direcciones se desean obtener.
+    /// </param>
+    /// <param name="ct">
+    /// Token de cancelación para abortar la operación en caso necesario.
+    /// </param>
+    /// <returns>
+    /// Una respuesta HTTP con la colección de direcciones del usuario especificado.
+    /// </returns>
+    /// <response code="200">Lista de direcciones obtenida correctamente.</response>
+    /// <response code="500">Error inesperado del servidor.</response>
+    [HttpGet("{idUsuario}/direcciones")]
+    [ProducesResponseType(typeof(IEnumerable<DireccionDetalleDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetDirecciones([FromRoute] int idUsuario, CancellationToken ct)
+    {
+        try
+        {
+            IEnumerable<DireccionDetalleDto> direcciones = await _obtenerDirecciones.Ejecutar(idUsuario, ct);
+            return Ok(direcciones);
+        } catch (Exception)
         {
             return StatusCode(500, new{message = "Error inesperado." });
         }

@@ -2,7 +2,7 @@
 
 namespace WinniElectricidad.Compartido.DTOs.Direcciones;
 
-public record DireccionDto
+public class DireccionDto
 {
         [Required(ErrorMessage = "La calle es obligatoria.")]
         [MaxLength(100, ErrorMessage = "La calle no puede superar los 100 caracteres.")]

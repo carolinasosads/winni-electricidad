@@ -128,6 +128,7 @@ builder.Services.AddHttpClient<IHCaptchaVerifier, HCaptchaServicio>();
 builder.Services.AddScoped<IRecuperarContrasena, RecuperarContrasena>();
 builder.Services.AddScoped<IServicioOneTimeToken, ServicioOneTimeToken>();
 builder.Services.AddScoped<IObtenerServiciosActivos, ObtenerServiciosActivos>();
+builder.Services.AddScoped<IObtenerDirecciones, ObtenerDirecciones>();
 
 // Repositorios
 builder.Services.AddScoped<IRepositorioUsuario, RepositorioUsuarios>();

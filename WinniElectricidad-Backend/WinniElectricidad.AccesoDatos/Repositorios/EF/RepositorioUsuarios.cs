@@ -73,4 +73,13 @@ public class RepositorioUsuarios : IRepositorioUsuario
                 ct
             );
     }
+
+    public async Task<IReadOnlyList<Direccion>> FindAddressByUserId(int idUsuario, CancellationToken ct = default)
+    {
+        return await _db.Usuarios
+            .OfType<UsuarioCliente>()                 
+            .Where(c => c.IdUsuario == idUsuario)
+            .SelectMany(c => c.Direcciones)
+            .ToListAsync(ct);
+    }
 }
