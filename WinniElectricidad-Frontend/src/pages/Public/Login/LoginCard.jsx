@@ -70,7 +70,9 @@ export default function SignInCard() {
 
     try{
       await login(email, password);
-      navigate("/principal", { replace: true });
+      //navigate("/principal", { replace: true });
+     // navigate("/dashboard", { replace: true });
+      navigate("/agenda", { replace: true });
 
     }catch(error){
       if(error instanceof ApiError){
