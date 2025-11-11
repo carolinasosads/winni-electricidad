@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using WinniElectricidad.Compartido.DTOs.Direcciones;
 using WinniElectricidad.Compartido.DTOs.Usuarios;
 using WinniElectricidad.Compartido.DTOs.Usuarios.Login;
@@ -247,42 +249,43 @@ public class UsuarioController : ControllerBase
     }
 
     /// <summary>
-    /// Obtiene todas las direcciones registradas por un usuario específico.
+    /// Obtiene todas las direcciones asociadas al usuario autenticado.
     /// </summary>
     /// <remarks>
-    /// Este endpoint devuelve el listado de direcciones asociadas al usuario identificado por su ID.
+    /// Este endpoint devuelve el listado de direcciones registradas por el usuario que realiza la solicitud.
     /// 
     /// **Flujo:**
-    /// 1. Recibe el identificador único del usuario como parámetro de ruta.  
-    /// 2. Consulta la base de datos mediante el servicio <see cref="IObtenerDirecciones"/>.  
-    /// 3. Devuelve una colección de objetos <see cref="DireccionDetalleDto"/> con la información de cada dirección.
-    /// 
+    /// 1. Valida el token JWT y extrae el identificador del usuario autenticado.  
+    /// 2. Utiliza el servicio <see cref="IObtenerDirecciones"/> para consultar las direcciones asociadas al usuario.  
+    /// 3. Devuelve una colección de objetos <see cref="DireccionDetalleDto"/> que representan las direcciones registradas.
+    ///
+    /// **Requiere autenticación:**  
+    /// - Solo disponible para usuarios con el rol <c>Cliente</c>.
+    ///
     /// **Códigos de respuesta:**
     /// - `200 OK` → Lista de direcciones obtenida correctamente.  
-    /// - `500 Internal Server Error` → Error inesperado durante la consulta.
+    /// - `401 Unauthorized` → El token es inválido o expiró.  
+    /// - `500 Internal Server Error` → Error inesperado del servidor.
     /// </remarks>
-    /// <param name="idUsuario">
-    /// Identificador único del usuario cuyas direcciones se desean obtener.
-    /// </param>
-    /// <param name="ct">
-    /// Token de cancelación para abortar la operación en caso necesario.
-    /// </param>
+    /// <param name="ct">Token de cancelación para abortar la operación si es necesario.</param>
     /// <returns>
-    /// Una respuesta HTTP con la colección de direcciones del usuario especificado.
+    /// Una respuesta HTTP que contiene la colección de direcciones del usuario autenticado.
     /// </returns>
     /// <response code="200">Lista de direcciones obtenida correctamente.</response>
+    /// <response code="401">Token inválido o expirado.</response>
     /// <response code="500">Error inesperado del servidor.</response>
-    [HttpGet("{idUsuario}/direcciones")]
+    [HttpGet("direcciones")]
     [ProducesResponseType(typeof(IEnumerable<DireccionDetalleDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetDirecciones([FromRoute] int idUsuario, CancellationToken ct)
+    [Authorize(Roles = "Cliente")]
+    public async Task<IActionResult> GetDirecciones(CancellationToken ct)
     {
         try
         {
-            if (idUsuario <= 0)
-            {
-                return BadRequest(new { message = "El id de usuario debe ser un valor positivo." });
-            }
+            var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(idClaim)) return Unauthorized(new { message = "Token inválido o expirado." });
+
+            var idUsuario = int.Parse(idClaim);
             
             IEnumerable<DireccionDetalleDto> direcciones = await _obtenerDirecciones.Ejecutar(idUsuario, ct);
             return Ok(direcciones);

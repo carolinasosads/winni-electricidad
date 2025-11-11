@@ -149,6 +149,7 @@ app.UseHttpsRedirection();
 //TODO: borrar antes de subir a prod
 app.UseCors("Dev");
 
+app.UseAuthentication(); 
 app.UseAuthorization();
 
 app.MapControllers();
