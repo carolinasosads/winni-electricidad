@@ -26,6 +26,7 @@ namespace WinniElectricidad.Tests.Large.Infraestructura;
 public class ApiTestFactory : WebApplicationFactory<Program>
 {
     private SqliteConnection? _connection;
+    public IConfiguration Configuration { get; private set; } = null!;
     
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -36,6 +37,8 @@ public class ApiTestFactory : WebApplicationFactory<Program>
             config.Sources.Clear();
             config.AddJsonFile("appsettings.Testing.json", optional: true);
             config.AddEnvironmentVariables();
+            
+            Configuration = config.Build();
         });
 
         builder.ConfigureServices(services =>

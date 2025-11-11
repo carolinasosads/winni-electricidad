@@ -1,4 +1,6 @@
-﻿namespace WinniElectricidad.Tests.Large.Infraestructura;
+﻿using WinniElectricidad.Tests.Large.Utils;
+
+namespace WinniElectricidad.Tests.Large.Infraestructura;
 
 /// <summary>
 /// Clase base abstracta para los tests end-to-end (E2E) del sistema Winni Electricidad.
@@ -26,11 +28,23 @@ public class LargeTestBase : IDisposable
     /// Cliente HTTP utilizado para interactuar con la API durante los tests E2E.
     /// </summary>
     protected readonly HttpClient Client;
+    
+    /// <summary>
+    /// Helper para generar tokens JWT válidos o expirados durante los tests.
+    /// </summary>
+    protected readonly JwtHelper Jwt;
 
     protected LargeTestBase()
     {
         Factory = new ApiTestFactory();
         Client = Factory.CreateClient();
+        Jwt = new JwtHelper(Factory.Configuration);
+    }
+    
+    [SetUp]
+    public virtual void LimpiarHeaders()
+    {
+        Client.DefaultRequestHeaders.Authorization = null;
     }
     
     public void Dispose()
