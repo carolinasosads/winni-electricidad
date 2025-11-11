@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using WinniElectricidad.Compartido.DTOs.Direcciones;
 using WinniElectricidad.Compartido.DTOs.Usuarios;
 using WinniElectricidad.Compartido.DTOs.Usuarios.Login;
 using WinniElectricidad.Compartido.DTOs.Usuarios.RecuperacionContrasena;
@@ -22,6 +25,7 @@ public class UsuarioController : ControllerBase
     private readonly IHCaptchaVerifier _captcha;
     
     private readonly IRecuperarContrasena _recuperarContrasena;
+    private readonly IObtenerDirecciones _obtenerDirecciones;
 
 
     /// <summary>
@@ -32,13 +36,15 @@ public class UsuarioController : ControllerBase
     /// <param name="captcha">Servicio de captcha para validar registro.</param>
     /// <param name="recuperarContrasena">Servicio de recuperación de contraseña.</param>
     /// <param name="registroUsuario">Servicio para registrar usuarios.</param>
-    public UsuarioController(ILoginUsuario loginUsuario, IServicioToken token, IRegistroUsuario registroUsuario, IHCaptchaVerifier captcha, IRecuperarContrasena recuperarContrasena)
+    /// <param name="obtenerDirecciones">Servicio para obtener las direcciones de un usuario.</param>
+    public UsuarioController(ILoginUsuario loginUsuario, IServicioToken token, IRegistroUsuario registroUsuario, IHCaptchaVerifier captcha, IRecuperarContrasena recuperarContrasena, IObtenerDirecciones obtenerDirecciones)
     {
         _loginUsuario = loginUsuario;
         _token = token;
         _registroUsuario = registroUsuario;
         _captcha = captcha;
         _recuperarContrasena = recuperarContrasena;
+        _obtenerDirecciones = obtenerDirecciones;
     }
 
     /// <summary>
@@ -237,6 +243,53 @@ public class UsuarioController : ControllerBase
             return Conflict(new { message = ex.Message });
         }
         catch (Exception)
+        {
+            return StatusCode(500, new{message = "Error inesperado." });
+        }
+    }
+
+    /// <summary>
+    /// Obtiene todas las direcciones asociadas al usuario autenticado.
+    /// </summary>
+    /// <remarks>
+    /// Este endpoint devuelve el listado de direcciones registradas por el usuario que realiza la solicitud.
+    /// 
+    /// **Flujo:**
+    /// 1. Valida el token JWT y extrae el identificador del usuario autenticado.  
+    /// 2. Utiliza el servicio <see cref="IObtenerDirecciones"/> para consultar las direcciones asociadas al usuario.  
+    /// 3. Devuelve una colección de objetos <see cref="DireccionDetalleDto"/> que representan las direcciones registradas.
+    ///
+    /// **Requiere autenticación:**  
+    /// - Solo disponible para usuarios con el rol <c>Cliente</c>.
+    ///
+    /// **Códigos de respuesta:**
+    /// - `200 OK` → Lista de direcciones obtenida correctamente.  
+    /// - `401 Unauthorized` → El token es inválido o expiró.  
+    /// - `500 Internal Server Error` → Error inesperado del servidor.
+    /// </remarks>
+    /// <param name="ct">Token de cancelación para abortar la operación si es necesario.</param>
+    /// <returns>
+    /// Una respuesta HTTP que contiene la colección de direcciones del usuario autenticado.
+    /// </returns>
+    /// <response code="200">Lista de direcciones obtenida correctamente.</response>
+    /// <response code="401">Token inválido o expirado.</response>
+    /// <response code="500">Error inesperado del servidor.</response>
+    [HttpGet("direcciones")]
+    [ProducesResponseType(typeof(IEnumerable<DireccionDetalleDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize(Roles = "Cliente")]
+    public async Task<IActionResult> GetDirecciones(CancellationToken ct)
+    {
+        try
+        {
+            var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(idClaim)) return Unauthorized(new { message = "Token inválido o expirado." });
+
+            var idUsuario = int.Parse(idClaim);
+            
+            IEnumerable<DireccionDetalleDto> direcciones = await _obtenerDirecciones.Ejecutar(idUsuario, ct);
+            return Ok(direcciones);
+        } catch (Exception)
         {
             return StatusCode(500, new{message = "Error inesperado." });
         }

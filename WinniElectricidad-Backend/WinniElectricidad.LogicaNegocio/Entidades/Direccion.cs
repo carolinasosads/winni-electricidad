@@ -39,15 +39,15 @@ public class Direccion
     {
         if (string.IsNullOrEmpty(calle.Trim()))
         {
-            throw new Exception("Ingrese una calle valida");
+            throw new Exception("Ingrese una calle válida.");
         }
     }
 
-    public void ValidarEsquina(string esquina)
+    private void ValidarEsquina(string esquina)
     {
         if (string.IsNullOrEmpty(esquina.Trim()))
         {
-            throw new Exception("Ingrese una esquina valida");
+            throw new Exception("Ingrese una esquina válida.");
         }
     }
 }
