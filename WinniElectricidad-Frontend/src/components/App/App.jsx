@@ -11,24 +11,20 @@ import EmployeeShow from "../../components/MUI/EmployeeShow.jsx";
 import EmployeeEdit from "../../components/MUI/EmployeeEdit.jsx";
 
 import { PrivateRoute } from "../routes/PrivateRoute.jsx";
+import { ProtectedRoute } from "../routes/ProtectedRoute.jsx";
 
 import AgendaLayout from "../../pages/User/Agenda/AgendaLayout.jsx";
 import AgendaPage from "../../pages/User/Agenda/AgendaPage.jsx"; 
 
-export default function App() {
+/*export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/login" replace />} />
 
-      {/* Públicas */}
-      <Route path="/registro" element={<Registro />} />
+      {/* Públicas *///}
+   /*   <Route path="/registro" element={<Registro />} />
       <Route path="/login" element={<Login />} />
       <Route path="/reset-password" element={<ResetPassword />} />
-
-{/*Que no se pueda ingresar por url falta */}
-      <Route path="/agenda" element={<AgendaLayout />}>
-        <Route index element={<AgendaPage />} />
-      </Route>
 
       <Route
         path="/dashboard"
@@ -39,7 +35,59 @@ export default function App() {
         }
       >
 
-        {/*Cambiar una vezz que tengamos el back */}
+        {/*Cambiar una vezz que tengamos el back *///}
+       /* <Route index element={<EmployeeList />} />
+        <Route path="employees" element={<EmployeeList />} />
+        <Route path="employees/:employeeId" element={<EmployeeShow />} />
+        <Route path="employees/:employeeId/edit" element={<EmployeeEdit />} />
+        <Route path="*" element={<EmployeeList />} />
+      </Route>
+
+    <Route
+      path="/agenda"
+      element={
+        <PrivateRoute>
+          <AgendaLayout />
+        </PrivateRoute>
+      }
+    >
+      <Route index element={<AgendaPage />} />
+    </Route>
+
+      <Route
+        path="/agenda"
+        element={
+          <PrivateRoute>
+            <AgendaLayout />
+          </PrivateRoute>
+        }
+      />
+
+    { /*Si ponen algo por url que no existe va para el login *///}
+     /* <Route path="*" element={<Navigate to="/login" replace />} />
+    </Routes>
+  );
+}*/
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Navigate to="/login" replace />} />
+
+      {/* públicas */}
+      <Route path="/registro" element={<Registro />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+
+      {/* solo UsuarioAdministrador */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute allowedRoles={["Administrador"]}>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<EmployeeList />} />
         <Route path="employees" element={<EmployeeList />} />
         <Route path="employees/:employeeId" element={<EmployeeShow />} />
@@ -47,16 +95,19 @@ export default function App() {
         <Route path="*" element={<EmployeeList />} />
       </Route>
 
+      {/* solo UsuarioCliente */}
       <Route
-        path="/principal"
+        path="/agenda"
         element={
-          <PrivateRoute>
-            <Principal />
-          </PrivateRoute>
+          <ProtectedRoute allowedRoles={["Cliente"]}>
+            <AgendaLayout />
+          </ProtectedRoute>
         }
-      />
+      >
+        <Route index element={<AgendaPage />} />
+      </Route>
 
-    { /*Si ponen algo por url que no existe va para el login */}
+      {/* catch-all */}
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );

@@ -130,7 +130,7 @@ function DashboardSidebar({
             <DashboardSidebarHeaderItem>Main items</DashboardSidebarHeaderItem>
             <DashboardSidebarPageItem
               id="employees"
-              title="Titulo 1"
+              title="Perfil"
               icon={<PersonIcon />}
               href="/employees"
               selected={!!matchPath('/employees/*', pathname) || pathname === '/'}

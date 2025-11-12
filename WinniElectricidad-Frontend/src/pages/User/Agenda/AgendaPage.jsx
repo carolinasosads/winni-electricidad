@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   addMonths,
   eachDayOfInterval,
@@ -26,18 +26,11 @@ import {
 } from "@mui/material";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-
-// Filtros separados (picklists)
 import AgendaFilters from "./AgendaFilters";
+import { CALENDAR_WIDTH, DAY_MIN_HEIGHT, direccionesUsuario } from "./AgendaConstants";
+import { getServiciosActivos } from "../../../services/authService";
 
-import {
-  CALENDAR_WIDTH,
-  DAY_MIN_HEIGHT,
-  servicioOpciones,
-  direccionesUsuario,
-} from "./AgendaConstants";
-
-/** ------------------ MOCKS SIN BACKEND ------------------ */
+/** ------------------ MOCKS SIN BACKEND (slots y disponibilidad) ------------------ */
 function mockSlotsFor(date) {
   const seed = date.getDate() * (date.getMonth() + 1);
   const base = ["09:00","09:30","10:00","10:30","11:00","15:00","15:30","16:00","16:30"];
@@ -64,11 +57,40 @@ export default function AgendaPage({ onReserve }) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
 
-  // estado de filtros (controlado por el padre)
-  const [servicios, setServicios] = useState([]);
-  const [tipoTrabajo, setTipoTrabajo] = useState("instalacion"); // 'instalacion' | 'mantenimiento'
+  // filtros
+  const [servicios, setServicios] = useState([]); // [{id,label}, ...] seleccionados
+  const [tipoTrabajo, setTipoTrabajo] = useState("instalacion");
   const [direccionId, setDireccionId] = useState(direccionesUsuario[0]?.id ?? "");
   const [comentarios, setComentarios] = useState("");
+
+  // opciones desde API
+  const [serviciosOpts, setServiciosOpts] = useState([]);          // ← FALTABA
+  const [loadingServicios, setLoadingServicios] = useState(true);  // ← FALTABA
+  const [errorServicios, setErrorServicios] = useState(null);      // ← FALTABA
+
+  useEffect(() => {
+    const ac = new AbortController();
+    (async () => {
+      try {
+        setLoadingServicios(true);
+        setErrorServicios(null);
+        
+
+      const data = await getServiciosActivos(ac.signal); //ver si se usa
+            const opts = (data ?? []).map(s => ({
+        id: s.id,
+        label: s.titulo, // ← el nombre real del servicio
+      }));
+        
+        setServiciosOpts(opts);
+      } catch (e) {
+        setErrorServicios(e?.message ?? "Error al obtener servicios");
+      } finally {
+        setLoadingServicios(false);
+      }
+    })();
+    return () => ac.abort();
+  }, []);
 
   const calendarDays = useMemo(() => {
     const start = startOfWeek(startOfMonth(currentMonth), { weekStartsOn: 1 });
@@ -91,7 +113,6 @@ export default function AgendaPage({ onReserve }) {
   const slots = selectedDate ? mockSlotsFor(selectedDate) : [];
 
   const handleReserve = (slot) => {
-    // payload que después vas a POSTear
     const payload = {
       date: selectedDate,
       time: slot.time,
@@ -109,19 +130,17 @@ export default function AgendaPage({ onReserve }) {
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: (t) => t.palette.background.default }}>
-      {/* CONTENIDO */}
-        <Box sx={{ p: { xs: 2, sm: 3 }, flex: 1 }}>
+      <Box sx={{ p: { xs: 2, sm: 3 }, flex: 1 }}>
         <Typography variant="h4" fontWeight={700} gutterBottom>
-          Resservas
+          Reservas
         </Typography>
 
         <Grid container spacing={3}>
           {/* Columna izquierda: filtros + calendario */}
           <Grid item xs={12} md={7} lg={8}>
-            {/* Filtros */}
             <AgendaFilters
               width={CALENDAR_WIDTH}
-              servicioOpciones={servicioOpciones}
+              servicioOpciones={serviciosOpts}
               direccionesUsuario={direccionesUsuario}
               servicios={servicios}
               setServicios={setServicios}
@@ -129,15 +148,16 @@ export default function AgendaPage({ onReserve }) {
               setTipoTrabajo={setTipoTrabajo}
               direccionId={direccionId}
               setDireccionId={setDireccionId}
+              loadingServicios={loadingServicios}
+              errorServicios={errorServicios}
             />
 
-            {/* Calendario */}
             <Paper
               variant="outlined"
               sx={{
                 p: 2,
                 mx: "auto",
-                width: CALENDAR_WIDTH, 
+                width: CALENDAR_WIDTH,
                 overflow: "hidden",
               }}
             >
@@ -206,7 +226,7 @@ export default function AgendaPage({ onReserve }) {
                         disabled={!info.hasAvailability || !inThisMonth}
                         sx={{
                           width: "100%",
-                          minHeight: DAY_MIN_HEIGHT, // alto fijo por día
+                          minHeight: DAY_MIN_HEIGHT.md, // alto fijo por día (elige el que quieras)
                           borderRadius: 2,
                           borderColor: isSelected ? "primary.main" : "divider",
                           bgcolor: "background.paper",
@@ -225,13 +245,9 @@ export default function AgendaPage({ onReserve }) {
                         </Typography>
                         <Chip
                           size="small"
-                          label={
-                            info.hasAvailability ? `${info.availableCount} turnos` : "—"
-                          }
+                          label={info.hasAvailability ? `${info.availableCount} turnos` : "—"}
                           variant="outlined"
-                          sx={{
-                            borderColor: info.hasAvailability ? "primary.light" : "divider",
-                          }}
+                          sx={{ borderColor: info.hasAvailability ? "primary.light" : "divider" }}
                         />
                       </Button>
                     </Grid>
@@ -247,17 +263,17 @@ export default function AgendaPage({ onReserve }) {
               <Typography variant="h6" fontWeight={700} gutterBottom>
                 Horarios disponibles
               </Typography>
-              {/* Comentarios del usuario */}
-      <TextField
-       label="Comentarios (opcional)"
-        placeholder="Ej: timbre roto, preferencia por la tarde, etc."
-        fullWidth
-        multiline
-        minRows={3}
-        value={comentarios}
-        onChange={(e) => setComentarios(e.target.value)}
-        sx={{ mb: 2 }}
-        disabled={!selectedDate}  // para permitir sólo cuando hay día seleccionado+
+
+              <TextField
+                label="Comentarios (opcional)"
+                placeholder="Ej: timbre roto, preferencia por la tarde, etc."
+                fullWidth
+                multiline
+                minRows={3}
+                value={comentarios}
+                onChange={(e) => setComentarios(e.target.value)}
+                sx={{ mb: 2 }}
+                disabled={!selectedDate}
               />
 
               {!selectedDate && (
@@ -276,8 +292,7 @@ export default function AgendaPage({ onReserve }) {
                   {slots.length === 0 ? (
                     <Typography color="text.secondary">
                       No hay horarios para{" "}
-                      <strong>{format(selectedDate, "PPP", { locale: es })}</strong>. Probá
-                      otro día.
+                      <strong>{format(selectedDate, "PPP", { locale: es })}</strong>. Probá otro día.
                     </Typography>
                   ) : (
                     <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>

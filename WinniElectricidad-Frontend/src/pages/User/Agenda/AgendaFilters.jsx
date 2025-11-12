@@ -11,18 +11,6 @@ import {
   MenuItem,
 } from "@mui/material";
 
-/**
- * Props esperadas:
- * - width: objeto o valor MUI (ej: { xs:'100%', sm:620, md:760 })
- * - servicioOpciones: [{ id, label }]
- * - direccionesUsuario: [{ id, label }]
- * - servicios: array seleccionado del Autocomplete
- * - setServicios: setter
- * - tipoTrabajo: 'instalacion' | 'mantenimiento'
- * - setTipoTrabajo: setter
- * - direccionId: string
- * - setDireccionId: setter
- */
 export default function AgendaFilters({
   width,
   servicioOpciones = [],
@@ -34,7 +22,6 @@ export default function AgendaFilters({
   direccionId,
   setDireccionId,
 }) {
-  //si no hay direcciones (evita Select vacío)
   const hasDirecciones = (direccionesUsuario?.length ?? 0) > 0;
 
   return (
@@ -48,17 +35,18 @@ export default function AgendaFilters({
         mx: "auto",
       }}
     >
-      {/* Servicios (multi-Picklust) */}
+      {/* Servicios (multi-picklist) */}
       <Autocomplete
         multiple
         options={servicioOpciones}
         getOptionLabel={(o) => o.label}
+        isOptionEqualToValue={(o, v) => o.id === v.id}
         value={servicios}
         onChange={(_, val) => setServicios(val)}
-        renderInput={(params) => (
-          <TextField {...params} label="Servicios" placeholder="Seleccionar..." />
-        )}
-      />
+        disableCloseOnSelect
+        filterSelectedOptions
+        renderInput={(params) => <TextField {...params} label="Servicios" />}
+        />
 
       {/* Tipo de trabajo */}
       <FormControl>
