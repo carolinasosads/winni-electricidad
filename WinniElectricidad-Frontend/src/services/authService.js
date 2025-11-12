@@ -1,6 +1,7 @@
 import ApiError from "./ApiError";
 
 const urlAPI = "http://localhost:5269/WinniElectricidadApi/Usuario/"
+const urlAPIServicio = "http://localhost:5269/WinniElectricidadApi/Servicio/";
 
 export const login = async (email, password) => {
     try{
@@ -199,4 +200,27 @@ function normalizarDireccion(d) {
     numero: d.numero?.toString().trim() || null,
     apto: d.apto?.toString().trim() || null
   };
+}
+
+export async function getServiciosActivos(signal) {
+  const token = localStorage.getItem("token");
+
+  const resp = await fetch(`${urlAPIServicio}activos`, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    signal,
+  });
+
+  if (!resp.ok) {
+    const data = await handleJsonOrText(resp);
+    throw new ApiError(
+      data?.message || "No se pudieron obtener los servicios.",
+      resp.status
+    );
+  }
+
+  return await resp.json(); 
 }
