@@ -217,7 +217,7 @@ export default function SignUp(props) {
       };
 
       await registro(p);
-      navigate("/principal");
+      navigate("/agenda");
     } catch (e) {
       setCaptchaError(e.message || "No pudimos completar el registro.");
       captchaRef.current?.resetCaptcha();

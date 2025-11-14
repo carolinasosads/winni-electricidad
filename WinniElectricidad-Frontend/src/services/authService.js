@@ -224,3 +224,32 @@ export async function getServiciosActivos(signal) {
 
   return await resp.json(); 
 }
+
+export async function getDireccionesUsuario(signal) {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    throw new ApiError("Usuario no autenticado.", 401);
+  }
+
+  const resp = await fetch(`${urlAPI}direcciones`, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    signal,
+
+  });
+
+  if (!resp.ok) {
+    const data = await handleJsonOrText(resp);
+    throw new ApiError(
+      data?.message || "No se pudieron obtener las direcciones.",
+      resp.status
+    );
+  }
+
+  const json = await resp.json();
+  return json;
+}

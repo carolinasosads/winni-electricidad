@@ -24,13 +24,14 @@ import {
   Divider,
   TextField,
 } from "@mui/material";
+
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import AgendaFilters from "./AgendaFilters";
-import { CALENDAR_WIDTH, DAY_MIN_HEIGHT, direccionesUsuario } from "./AgendaConstants";
-import { getServiciosActivos } from "../../../services/authService";
+import { CALENDAR_WIDTH, DAY_MIN_HEIGHT } from "./AgendaConstants";
+import { getServiciosActivos, getDireccionesUsuario } from "../../../services/authService";
 
-/** ------------------ MOCKS SIN BACKEND (slots y disponibilidad) ------------------ */
+/** ------------------ MOCKS SIN BACKEND  ------------------ */
 function mockSlotsFor(date) {
   const seed = date.getDate() * (date.getMonth() + 1);
   const base = ["09:00","09:30","10:00","10:30","11:00","15:00","15:30","16:00","16:30"];
@@ -58,39 +59,59 @@ export default function AgendaPage({ onReserve }) {
   const [selectedDate, setSelectedDate] = useState(null);
 
   // filtros
-  const [servicios, setServicios] = useState([]); // [{id,label}, ...] seleccionados
+  const [servicios, setServicios] = useState([]);
   const [tipoTrabajo, setTipoTrabajo] = useState("instalacion");
-  const [direccionId, setDireccionId] = useState(direccionesUsuario[0]?.id ?? "");
+  const [direccionId, setDireccionId] = useState("");
   const [comentarios, setComentarios] = useState("");
+  const [direccionesUsuario, setDireccionesUsuario] = useState([]);
 
   // opciones desde API
-  const [serviciosOpts, setServiciosOpts] = useState([]);          // ← FALTABA
-  const [loadingServicios, setLoadingServicios] = useState(true);  // ← FALTABA
-  const [errorServicios, setErrorServicios] = useState(null);      // ← FALTABA
+  const [serviciosOpts, setServiciosOpts] = useState([]);         
+  const [loadingServicios, setLoadingServicios] = useState(true);  
+  const [errorServicios, setErrorServicios] = useState(null);     
 
   useEffect(() => {
-    const ac = new AbortController();
-    (async () => {
-      try {
-        setLoadingServicios(true);
-        setErrorServicios(null);
-        
+  const ac = new AbortController();
+  (async () => {
+    try {
+      setLoadingServicios(true);
+      setErrorServicios(null);
 
-      const data = await getServiciosActivos(ac.signal); //ver si se usa
-            const opts = (data ?? []).map(s => ({
+      // Pedimos servicios y direcciones en paralelo
+      const [dataServicios, dataDirecciones] = await Promise.all([
+        getServiciosActivos(ac.signal),
+        getDireccionesUsuario(ac.signal),
+      ]);
+
+      // Mapeo servicios -> [{ id, label }]
+      const optsServicios = (dataServicios ?? []).map((s) => ({
         id: s.id,
-        label: s.titulo, // ← el nombre real del servicio
+        label: s.titulo,
       }));
-        
-        setServiciosOpts(opts);
-      } catch (e) {
-        setErrorServicios(e?.message ?? "Error al obtener servicios");
-      } finally {
-        setLoadingServicios(false);
+      setServiciosOpts(optsServicios);
+
+      // Mapeo direcciones -> [{ id, label }]
+      const optsDirecciones = (dataDirecciones ?? []).map((d) => ({
+        id: d.id, 
+        label: `${d.calle} ${d.numero ?? ""}${
+          d.apto ? `, Apto ${d.apto}` : ""
+        }${d.esquina ? ` - Esq. ${d.esquina}` : ""}`.trim(),
+      }));
+      setDireccionesUsuario(optsDirecciones);
+
+      // seleccionar la primera dirección por defecto
+      if (optsDirecciones.length > 0) {
+        setDireccionId(optsDirecciones[0].id);
       }
-    })();
-    return () => ac.abort();
-  }, []);
+    } catch (e) {
+      setErrorServicios(e?.message ?? "Error al obtener servicios o direcciones");
+    } finally {
+      setLoadingServicios(false);
+    }
+  })();
+
+  return () => ac.abort();
+}, []);
 
   const calendarDays = useMemo(() => {
     const start = startOfWeek(startOfMonth(currentMonth), { weekStartsOn: 1 });
@@ -226,7 +247,7 @@ export default function AgendaPage({ onReserve }) {
                         disabled={!info.hasAvailability || !inThisMonth}
                         sx={{
                           width: "100%",
-                          minHeight: DAY_MIN_HEIGHT.md, // alto fijo por día (elige el que quieras)
+                          minHeight: DAY_MIN_HEIGHT.md, 
                           borderRadius: 2,
                           borderColor: isSelected ? "primary.main" : "divider",
                           bgcolor: "background.paper",
