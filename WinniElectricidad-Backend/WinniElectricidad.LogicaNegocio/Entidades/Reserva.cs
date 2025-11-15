@@ -67,16 +67,11 @@ public class Reserva
         {
             throw new ArgumentException("No se pueden reservar turnos con más de 30 días de anticipación.");
         }
-        
-        if (fechaReserva == DateTime.MinValue)
-        {
-            throw new ArgumentException("Debe seleccionar una fecha válida.");
-        }
     }
 
     private static void ValidarTipoServicioReserva(TipoServicioReserva tipoServicioReserva)
     {
-        if (tipoServicioReserva is not TipoServicioReserva.Instalacion && tipoServicioReserva is not TipoServicioReserva.Mantenimiento) 
+        if (!Enum.IsDefined(typeof(TipoServicioReserva), tipoServicioReserva)) 
         {
             throw new ArgumentException("Debe seleccionar un tipo correcto: Instalación o Mantenimiento.");
         }
@@ -91,7 +86,7 @@ public class Reserva
         
         if (idUsuarioCliente <= 0)
         {
-            throw new ArgumentException("Debe seleccionar una cliente válido.");
+            throw new ArgumentException("Debe seleccionar un cliente válido.");
         }
     }
 
