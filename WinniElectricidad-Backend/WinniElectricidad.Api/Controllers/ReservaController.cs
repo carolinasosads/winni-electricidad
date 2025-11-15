@@ -18,7 +18,7 @@ public class ReservaController : ControllerBase
     /// </summary>
     public ReservaController(IObtenerHorariosDisponibles obtenerHorariosDisponibles)
     {
-        _obtenerHorariosDisponibles = obtenerHorariosDisponibles;
+        _obtenerHorariosDisponibles  = obtenerHorariosDisponibles;
     }
     
     /// <summary>
@@ -58,7 +58,7 @@ public class ReservaController : ControllerBase
             return Ok(horariosDisponibles);
         } catch (Exception)
         {
-            return StatusCode(500, new { message = "Error inesperado." });
+            return StatusCode(500, new{message = "Error inesperado." });
         }
     }
 }
