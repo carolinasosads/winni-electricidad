@@ -76,7 +76,7 @@ public class WinniElectricidadContext : DbContext
             entity.Property(s => s.Activo)
                 .HasDefaultValue(true);
         });
-
+        
         modelBuilder.Entity<Reserva>(entity =>
         {
             entity.HasKey(r => r.IdReserva);

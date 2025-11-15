@@ -27,7 +27,6 @@ public class UsuarioController : ControllerBase
     private readonly IRecuperarContrasena _recuperarContrasena;
     private readonly IObtenerDirecciones _obtenerDirecciones;
 
-
     /// <summary>
     /// Inicializa una nueva instancia del <see cref="UsuarioController"/> con las dependencias necesarias.
     /// </summary>

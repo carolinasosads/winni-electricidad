@@ -15,6 +15,7 @@ public class ServicioControllerTests : LargeTestBase
         // Arrange
         const string endpoint = EndpointBase + "activos";
 
+        await DbSeeder.CleanDatabaseAsync(Factory);
         await DbSeeder.SeedServiciosAsync(Factory, new[]
         {
             new LogicaNegocio.Entidades.Servicio { Titulo = "Electricidad", Descripcion = "Descripción de prueba.", ImagenUrl = null, Activo = true },
