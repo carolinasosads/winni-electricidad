@@ -5,10 +5,9 @@ public class UsuarioCliente : UsuarioBase
     #region Propiedades
 
     public ICollection<Direccion> Direcciones { get; set; } = new List<Direccion>();
-   //public IEnumerable<Direccion>  Direcciones { get; set; } = new List<Direccion>();
-    public IEnumerable<Reserva> Reservas { get; set; } = new List<Reserva>();
-    public IEnumerable<Pago>  Pagos { get; set; } = new List<Pago>();
-    //public IEnumerable<Presupuesto>  Presupuestos { get; set; } = new List<Presupuesto>();
+    public ICollection<Reserva> Reservas { get; set; } = new List<Reserva>();
+    public ICollection<Pago>  Pagos { get; set; } = new List<Pago>();
+    public ICollection<Presupuesto>  Presupuestos { get; set; } = new List<Presupuesto>();
     public override string Rol => "Cliente";
 
     #endregion
@@ -19,6 +18,7 @@ public class UsuarioCliente : UsuarioBase
         Direcciones = direcciones;
         Reservas = new List<Reserva>();
         Pagos = new List<Pago>();
+        Presupuestos = new List<Presupuesto>();
         Validar();
     }
 

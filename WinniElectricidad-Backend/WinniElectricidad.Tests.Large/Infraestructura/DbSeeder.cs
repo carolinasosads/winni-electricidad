@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using WinniElectricidad.AccesoDatos.Repositorios.EF;
 using Direccion = WinniElectricidad.LogicaNegocio.Entidades.Direccion;
+using TipoServicioReserva = WinniElectricidad.LogicaNegocio.Entidades.TipoServicioReserva;
 using UsuarioCliente = WinniElectricidad.LogicaNegocio.Entidades.UsuarioCliente;
 
 namespace WinniElectricidad.Tests.Large.Infraestructura;
@@ -13,6 +14,17 @@ namespace WinniElectricidad.Tests.Large.Infraestructura;
 /// </summary>
 public static class DbSeeder
 {
+    public static async Task CleanDatabaseAsync(ApiTestFactory factory)
+    {
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<WinniElectricidadContext>();
+        
+        db.Reservas.RemoveRange(db.Reservas);
+        db.Servicios.RemoveRange(db.Servicios);
+
+        await db.SaveChangesAsync();
+    }
+    
     /// <summary>
     /// Elimina todos los registros de la tabla <see cref="Servicio"/> y agrega los servicios proporcionados.
     /// </summary>
@@ -22,9 +34,6 @@ public static class DbSeeder
     {
         using var scope = factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<WinniElectricidadContext>();
-
-        db.Servicios.RemoveRange(db.Servicios);
-        await db.SaveChangesAsync();
 
         db.Servicios.AddRange(servicios);
         await db.SaveChangesAsync();
@@ -60,5 +69,44 @@ public static class DbSeeder
         await db.SaveChangesAsync();
 
         return usuario;
+    }
+
+    /// <summary>
+    /// Crea una reserva de prueba para un usuario cliente con direcciones,
+    /// utilizando un servicio existente y una fecha válida (>= 48 h y menor 30 días).
+    /// </summary>
+    /// <param name="factory">Instancia de la fábrica de la API usada por los tests.</param>
+    /// <param name="fechaReserva">
+    /// Fecha/hora deseada para la reserva. Si es null, se usa hoy + 3 días a las 9:00.
+    /// </param>
+    /// <returns>La reserva creada y persistida en la base de datos de pruebas.</returns>
+    public static async Task<LogicaNegocio.Entidades.Reserva> SeedReservaAsync(
+        ApiTestFactory factory,
+        DateTime? fechaReserva = null)
+    {
+        var usuario = await SeedUsuarioConDireccionesAsync(factory);
+
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<WinniElectricidadContext>();
+
+        await SeedServiciosAsync(factory, [
+            new LogicaNegocio.Entidades.Servicio { Titulo = "Electricidad", Descripcion = "Descripción de prueba.", ImagenUrl = null, Activo = true }
+        ]);
+        var servicio = await db.Servicios.FirstAsync();
+        
+        var fecha = fechaReserva ?? DateTime.Today.AddDays(3).AddHours(9);
+
+        var reserva = new LogicaNegocio.Entidades.Reserva(
+            fecha,
+            TipoServicioReserva.Instalacion,
+            usuario.IdUsuario,
+            usuario.Direcciones.First().IdDireccion,
+            new List<LogicaNegocio.Entidades.Servicio> { servicio },
+            "Reserva de prueba para tests E2E");
+
+        db.Reservas.Add(reserva);
+        await db.SaveChangesAsync();
+
+        return reserva;
     }
 }

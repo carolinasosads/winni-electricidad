@@ -10,7 +10,7 @@ public class WinniElectricidadContext : DbContext
     public DbSet<UsuarioBase>  Usuarios { get; set; }
     public DbSet<Direccion>  Direcciones { get; set; }
     public DbSet<Reserva>  Reservas { get; set; }
-    //public DbSet<Presupuesto>  Presupuestos { get; set; }
+    public DbSet<Presupuesto>  Presupuestos { get; set; }
     public DbSet<Pago>  Pagos { get; set; }
     public DbSet<Notificacion>  Notificaciones { get; set; }
     public DbSet<Servicio>  Servicios { get; set; }
@@ -19,12 +19,12 @@ public class WinniElectricidadContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        
+
         modelBuilder.Entity<UsuarioBase>()
             .HasDiscriminator<string>("Discriminator")
             .HasValue<UsuarioAdministrador>("UsuarioAdministrador")
             .HasValue<UsuarioCliente>("UsuarioCliente");
-        
+
         modelBuilder.Entity<Direccion>(e =>
         {
             e.HasOne(d => d.UsuarioCliente)
@@ -57,7 +57,7 @@ public class WinniElectricidadContext : DbContext
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade);
         });
-        
+
         modelBuilder.Entity<Servicio>(entity =>
         {
             entity.HasIndex(s => s.Titulo)
@@ -77,66 +77,88 @@ public class WinniElectricidadContext : DbContext
                 .HasDefaultValue(true);
         });
         
-        modelBuilder.Entity<Reserva>()
-            .HasMany(r => r.Servicios)
-            .WithMany()
-            .UsingEntity<Dictionary<string, object>>(
-                "ReservaServicio",
-                j => j.HasOne<Servicio>()
-                    .WithMany()
-                    .HasForeignKey("IdServicio")
-                    .OnDelete(DeleteBehavior.Cascade),
-                j => j.HasOne<Reserva>()
-                    .WithMany()
-                    .HasForeignKey("IdReserva")
-                    .OnDelete(DeleteBehavior.Cascade),
-                j =>
-                {
-                    j.HasKey("IdReserva", "IdServicio");
-                    j.ToTable("ReservaServicio");
-                });
-        
+        modelBuilder.Entity<Reserva>(entity =>
+        {
+            entity.HasKey(r => r.IdReserva);
+
+            entity.Property(r => r.FechaReserva)
+                .IsRequired();
+
+            entity.Property(r => r.EstadoReserva)
+                .HasConversion<int>()
+                .IsRequired();
+
+            entity.Property(r => r.TipoServicioReserva)
+                .HasConversion<int>()
+                .IsRequired();
+
+            entity.HasOne<UsuarioCliente>()
+                .WithMany(c => c.Reservas)
+                .HasForeignKey(r => r.IdUsuarioCliente)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(r => r.Direccion)
+                .WithMany()
+                .HasForeignKey(r => r.IdDireccion)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(r => r.Presupuesto)
+                .WithOne(p => p.Reserva)
+                .HasForeignKey<Presupuesto>(p => p.IdReserva)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasMany(r => r.Servicios)
+                .WithMany()
+                .UsingEntity<Dictionary<string, object>>(
+                    "ReservaServicio",
+                    j => j.HasOne<Servicio>()
+                        .WithMany()
+                        .HasForeignKey("IdServicio")
+                        .OnDelete(DeleteBehavior.Cascade),
+                    j => j.HasOne<Reserva>()
+                        .WithMany()
+                        .HasForeignKey("IdReserva")
+                        .OnDelete(DeleteBehavior.Cascade),
+                    j =>
+                    {
+                        j.HasKey("IdReserva", "IdServicio");
+                        j.ToTable("ReservaServicio");
+                    });
+        });
+
         modelBuilder.Entity<Servicio>().HasData(
-            new Servicio
-            {
-                Id = 1,
-                Titulo = "Electricidad",
-                Descripcion = "Descripción genérica para el servicio de Electricidad",
-                ImagenUrl = null,
-                Activo = true
-            },
-            new Servicio
-            {
-                Id = 2,
-                Titulo = "Sanitaria",
-                Descripcion = "Descripción genérica para el servicio de Sanitaria",
-                ImagenUrl = null,
-                Activo = true
-            },
-            new Servicio
-            {
-                Id = 3,
-                Titulo = "Climatización",
-                Descripcion = "Descripción genérica para el servicio de Climatización",
-                ImagenUrl = null,
-                Activo = true
-            },
-            new Servicio
-            {
-                Id = 4,
-                Titulo = "Riego",
-                Descripcion = "Descripción genérica para el servicio de Riego",
-                ImagenUrl = null,
-                Activo = true
-            },
-            new Servicio
-            {
-                Id = 5,
-                Titulo = "Mantenimiento",
-                Descripcion = "Descripción genérica para el servicio de Mantenimiento",
-                ImagenUrl = null,
-                Activo = true
-            }
-        );
+                new Servicio
+                {
+                    Id = 1,
+                    Titulo = "Electricidad",
+                    Descripcion = "Descripción genérica para el servicio de Electricidad",
+                    ImagenUrl = null,
+                    Activo = true
+                },
+                new Servicio
+                {
+                    Id = 2,
+                    Titulo = "Sanitaria",
+                    Descripcion = "Descripción genérica para el servicio de Sanitaria",
+                    ImagenUrl = null,
+                    Activo = true
+                },
+                new Servicio
+                {
+                    Id = 3,
+                    Titulo = "Climatización",
+                    Descripcion = "Descripción genérica para el servicio de Climatización",
+                    ImagenUrl = null,
+                    Activo = true
+                },
+                new Servicio
+                {
+                    Id = 4,
+                    Titulo = "Riego",
+                    Descripcion = "Descripción genérica para el servicio de Riego",
+                    ImagenUrl = null,
+                    Activo = true
+                }
+            );
     }
 }
