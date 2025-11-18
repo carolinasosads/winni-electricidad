@@ -17,7 +17,10 @@ public class RepositorioReservas : IRepositorioReserva
     {
         await _db.Reservas.AddAsync(reserva, ct);
         await _db.SaveChangesAsync(ct);
-
+        
+        //necesario para el mapper asi el dto no queda null
+        await _db.Entry(reserva).Reference(r => r.Direccion).LoadAsync(ct);
+        await _db.Entry(reserva).Collection(r => r.Servicios).LoadAsync(ct);
         return reserva;
     }
 
@@ -59,7 +62,6 @@ public class RepositorioReservas : IRepositorioReserva
                 r.FechaReserva == fechaReserva &&
                 r.EstadoReserva != EstadoReserva.Cancelada,
                 ct);
-            
     }
 
     public async Task<bool> HorarioOcupado(DateTime fechaReserva, CancellationToken ct = default)

@@ -8,9 +8,9 @@ namespace WinniElectricidad.LogicaAplicacion.Servicios.Reserva;
 
 public class AgendarReserva : IAgendarReserva
 {
-    private readonly IRepositorioReserva  _repositorioReserva;
-    private readonly IRepositorioUsuario  _repositorioUsuario;
-    private readonly IRepositorioServicio  _repositorioServicio;
+    private readonly IRepositorioReserva _repositorioReserva;
+    private readonly IRepositorioUsuario _repositorioUsuario;
+    private readonly IRepositorioServicio _repositorioServicio;
 
     public AgendarReserva(IRepositorioReserva repositorioReserva, IRepositorioUsuario repositorioUsuario, IRepositorioServicio repositorioServicio)
     {
