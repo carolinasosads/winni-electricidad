@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WinniElectricidad.Compartido.DTOs.Reservas;
+using WinniElectricidad.Compartido.Reservas;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Reserva;
+using WinniElectricidad.LogicaNegocio.ExcepcionesPersonalizadas.Reservas;
 
 namespace WinniElectricidad.Api.Controllers;
 
@@ -13,12 +16,15 @@ namespace WinniElectricidad.Api.Controllers;
 public class ReservaController : ControllerBase
 {
     private readonly IObtenerHorariosDisponibles _obtenerHorariosDisponibles;
+    private readonly IAgendarReserva _agendarReserva;
+
     /// <summary>
     /// Inicializa una nueva instancia del <see cref="ReservaController"/> con las dependencias necesarias.
     /// </summary>
-    public ReservaController(IObtenerHorariosDisponibles obtenerHorariosDisponibles)
+    public ReservaController(IObtenerHorariosDisponibles obtenerHorariosDisponibles, IAgendarReserva agendarReserva)
     {
         _obtenerHorariosDisponibles = obtenerHorariosDisponibles;
+        _agendarReserva = agendarReserva;
     }
     
     /// <summary>
@@ -57,6 +63,78 @@ public class ReservaController : ControllerBase
             var horariosDisponibles = await _obtenerHorariosDisponibles.Ejecutar(cancellationToken);
             return Ok(horariosDisponibles);
         } catch (Exception)
+        {
+            return StatusCode(500, new { message = "Error inesperado." });
+        }
+    }
+    
+    /// <summary>
+    /// Crea una nueva reserva de presupuesto para el usuario autenticado.
+    /// </summary>
+    /// <remarks>
+    /// Este endpoint permite agendar una cita para solicitar un presupuesto, indicando fecha, hora,
+    /// servicios requeridos y la dirección del usuario.
+    ///
+    /// **Flujo:**
+    /// 1. Se valida el token JWT y se obtiene el identificador del usuario autenticado.  
+    /// 2. Se procesa la solicitud mediante el servicio <see cref="IAgendarReserva"/>.  
+    /// 3. Si la reserva es válida, se crea y retorna un objeto <see cref="ReservaCreadaDto"/>.  
+    ///
+    /// **Requiere autenticación:**  
+    /// - Roles permitidos: <c>Cliente</c> y <c>Administrador</c>.
+    ///
+    /// **Códigos de respuesta:**
+    /// - `200 OK` → Reserva creada correctamente.  
+    /// - `400 Bad Request` → La solicitud contiene datos inválidos.  
+    /// - `401 Unauthorized` → Token inválido o expirado.  
+    /// - `403 Forbidden` → El usuario no tiene permisos para completar la acción.  
+    /// - `409 Conflict` → La reserva no puede realizarse (duplicada, horario ocupado, etc.).  
+    /// - `500 Internal Server Error` → Error inesperado del servidor.
+    /// </remarks>
+    /// <param name="nuevaReserva">
+    /// Datos necesarios para crear la reserva, incluyendo fecha, horario, dirección y servicios seleccionados.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Token de cancelación para abortar la operación si es necesario.
+    /// </param>
+    /// <returns>
+    /// Una respuesta HTTP que contiene los datos de la reserva creada.
+    /// </returns>
+    /// <response code="200">Reserva creada correctamente.</response>
+    /// <response code="400">La solicitud contiene datos inválidos.</response>
+    /// <response code="401">Token inválido o expirado.</response>
+    /// <response code="403">El usuario no tiene permisos suficientes.</response>
+    /// <response code="409">Conflicto al intentar crear la reserva.</response>
+    /// <response code="500">Error inesperado del servidor.</response>
+    [HttpPost("agendar")]
+    [ProducesResponseType(typeof(ReservaCreadaDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize(Roles = "Cliente, Administrador")]
+    public async Task<IActionResult> Agendar([FromBody] ReservaACrearDto nuevaReserva, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(idClaim)) return Unauthorized(new { message = "Token inválido o expirado." });
+
+            var idUsuario = int.Parse(idClaim);
+            
+            var reservaCreada = await _agendarReserva.Ejecutar(nuevaReserva, idUsuario, cancellationToken);
+            
+            return Ok(reservaCreada);
+        } catch (ReservaException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Forbid(ex.Message);
+        }
+        catch (Exception)
         {
             return StatusCode(500, new { message = "Error inesperado." });
         }
