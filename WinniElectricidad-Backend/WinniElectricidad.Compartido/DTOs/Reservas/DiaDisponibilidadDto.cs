@@ -6,5 +6,5 @@
 public record DiaDisponibilidadDto
 {
     public DateTime Fecha { get; init; }
-    public IEnumerable<HoraDto> Horas { get; init; }
+    public IEnumerable<HoraDto> Horas { get; init; } = [];
 }
