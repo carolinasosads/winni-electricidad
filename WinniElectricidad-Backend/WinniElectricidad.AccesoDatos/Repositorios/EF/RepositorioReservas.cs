@@ -55,8 +55,9 @@ public class RepositorioReservas : IRepositorioReserva
     {
         return await _db.Reservas
             .AnyAsync(r =>
-                    r.IdUsuarioCliente == idUsuario &&
-                    r.FechaReserva == fechaReserva,
+                r.IdUsuarioCliente == idUsuario &&
+                r.FechaReserva == fechaReserva &&
+                r.EstadoReserva != EstadoReserva.Cancelada,
                 ct);
             
     }
@@ -64,6 +65,7 @@ public class RepositorioReservas : IRepositorioReserva
     public async Task<bool> HorarioOcupado(DateTime fechaReserva, CancellationToken ct = default)
     {
         return await _db.Reservas
-            .AnyAsync(r => r.FechaReserva == fechaReserva, ct);
+            .AnyAsync(r => r.FechaReserva == fechaReserva && 
+                           r.EstadoReserva != EstadoReserva.Cancelada, ct);
     }
 }
