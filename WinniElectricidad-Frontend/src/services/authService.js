@@ -2,6 +2,7 @@ import ApiError from "./ApiError";
 
 const urlAPI = "http://localhost:5269/WinniElectricidadApi/Usuario/"
 const urlAPIServicio = "http://localhost:5269/WinniElectricidadApi/Servicio/";
+const urlAPIReserva  = "http://localhost:5269/WinniElectricidadApi/Reserva/"
 
 export const login = async (email, password) => {
     try{
@@ -252,4 +253,30 @@ export async function getDireccionesUsuario(signal) {
 
   const json = await resp.json();
   return json;
+}
+
+//Horarios revisar
+export async function getHorariosDisponibles(signal) {
+  const token = localStorage.getItem("token");
+  console.log(token);
+  const response = await fetch(
+    `${urlAPIReserva}disponibilidad`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      signal,
+    }
+  );
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(
+      `Error al obtener disponibilidad horaria (${response.status}): ${text}`
+    );
+  }
+
+  return await response.json();
 }

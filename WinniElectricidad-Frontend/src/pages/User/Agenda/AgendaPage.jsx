@@ -29,30 +29,7 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import AgendaFilters from "./AgendaFilters";
 import { CALENDAR_WIDTH, DAY_MIN_HEIGHT } from "./AgendaConstants";
-import { getServiciosActivos, getDireccionesUsuario } from "../../../services/authService";
-
-/** ------------------ MOCKS SIN BACKEND  ------------------ */
-function mockSlotsFor(date) {
-  const seed = date.getDate() * (date.getMonth() + 1);
-  const base = ["09:00","09:30","10:00","10:30","11:00","15:00","15:30","16:00","16:30"];
-  return base
-    .map((t, i) => ({ time: t, available: ((seed + i * 3) % 5) !== 0 }))
-    .filter(s => s.available);
-}
-
-function mockMonthAvailability(currentMonth) {
-  const start = startOfMonth(currentMonth);
-  const end = endOfMonth(currentMonth);
-  const days = eachDayOfInterval({ start, end });
-  return days.map(d => {
-    const slots = mockSlotsFor(d);
-    return {
-      date: d,
-      hasAvailability: slots.length > 0,
-      availableCount: slots.length,
-    };
-  });
-}
+import {getServiciosActivos, getDireccionesUsuario, getHorariosDisponibles, } from "../../../services/authService";
 
 export default function AgendaPage({ onReserve }) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -65,53 +42,82 @@ export default function AgendaPage({ onReserve }) {
   const [comentarios, setComentarios] = useState("");
   const [direccionesUsuario, setDireccionesUsuario] = useState([]);
 
-  // opciones desde API
-  const [serviciosOpts, setServiciosOpts] = useState([]);         
-  const [loadingServicios, setLoadingServicios] = useState(true);  
-  const [errorServicios, setErrorServicios] = useState(null);     
+  // servicios
+  const [serviciosOpts, setServiciosOpts] = useState([]);
+  const [loadingServicios, setLoadingServicios] = useState(true);
+  const [errorServicios, setErrorServicios] = useState(null);
+
+  // horarios disponibles 
+  const [disponibilidad, setDisponibilidad] = useState([]); 
+  const [loadingDisponibilidad, setLoadingDisponibilidad] = useState(true);
+  const [errorDisponibilidad, setErrorDisponibilidad] = useState(null);
 
   useEffect(() => {
-  const ac = new AbortController();
-  (async () => {
-    try {
-      setLoadingServicios(true);
-      setErrorServicios(null);
+    const ac = new AbortController();
 
-      // Pedimos servicios y direcciones en paralelo
-      const [dataServicios, dataDirecciones] = await Promise.all([
-        getServiciosActivos(ac.signal),
-        getDireccionesUsuario(ac.signal),
-      ]);
+    (async () => {
+      try {
+        setLoadingServicios(true);
+        setErrorServicios(null);
+        setLoadingDisponibilidad(true);
+        setErrorDisponibilidad(null);
 
-      // Mapeo servicios -> [{ id, label }]
-      const optsServicios = (dataServicios ?? []).map((s) => ({
-        id: s.id,
-        label: s.titulo,
-      }));
-      setServiciosOpts(optsServicios);
+        // Pedimos servicios, direcciones y disponibilidad en paralelo
+        const [dataServicios, dataDirecciones, dataDisponibilidad] =
+          await Promise.all([
+            getServiciosActivos(ac.signal),
+            getDireccionesUsuario(ac.signal),
+            getHorariosDisponibles(ac.signal),
+          ]);
 
-      // Mapeo direcciones -> [{ id, label }]
-      const optsDirecciones = (dataDirecciones ?? []).map((d) => ({
-        id: d.id, 
-        label: `${d.calle} ${d.numero ?? ""}${
-          d.apto ? `, Apto ${d.apto}` : ""
-        }${d.esquina ? ` - Esq. ${d.esquina}` : ""}`.trim(),
-      }));
-      setDireccionesUsuario(optsDirecciones);
+        // ----- Servicios -----
+        const optsServicios = (dataServicios ?? []).map((s) => ({
+          id: s.id,
+          label: s.titulo,
+        }));
+        setServiciosOpts(optsServicios);
 
-      // seleccionar la primera dirección por defecto
-      if (optsDirecciones.length > 0) {
-        setDireccionId(optsDirecciones[0].id);
+        // ----- Direcciones -----
+        const optsDirecciones = (dataDirecciones ?? []).map((d) => ({
+          id: d.id,
+          label: `${d.calle} ${d.numero ?? ""}${
+            d.apto ? `, Apto ${d.apto}` : ""
+          }${d.esquina ? ` - Esq. ${d.esquina}` : ""}`.trim(),
+        }));
+        setDireccionesUsuario(optsDirecciones);
+
+        if (optsDirecciones.length > 0) {
+          setDireccionId(optsDirecciones[0].id);
+        }
+
+        // ----- Disponibilidad -----
+        const disponibilidadNormalizada = (dataDisponibilidad ?? []).map(
+          (d) => ({
+            date: new Date(d.fecha), 
+            slots: (d.horas ?? [])
+              .filter((h) => h.disponible)
+              .map((h) => h.hora), 
+          })
+        );
+
+        setDisponibilidad(disponibilidadNormalizada);
+      } catch (e) {
+        if (e.name === "AbortError") {
+          console.log("Petición cancelada");
+          return;
+        }
+
+        const msg = e?.message ?? "Error al obtener datos iniciales";
+        setErrorServicios(msg);
+        setErrorDisponibilidad(msg);
+      } finally {
+        setLoadingServicios(false);
+        setLoadingDisponibilidad(false);
       }
-    } catch (e) {
-      setErrorServicios(e?.message ?? "Error al obtener servicios o direcciones");
-    } finally {
-      setLoadingServicios(false);
-    }
-  })();
+    })();
 
-  return () => ac.abort();
-}, []);
+    return () => ac.abort();
+  }, []);
 
   const calendarDays = useMemo(() => {
     const start = startOfWeek(startOfMonth(currentMonth), { weekStartsOn: 1 });
@@ -119,9 +125,18 @@ export default function AgendaPage({ onReserve }) {
     return eachDayOfInterval({ start, end });
   }, [currentMonth]);
 
+  // Disponibilidad agregada por día del mes actual
   const monthAvailability = useMemo(
-    () => mockMonthAvailability(currentMonth),
-    [currentMonth]
+    () =>
+      disponibilidad
+        .filter((d) => isSameMonth(d.date, currentMonth))
+        .map((d) => ({
+          date: d.date,
+          hasAvailability: (d.slots?.length ?? 0) > 0,
+          availableCount: d.slots?.length ?? 0,
+          slots: d.slots ?? [],
+        })),
+    [disponibilidad, currentMonth]
   );
 
   const infoFor = (date) =>
@@ -129,9 +144,14 @@ export default function AgendaPage({ onReserve }) {
       date,
       hasAvailability: false,
       availableCount: 0,
+      slots: [],
     };
 
-  const slots = selectedDate ? mockSlotsFor(selectedDate) : [];
+  const slots = useMemo(() => {
+    if (!selectedDate) return [];
+    const info = infoFor(selectedDate);
+    return (info.slots ?? []).map((time) => ({ time }));
+  }, [selectedDate, monthAvailability]);
 
   const handleReserve = (slot) => {
     const payload = {
@@ -143,14 +163,18 @@ export default function AgendaPage({ onReserve }) {
       comentarios,
     };
     if (onReserve) onReserve(payload);
-    else alert(
-      `Reserva (mock): ${format(selectedDate, "PPP", { locale: es })} ${slot.time}\n` +
-      JSON.stringify(payload, null, 2)
-    );
+    else
+      alert(
+        `Reserva (mock): ${format(selectedDate, "PPP", {
+          locale: es,
+        })} ${slot.time}\n` + JSON.stringify(payload, null, 2)
+      );
   };
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: (t) => t.palette.background.default }}>
+    <Box
+      sx={{ minHeight: "100vh", bgcolor: (t) => t.palette.background.default }}
+    >
       <Box sx={{ p: { xs: 2, sm: 3 }, flex: 1 }}>
         <Typography variant="h4" fontWeight={700} gutterBottom>
           Reservas
@@ -193,7 +217,9 @@ export default function AgendaPage({ onReserve }) {
               >
                 <IconButton
                   size="small"
-                  onClick={() => setCurrentMonth(addMonths(currentMonth, -1))}
+                  onClick={() =>
+                    setCurrentMonth(addMonths(currentMonth, -1))
+                  }
                 >
                   <ChevronLeftIcon />
                 </IconButton>
@@ -211,10 +237,19 @@ export default function AgendaPage({ onReserve }) {
               </Box>
 
               {/* Nombres de días */}
-              <Grid container columns={7} spacing={1} sx={{ textAlign: "center", mb: 1 }}>
+              <Grid
+                container
+                columns={7}
+                spacing={1}
+                sx={{ textAlign: "center", mb: 1 }}
+              >
                 {["lun", "mar", "mié", "jue", "vie", "sáb", "dom"].map((d) => (
                   <Grid key={d} item xs={1}>
-                    <Typography variant="caption" fontWeight={700} color="text.secondary">
+                    <Typography
+                      variant="caption"
+                      fontWeight={700}
+                      color="text.secondary"
+                    >
                       {d.toUpperCase()}
                     </Typography>
                   </Grid>
@@ -237,7 +272,8 @@ export default function AgendaPage({ onReserve }) {
                 {calendarDays.map((date) => {
                   const inThisMonth = isSameMonth(date, currentMonth);
                   const info = infoFor(date);
-                  const isSelected = !!selectedDate && isSameDay(selectedDate, date);
+                  const isSelected =
+                    !!selectedDate && isSameDay(selectedDate, date);
 
                   return (
                     <Grid key={date.toISOString()} item xs={1}>
@@ -247,9 +283,11 @@ export default function AgendaPage({ onReserve }) {
                         disabled={!info.hasAvailability || !inThisMonth}
                         sx={{
                           width: "100%",
-                          minHeight: DAY_MIN_HEIGHT.md, 
+                          minHeight: DAY_MIN_HEIGHT.md,
                           borderRadius: 2,
-                          borderColor: isSelected ? "primary.main" : "divider",
+                          borderColor: isSelected
+                            ? "primary.main"
+                            : "divider",
                           bgcolor: "background.paper",
                           color: "text.primary",
                           opacity: inThisMonth ? 1 : 0.45,
@@ -266,9 +304,17 @@ export default function AgendaPage({ onReserve }) {
                         </Typography>
                         <Chip
                           size="small"
-                          label={info.hasAvailability ? `${info.availableCount} turnos` : "—"}
+                          label={
+                            info.hasAvailability
+                              ? `${info.availableCount} turnos`
+                              : "—"
+                          }
                           variant="outlined"
-                          sx={{ borderColor: info.hasAvailability ? "primary.light" : "divider" }}
+                          sx={{
+                            borderColor: info.hasAvailability
+                              ? "primary.light"
+                              : "divider",
+                          }}
                         />
                       </Button>
                     </Grid>
@@ -280,10 +326,25 @@ export default function AgendaPage({ onReserve }) {
 
           {/* Columna derecha: horarios */}
           <Grid item xs={12} md={5} lg={4}>
-            <Paper variant="outlined" sx={{ p: 2, maxHeight: 420, overflow: "auto" }}>
+            <Paper
+              variant="outlined"
+              sx={{ p: 2, maxHeight: 420, overflow: "auto" }}
+            >
               <Typography variant="h6" fontWeight={700} gutterBottom>
                 Horarios disponibles
               </Typography>
+
+              {loadingDisponibilidad && (
+                <Typography color="text.secondary" sx={{ mb: 1 }}>
+                  Cargando disponibilidad...
+                </Typography>
+              )}
+
+              {!loadingDisponibilidad && errorDisponibilidad && (
+                <Typography color="error" sx={{ mb: 1 }}>
+                  {errorDisponibilidad}
+                </Typography>
+              )}
 
               <TextField
                 label="Comentarios (opcional)"
@@ -313,7 +374,10 @@ export default function AgendaPage({ onReserve }) {
                   {slots.length === 0 ? (
                     <Typography color="text.secondary">
                       No hay horarios para{" "}
-                      <strong>{format(selectedDate, "PPP", { locale: es })}</strong>. Probá otro día.
+                      <strong>
+                        {format(selectedDate, "PPP", { locale: es })}
+                      </strong>
+                      . Probá otro día.
                     </Typography>
                   ) : (
                     <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>

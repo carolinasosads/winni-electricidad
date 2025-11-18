@@ -25,13 +25,6 @@ export default function AgendaLayout() {
 
   const layoutRef = React.useRef(null);
 
-  // ---- LOGOUT ----
-  const handleLogout = () => {
-    localStorage.removeItem('rol'); 
-    sessionStorage.removeItem('token'); 
-    navigate('/login', { replace: true });
-  };
-
   return (
     <Box
       ref={layoutRef}

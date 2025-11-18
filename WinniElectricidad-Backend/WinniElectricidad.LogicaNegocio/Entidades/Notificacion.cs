@@ -6,6 +6,6 @@ public class Notificacion
 {
     #region  Propiedades
     [Key]
-    public int IdNotificacion { get; set; } // TODO: ver como hacer que sea autoincremental
+    public int IdNotificacion { get; set; } 
     #endregion
 }
