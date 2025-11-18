@@ -124,7 +124,11 @@ public class WinniElectricidadContext : DbContext
                         j.HasKey("IdReserva", "IdServicio");
                         j.ToTable("ReservaServicio");
                     });
+//Índice unico para que no haya dos reservas en el mismo horario 
+            entity.HasIndex(r => new { r.FechaReserva})
+                .IsUnique(); 
         });
+
 
         modelBuilder.Entity<Servicio>().HasData(
                 new Servicio
