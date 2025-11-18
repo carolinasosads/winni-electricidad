@@ -13,7 +13,7 @@ public class RepositorioServicios : IRepositorioServicio
         _db = db;
     }
     
-    public Task Add(Servicio obj, CancellationToken ct = default)
+    public Task<Servicio?> Add(Servicio obj, CancellationToken ct = default)
     {
         throw new NotImplementedException();
     }
@@ -41,5 +41,12 @@ public class RepositorioServicios : IRepositorioServicio
     public async Task<IReadOnlyList<Servicio>> FindAllActive(CancellationToken ct = default)
     {
         return await _db.Servicios.Where(s => s.Activo).ToListAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<Servicio>> FindByIds(List<int> ids, CancellationToken ct = default)
+    {
+        return await _db.Servicios
+            .Where(s => ids.Contains(s.Id))
+            .ToListAsync(ct);
     }
 }

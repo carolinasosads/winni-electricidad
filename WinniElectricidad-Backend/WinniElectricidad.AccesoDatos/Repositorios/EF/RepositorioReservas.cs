@@ -12,10 +12,13 @@ public class RepositorioReservas : IRepositorioReserva
     {
         _db = db;
     }
-    
-    public Task Add(Reserva obj, CancellationToken ct = default)
+
+    public async Task<Reserva?> Add(Reserva reserva, CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        await _db.Reservas.AddAsync(reserva, ct);
+        await _db.SaveChangesAsync(ct);
+
+        return reserva;
     }
 
     public Task<Reserva?> FindById(int id, CancellationToken ct = default)
@@ -46,5 +49,21 @@ public class RepositorioReservas : IRepositorioReserva
                         && r.FechaReserva.Date <= fechaLimite
                         && r.EstadoReserva != EstadoReserva.Cancelada)
             .ToListAsync(ct);
+    }
+
+    public async Task<bool> UsuarioTieneReservaEnHorario(int idUsuario, DateTime fechaReserva, CancellationToken ct = default)
+    {
+        return await _db.Reservas
+            .AnyAsync(r =>
+                    r.IdUsuarioCliente == idUsuario &&
+                    r.FechaReserva == fechaReserva,
+                ct);
+            
+    }
+
+    public async Task<bool> HorarioOcupado(DateTime fechaReserva, CancellationToken ct = default)
+    {
+        return await _db.Reservas
+            .AnyAsync(r => r.FechaReserva == fechaReserva, ct);
     }
 }

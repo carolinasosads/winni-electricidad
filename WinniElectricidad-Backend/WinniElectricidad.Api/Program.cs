@@ -132,13 +132,13 @@ builder.Services.AddScoped<IServicioOneTimeToken, ServicioOneTimeToken>();
 builder.Services.AddScoped<IObtenerServiciosActivos, ObtenerServiciosActivos>();
 builder.Services.AddScoped<IObtenerDirecciones, ObtenerDirecciones>();
 builder.Services.AddScoped<IObtenerHorariosDisponibles, ObtenerHorariosDisponibles>();
+builder.Services.AddScoped<IAgendarReserva, AgendarReserva>();
 
 // Repositorios
 builder.Services.AddScoped<IRepositorioUsuario, RepositorioUsuarios>();
 builder.Services.AddScoped<IRepositorioOneTimeToken, RepositorioOneTimeTokens>();
 builder.Services.AddScoped<IRepositorioServicio, RepositorioServicios>();
 builder.Services.AddScoped<IRepositorioReserva, RepositorioReservas>();
-
 
 var app = builder.Build();
 
