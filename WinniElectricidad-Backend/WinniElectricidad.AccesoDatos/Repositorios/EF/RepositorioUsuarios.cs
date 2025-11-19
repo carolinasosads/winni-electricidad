@@ -13,14 +13,15 @@ public class RepositorioUsuarios : IRepositorioUsuario
         _db = db;
     }
     
-    public Task Add(UsuarioBase obj, CancellationToken ct = default)
+    public Task<UsuarioBase?> Add(UsuarioBase obj, CancellationToken ct = default)
     {
         throw new NotImplementedException();
     }
 
-    public Task<UsuarioBase?> FindById(int id, CancellationToken ct = default)
+    public async Task<UsuarioBase?> FindById(int id, CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        var usuario = await _db.Usuarios.Where(x => x.IdUsuario == id).FirstOrDefaultAsync(ct);
+        return usuario;
     }
 
     public Task Update(UsuarioBase obj, CancellationToken ct = default)

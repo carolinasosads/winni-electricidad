@@ -73,7 +73,7 @@ public static class DbSeeder
 
     /// <summary>
     /// Crea una reserva de prueba para un usuario cliente con direcciones,
-    /// utilizando un servicio existente y una fecha válida (>= 48 h y menor 30 días).
+    /// utilizando un servicio existente y una fecha válida (>= 48 h y menor a 30 días).
     /// </summary>
     /// <param name="factory">Instancia de la fábrica de la API usada por los tests.</param>
     /// <param name="fechaReserva">
