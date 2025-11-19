@@ -255,10 +255,8 @@ export async function getDireccionesUsuario(signal) {
   return json;
 }
 
-//Horarios revisar
 export async function getHorariosDisponibles(signal) {
   const token = localStorage.getItem("token");
-  console.log(token);
   const response = await fetch(
     `${urlAPIReserva}disponibilidad`,
     {
@@ -279,4 +277,47 @@ export async function getHorariosDisponibles(signal) {
   }
 
   return await response.json();
+}
+
+export async function crearReserva(reserva, signal) {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    throw new ApiError("Usuario no autenticado.", 401);
+  }
+
+  const resp = await fetch(`${urlAPIReserva}agendar`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(reserva),
+    signal,
+  });
+
+  if (resp.status === 401) {
+    const data = await handleJsonOrText(resp);
+    throw new ApiError(data?.message || "Token inválido o expirado.", 401);
+  }
+
+  if (resp.status === 409) {
+    const data = await handleJsonOrText(resp);
+    throw new ApiError(
+      data?.message ||
+        "El horario seleccionado ya no está disponible.",
+      409
+    );
+  }
+
+  if (!resp.ok) {
+    const data = await handleJsonOrText(resp);
+    throw new ApiError(
+      data?.message || "Error al crear la reserva.",
+      resp.status
+    );
+  }
+
+  return await resp.json(); 
 }

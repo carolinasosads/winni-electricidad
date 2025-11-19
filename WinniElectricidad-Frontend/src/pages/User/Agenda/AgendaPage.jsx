@@ -24,12 +24,19 @@ import {
   Divider,
   TextField,
 } from "@mui/material";
+import Alert from "@mui/material/Alert";
 
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import AgendaFilters from "./AgendaFilters";
 import { CALENDAR_WIDTH, DAY_MIN_HEIGHT } from "./AgendaConstants";
-import {getServiciosActivos, getDireccionesUsuario, getHorariosDisponibles, } from "../../../services/authService";
+import {
+  getServiciosActivos,
+  getDireccionesUsuario,
+  getHorariosDisponibles,
+  crearReserva,
+} from "../../../services/authService";
+import ApiError from "../../../services/ApiError";
 
 export default function AgendaPage({ onReserve }) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -47,22 +54,29 @@ export default function AgendaPage({ onReserve }) {
   const [loadingServicios, setLoadingServicios] = useState(true);
   const [errorServicios, setErrorServicios] = useState(null);
 
-  // horarios disponibles 
-  const [disponibilidad, setDisponibilidad] = useState([]); 
+  // horarios disponibles
+  const [disponibilidad, setDisponibilidad] = useState([]);
   const [loadingDisponibilidad, setLoadingDisponibilidad] = useState(true);
   const [errorDisponibilidad, setErrorDisponibilidad] = useState(null);
 
+  // horario seleccionado
+  const [selectedSlot, setSelectedSlot] = useState(null);
+
+  // mensajes reserva
+  const [reservaSuccess, setReservaSuccess] = useState("");
+  const [reservaError, setReservaError] = useState("");
+
+  // ---- carga inicial de datos ----
   useEffect(() => {
     const ac = new AbortController();
 
-    (async () => {
+    async function cargarDatos() {
       try {
         setLoadingServicios(true);
         setErrorServicios(null);
         setLoadingDisponibilidad(true);
         setErrorDisponibilidad(null);
 
-        // Pedimos servicios, direcciones y disponibilidad en paralelo
         const [dataServicios, dataDirecciones, dataDisponibilidad] =
           await Promise.all([
             getServiciosActivos(ac.signal),
@@ -70,14 +84,14 @@ export default function AgendaPage({ onReserve }) {
             getHorariosDisponibles(ac.signal),
           ]);
 
-        // ----- Servicios -----
+        // Servicios
         const optsServicios = (dataServicios ?? []).map((s) => ({
           id: s.id,
           label: s.titulo,
         }));
         setServiciosOpts(optsServicios);
 
-        // ----- Direcciones -----
+        // Direcciones
         const optsDirecciones = (dataDirecciones ?? []).map((d) => ({
           id: d.id,
           label: `${d.calle} ${d.numero ?? ""}${
@@ -85,27 +99,14 @@ export default function AgendaPage({ onReserve }) {
           }${d.esquina ? ` - Esq. ${d.esquina}` : ""}`.trim(),
         }));
         setDireccionesUsuario(optsDirecciones);
-
         if (optsDirecciones.length > 0) {
           setDireccionId(optsDirecciones[0].id);
         }
 
-        // ----- Disponibilidad -----
-        const disponibilidadNormalizada = (dataDisponibilidad ?? []).map(
-          (d) => ({
-            date: new Date(d.fecha), 
-            slots: (d.horas ?? [])
-              .filter((h) => h.disponible)
-              .map((h) => h.hora), 
-          })
-        );
-
-        setDisponibilidad(disponibilidadNormalizada);
+        // Disponibilidad (solo horas disponibles)
+        setDisponibilidad(normalizarDisponibilidad(dataDisponibilidad));
       } catch (e) {
-        if (e.name === "AbortError") {
-          console.log("Petición cancelada");
-          return;
-        }
+        if (e.name === "AbortError") return;
 
         const msg = e?.message ?? "Error al obtener datos iniciales";
         setErrorServicios(msg);
@@ -114,18 +115,20 @@ export default function AgendaPage({ onReserve }) {
         setLoadingServicios(false);
         setLoadingDisponibilidad(false);
       }
-    })();
+    }
+
+    cargarDatos();
 
     return () => ac.abort();
   }, []);
 
+  // ---- helpers de calendario ----
   const calendarDays = useMemo(() => {
     const start = startOfWeek(startOfMonth(currentMonth), { weekStartsOn: 1 });
     const end = endOfWeek(endOfMonth(currentMonth), { weekStartsOn: 1 });
     return eachDayOfInterval({ start, end });
   }, [currentMonth]);
 
-  // Disponibilidad agregada por día del mes actual
   const monthAvailability = useMemo(
     () =>
       disponibilidad
@@ -153,24 +156,81 @@ export default function AgendaPage({ onReserve }) {
     return (info.slots ?? []).map((time) => ({ time }));
   }, [selectedDate, monthAvailability]);
 
-  const handleReserve = (slot) => {
+  // ---- reservar ----
+  const handleReserve = async () => {
+    if (!selectedDate || !selectedSlot) return;
+
+    // limpio mensajes previos
+    setReservaSuccess("");
+    setReservaError("");
+
+    // validación rápida front
+    if (!servicios || servicios.length === 0) {
+      setReservaError("Debe seleccionar al menos un servicio.");
+      return;
+    }
+
     const payload = {
-      date: selectedDate,
-      time: slot.time,
-      servicios: servicios.map((s) => s.id),
-      tipo: tipoTrabajo,
-      direccionId,
-      comentarios,
+      fechaReserva: combinarFechaYHora(selectedDate, selectedSlot),
+      tipoServicio: tipoTrabajo === "instalacion" ? 1 : 2,
+      idDireccion: Number(direccionId),
+      idServicios: servicios.map((s) => s.id),
+      comentario: comentarios?.trim() || null,
     };
-    if (onReserve) onReserve(payload);
-    else
-      alert(
-        `Reserva (mock): ${format(selectedDate, "PPP", {
-          locale: es,
-        })} ${slot.time}\n` + JSON.stringify(payload, null, 2)
+
+    try {
+      const reservaCreada = await crearReserva(payload);
+
+      if (onReserve) onReserve(reservaCreada);
+
+      const fechaStr = format(selectedDate, "PPP", { locale: es });
+      setReservaSuccess(
+        `Reserva creada con éxito para ${fechaStr} ${selectedSlot}.`
       );
+      setReservaError("");
+
+      // limpiar campos
+      setSelectedSlot(null);
+      setComentarios("");
+
+      // volver a pedir disponibilidad para refrescar el calendario
+      try {
+        const dataDisponibilidadActualizada = await getHorariosDisponibles();
+        setDisponibilidad(
+          normalizarDisponibilidad(dataDisponibilidadActualizada)
+        );
+      } catch (e) {
+        console.error("No se pudo actualizar la disponibilidad:", e);
+      }
+    } catch (e) {
+      console.error("Error al crear la reserva:", e);
+
+      let msg = "No se pudo crear la reserva. Intentá nuevamente.";
+
+      if (e instanceof ApiError) {
+        // puede venir con JSON adentro del message
+        try {
+          const parsed = JSON.parse(e.message);
+          if (parsed?.errors) {
+            msg = Object.values(parsed.errors).flat().join(" ");
+          } else if (parsed?.message) {
+            msg = parsed.message;
+          } else {
+            msg = e.message;
+          }
+        } catch {
+          msg = e.message || msg;
+        }
+      } else if (e?.message) {
+        msg = e.message;
+      }
+
+      setReservaError(msg);
+      setReservaSuccess("");
+    }
   };
 
+  // ---- render ----
   return (
     <Box
       sx={{ minHeight: "100vh", bgcolor: (t) => t.palette.background.default }}
@@ -279,7 +339,12 @@ export default function AgendaPage({ onReserve }) {
                     <Grid key={date.toISOString()} item xs={1}>
                       <Button
                         variant={isSelected ? "outlined" : "text"}
-                        onClick={() => setSelectedDate(date)}
+                        onClick={() => {
+                          setSelectedDate(date);
+                          setSelectedSlot(null);
+                          setReservaSuccess("");
+                          setReservaError("");
+                        }}
                         disabled={!info.hasAvailability || !inThisMonth}
                         sx={{
                           width: "100%",
@@ -328,11 +393,34 @@ export default function AgendaPage({ onReserve }) {
           <Grid item xs={12} md={5} lg={4}>
             <Paper
               variant="outlined"
-              sx={{ p: 2, maxHeight: 420, overflow: "auto" }}
+              sx={{ p: 2, maxHeight: 500, overflow: "auto" }}
             >
               <Typography variant="h6" fontWeight={700} gutterBottom>
                 Horarios disponibles
               </Typography>
+
+              {/* Mensajes de reserva */}
+              {reservaSuccess && (
+                <Alert
+                  severity="success"
+                  variant="outlined"
+                  sx={{ mb: 1 }}
+                  onClose={() => setReservaSuccess("")}
+                >
+                  {reservaSuccess}
+                </Alert>
+              )}
+
+              {reservaError && (
+                <Alert
+                  severity="error"
+                  variant="outlined"
+                  sx={{ mb: 1 }}
+                  onClose={() => setReservaError("")}
+                >
+                  {reservaError}
+                </Alert>
+              )}
 
               {loadingDisponibilidad && (
                 <Typography color="text.secondary" sx={{ mb: 1 }}>
@@ -380,19 +468,39 @@ export default function AgendaPage({ onReserve }) {
                       . Probá otro día.
                     </Typography>
                   ) : (
-                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                      {slots.map((s) => (
+                    <>
+                      <Box
+                        sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}
+                      >
+                        {slots.map((s) => (
+                          <Button
+                            key={s.time}
+                            size="small"
+                            variant={
+                              selectedSlot === s.time
+                                ? "contained"
+                                : "outlined"
+                            }
+                            onClick={() => setSelectedSlot(s.time)}
+                            sx={{ borderRadius: 2 }}
+                          >
+                            {s.time}
+                          </Button>
+                        ))}
+                      </Box>
+
+                      {selectedSlot && (
                         <Button
-                          key={s.time}
-                          size="small"
-                          variant="outlined"
-                          onClick={() => handleReserve(s)}
-                          sx={{ borderRadius: 2 }}
+                          variant="contained"
+                          color="primary"
+                          fullWidth
+                          sx={{ mt: 2, borderRadius: 2 }}
+                          onClick={handleReserve}
                         >
-                          {s.time}
+                          Confirmar reserva
                         </Button>
-                      ))}
-                    </Box>
+                      )}
+                    </>
                   )}
                 </>
               )}
@@ -402,4 +510,26 @@ export default function AgendaPage({ onReserve }) {
       </Box>
     </Box>
   );
+}
+
+// ---- helpers ----
+function combinarFechaYHora(fecha, horaStr) {
+  const [hours, minutes] = horaStr.split(":").map(Number);
+
+  const year = fecha.getFullYear();
+  const month = String(fecha.getMonth() + 1).padStart(2, "0");
+  const day = String(fecha.getDate()).padStart(2, "0");
+  const hh = String(hours).padStart(2, "0");
+  const mm = String(minutes).padStart(2, "0");
+
+  return `${year}-${month}-${day}T${hh}:${mm}:00`;
+}
+
+function normalizarDisponibilidad(dataDisponibilidad) {
+  return (dataDisponibilidad ?? []).map((d) => ({
+    date: new Date(d.fecha),
+    slots: (d.horas ?? [])
+      .filter((h) => h.disponible)
+      .map((h) => h.hora),
+  }));
 }
