@@ -1,6 +1,8 @@
 import ApiError from "./ApiError";
 
 const urlAPI = "http://localhost:5269/WinniElectricidadApi/Usuario/"
+const urlAPIServicio = "http://localhost:5269/WinniElectricidadApi/Servicio/";
+const urlAPIReserva  = "http://localhost:5269/WinniElectricidadApi/Reserva/"
 
 export const login = async (email, password) => {
     try{
@@ -199,4 +201,123 @@ function normalizarDireccion(d) {
     numero: d.numero?.toString().trim() || null,
     apto: d.apto?.toString().trim() || null
   };
+}
+
+export async function getServiciosActivos(signal) {
+  const token = localStorage.getItem("token");
+
+  const resp = await fetch(`${urlAPIServicio}activos`, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    signal,
+  });
+
+  if (!resp.ok) {
+    const data = await handleJsonOrText(resp);
+    throw new ApiError(
+      data?.message || "No se pudieron obtener los servicios.",
+      resp.status
+    );
+  }
+
+  return await resp.json(); 
+}
+
+export async function getDireccionesUsuario(signal) {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    throw new ApiError("Usuario no autenticado.", 401);
+  }
+
+  const resp = await fetch(`${urlAPI}direcciones`, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    signal,
+
+  });
+
+  if (!resp.ok) {
+    const data = await handleJsonOrText(resp);
+    throw new ApiError(
+      data?.message || "No se pudieron obtener las direcciones.",
+      resp.status
+    );
+  }
+
+  const json = await resp.json();
+  return json;
+}
+
+export async function getHorariosDisponibles(signal) {
+  const token = localStorage.getItem("token");
+  const response = await fetch(
+    `${urlAPIReserva}disponibilidad`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      signal,
+    }
+  );
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(
+      `Error al obtener disponibilidad horaria (${response.status}): ${text}`
+    );
+  }
+
+  return await response.json();
+}
+
+export async function crearReserva(reserva, signal) {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    throw new ApiError("Usuario no autenticado.", 401);
+  }
+
+  const resp = await fetch(`${urlAPIReserva}agendar`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(reserva),
+    signal,
+  });
+
+  if (resp.status === 401) {
+    const data = await handleJsonOrText(resp);
+    throw new ApiError(data?.message || "Token inválido o expirado.", 401);
+  }
+
+  if (resp.status === 409) {
+    const data = await handleJsonOrText(resp);
+    throw new ApiError(
+      data?.message ||
+        "El horario seleccionado ya no está disponible.",
+      409
+    );
+  }
+
+  if (!resp.ok) {
+    const data = await handleJsonOrText(resp);
+    throw new ApiError(
+      data?.message || "Error al crear la reserva.",
+      resp.status
+    );
+  }
+
+  return await resp.json(); 
 }

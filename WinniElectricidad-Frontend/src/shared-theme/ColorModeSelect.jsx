@@ -1,17 +1,24 @@
-import * as React from "react";
-import IconButton from "@mui/material/IconButton";
-import LightModeIcon from "@mui/icons-material/LightMode";
-import DarkModeIcon from "@mui/icons-material/DarkMode";
-import { useTheme } from "@mui/material/styles";
-import { ColorModeContext } from "./AppTheme.jsx";
+import { useColorScheme } from '@mui/material/styles';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 
-export default function ColorModeSelect({ sx }) {
-  const theme = useTheme();
-  const colorMode = React.useContext(ColorModeContext);
-
+export default function ColorModeSelect(props) {
+  const { mode, setMode } = useColorScheme();
+  if (!mode) {
+    return null;
+  }
   return (
-    <IconButton onClick={colorMode.toggleColorMode} sx={sx}>
-      {theme.palette.mode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
-    </IconButton>
+    <Select
+      value={mode}
+      onChange={(event) => setMode(event.target.value)}
+      SelectDisplayProps={{
+        'data-screenshot': 'toggle-mode',
+      }}
+      {...props}
+    >
+      <MenuItem value="system">System</MenuItem>
+      <MenuItem value="light">Light</MenuItem>
+      <MenuItem value="dark">Dark</MenuItem>
+    </Select>
   );
 }
