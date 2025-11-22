@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { Box, Toolbar, Stack } from '@mui/material';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Box, Toolbar } from '@mui/material';
+import { Outlet } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 
@@ -12,7 +12,6 @@ import ThemeSwitcher from '../../../components/MUI/ThemeSwitcher.jsx';
 export default function AgendaLayout() {
   const theme = useTheme();
   const overMd = useMediaQuery(theme.breakpoints.up('md'));
-  const navigate = useNavigate();
 
   const [expandedDesktop, setExpandedDesktop] = React.useState(true);
   const [expandedMobile, setExpandedMobile] = React.useState(false);
