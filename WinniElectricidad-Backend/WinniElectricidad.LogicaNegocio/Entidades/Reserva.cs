@@ -67,6 +67,9 @@ public class Reserva
         {
             throw new ArgumentException("No se pueden reservar turnos con más de 30 días de anticipación.");
         }
+        
+        if (fechaReserva.DayOfWeek == DayOfWeek.Sunday)
+            throw new ArgumentException("No es posible reservar los días domingo.");
     }
 
     private static void ValidarTipoServicioReserva(TipoServicioReserva tipoServicioReserva)

@@ -23,18 +23,26 @@ public class ObtenerHorariosDisponibles : IObtenerHorariosDisponibles
         
         for (var fecha = minimo; fecha <= maximo; fecha = fecha.AddDays(1))
         {
+
             var horas = new List<HoraDto>();
 
             var horaActual = new TimeOnly(9, 0);
             var fin = new TimeOnly(17, 0);
-
+            
             while (horaActual < fin)
             {
-                bool ocupado = reservas.Any(r =>
-                    r.FechaReserva.Date == fecha.Date &&
-                    TimeOnly.FromDateTime(r.FechaReserva) == horaActual);
+                if (fecha.DayOfWeek == DayOfWeek.Sunday)
+                {
+                    horas.Add(new HoraDto { Hora = horaActual, Disponible = false });
+                }
+                else
+                {
+                    bool ocupado = reservas.Any(r =>
+                        r.FechaReserva.Date == fecha.Date &&
+                        TimeOnly.FromDateTime(r.FechaReserva) == horaActual);
 
-                horas.Add(new HoraDto { Hora = horaActual, Disponible = !ocupado });
+                    horas.Add(new HoraDto { Hora = horaActual, Disponible = !ocupado });
+                }
                 horaActual = horaActual.AddMinutes(90); 
             }
             
