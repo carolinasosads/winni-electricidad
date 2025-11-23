@@ -2,13 +2,13 @@ import * as React from 'react';
 import PropTypes from 'prop-types';
 import ListSubheader from '@mui/material/ListSubheader';
 
-import DashboardSidebarContext from "./context/DashboardSidebarContext";
+import SidebarContext from './SideBarContext';
 
-import { DRAWER_WIDTH } from './constants';
-import { getDrawerSxTransitionMixin } from './mixins';
+import { DRAWER_WIDTH } from './Constants';
+import { getDrawerSxTransitionMixin } from './Mixins';
 
-function DashboardSidebarHeaderItem({ children }) {
-  const sidebarContext = React.useContext(DashboardSidebarContext);
+function SidebarHeaderItem({ children }) {
+  const sidebarContext = React.useContext(SidebarContext);
   if (!sidebarContext) {
     throw new Error('Sidebar context was used without a provider.');
   }
@@ -41,8 +41,8 @@ function DashboardSidebarHeaderItem({ children }) {
   );
 }
 
-DashboardSidebarHeaderItem.propTypes = {
+SidebarHeaderItem.propTypes = {
   children: PropTypes.node,
 };
 
-export default DashboardSidebarHeaderItem;
+export default SidebarHeaderItem;

@@ -13,17 +13,18 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import LayersIcon from '@mui/icons-material/Layers';
 import { matchPath, useLocation } from 'react-router-dom';
 
-import DashboardSidebarContext from './context/DashboardSidebarContext';
-import { DRAWER_WIDTH, MINI_DRAWER_WIDTH } from './constants';
-import DashboardSidebarPageItem from './DashboardSidebarPageItem';
-import DashboardSidebarHeaderItem from './DashboardSidebarHeaderItem';
-import DashboardSidebarDividerItem from './DashboardSidebarDividerItem';
+import SidebarContext from './Context/SideBarContext';
+import { DRAWER_WIDTH, MINI_DRAWER_WIDTH } from './Context/Constants'
+import SidebarPageItem from './Context/SideBarPageItem';
+import SidebarHeaderItem from './Context/SideBarHeaderItem';
+import SideBarDividerItem from './Context/SideBarDividerItem';
+
 import {
   getDrawerSxTransitionMixin,
   getDrawerWidthTransitionMixin,
-} from './mixins';
+} from '../SideBar/Context/Mixins';
 
-function DashboardSidebar({
+function Sidebar({
   expanded = true,
   setExpanded,
   disableCollapsibleSidebar = false,
@@ -127,17 +128,17 @@ function DashboardSidebar({
               width: mini ? MINI_DRAWER_WIDTH : 'auto',
             }}
           >
-            <DashboardSidebarHeaderItem>Main items</DashboardSidebarHeaderItem>
-            <DashboardSidebarPageItem
+            <SidebarHeaderItem>Main items</SidebarHeaderItem>
+            <SidebarPageItem
               id="employees"
               title="Perfil"
               icon={<PersonIcon />}
               href="/employees"
               selected={!!matchPath('/employees/*', pathname) || pathname === '/'}
             />
-            <DashboardSidebarDividerItem />
-            <DashboardSidebarHeaderItem>Example items</DashboardSidebarHeaderItem>
-            <DashboardSidebarPageItem
+            <SideBarDividerItem />
+            <SidebarHeaderItem>Example items</SidebarHeaderItem>
+            <SidebarPageItem
               id="reports"
               title="Item de ejemplo"
               icon={<BarChartIcon />}
@@ -155,14 +156,14 @@ function DashboardSidebar({
                     minWidth: 240,
                   }}
                 >
-                  <DashboardSidebarPageItem
+                  <SidebarPageItem
                     id="sales"
                     title="Item 1"
                     icon={<DescriptionIcon />}
                     href="/reports/sales"
                     selected={!!matchPath('/reports/sales', pathname)}
                   />
-                  <DashboardSidebarPageItem
+                  <SidebarPageItem
                     id="traffic"
                     title="Item 2"
                     icon={<DescriptionIcon />}
@@ -172,7 +173,7 @@ function DashboardSidebar({
                 </List>
               }
             />
-            <DashboardSidebarPageItem
+            <SidebarPageItem
               id="integrations"
               title="Otro botoncito mas"
               icon={<LayersIcon />}
@@ -225,7 +226,7 @@ function DashboardSidebar({
   ]);
 
   return (
-    <DashboardSidebarContext.Provider value={sidebarContextValue}>
+    <SidebarContext.Provider value={sidebarContextValue}>
       <Drawer
         container={container}
         variant="temporary"
@@ -267,11 +268,11 @@ function DashboardSidebar({
       >
         {getDrawerContent('desktop')}
       </Drawer>
-    </DashboardSidebarContext.Provider>
+    </SidebarContext.Provider>
   );
 }
 
-DashboardSidebar.propTypes = {
+Sidebar.propTypes = {
   container: (props, propName) => {
     if (props[propName] == null) {
       return null;
@@ -286,4 +287,4 @@ DashboardSidebar.propTypes = {
   setExpanded: PropTypes.func.isRequired,
 };
 
-export default DashboardSidebar;
+export default Sidebar;

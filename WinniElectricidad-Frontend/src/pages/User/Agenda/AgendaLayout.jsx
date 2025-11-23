@@ -4,10 +4,9 @@ import { Outlet } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 
-import AppHeader from '../../Public/Header/SeccionHeader.jsx';
+import AppHeader from '../../Public/Header/Header.jsx'
 import LogoutButton from '../../../components/UI/Button/Button.jsx';
-import DashboardSidebar from '../../../components/MUI/DashboardSidebar.jsx';
-import ThemeSwitcher from '../../../components/MUI/ThemeSwitcher.jsx';
+import SeccionSideBar from '../../Public/SideBar/SideBar.jsx'
 
 export default function AgendaLayout() {
   const theme = useTheme();
@@ -38,19 +37,16 @@ export default function AgendaLayout() {
         homeHref="/principal"
         rightSlot={
             <>
-            <ThemeSwitcher />
             <LogoutButton />
             </>
         }
         />
-
       {/* Sidebar */}
-      <DashboardSidebar
+      <SeccionSideBar
         expanded={expanded}
         setExpanded={setExpanded}
         container={layoutRef?.current ?? undefined}
       />
-
       {/* Contenido */}
       <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
         {/* separador para el AppBar position="absolute" */}
