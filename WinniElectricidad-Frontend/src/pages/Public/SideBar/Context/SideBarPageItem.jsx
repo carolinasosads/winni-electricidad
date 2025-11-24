@@ -12,10 +12,10 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Link } from 'react-router-dom';
-import DashboardSidebarContext from "./context/DashboardSidebarContext";
-import { MINI_DRAWER_WIDTH } from './constants';
+import SidebarContext from './SideBarContext';
+import { MINI_DRAWER_WIDTH } from './Constants';
 
-function DashboardSidebarPageItem({
+function SidebarPageItem({
   id,
   title,
   icon,
@@ -27,7 +27,7 @@ function DashboardSidebarPageItem({
   disabled = false,
   nestedNavigation,
 }) {
-  const sidebarContext = React.useContext(DashboardSidebarContext);
+  const sidebarContext = React.useContext(SidebarContext);
   if (!sidebarContext) {
     throw new Error('Sidebar context was used without a provider.');
   }
@@ -219,11 +219,11 @@ function DashboardSidebarPageItem({
                   transform: 'translateY(-50px)',
                 }}
               >
-                <DashboardSidebarContext.Provider
+                <SidebarContext.Provider
                   value={miniNestedNavigationSidebarContextValue}
                 >
                   {nestedNavigation}
-                </DashboardSidebarContext.Provider>
+                </SidebarContext.Provider>
               </Paper>
             </Box>
           </Grow>
@@ -238,7 +238,7 @@ function DashboardSidebarPageItem({
   );
 }
 
-DashboardSidebarPageItem.propTypes = {
+SidebarPageItem.propTypes = {
   action: PropTypes.node,
   defaultExpanded: PropTypes.bool,
   disabled: PropTypes.bool,
@@ -251,4 +251,4 @@ DashboardSidebarPageItem.propTypes = {
   title: PropTypes.string.isRequired,
 };
 
-export default DashboardSidebarPageItem;
+export default SidebarPageItem;
