@@ -70,7 +70,7 @@ public class AgendarReservaTests
         _mockRepoReservas.Setup(r => r.UsuarioTieneReservaEnHorario(1, fecha, It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
         
-        _mockRepoReservas.Setup(r => r.UsuarioTieneReservaEnDia(1, fecha.Day, It.IsAny<CancellationToken>()))
+        _mockRepoReservas.Setup(r => r.UsuarioTieneReservaEnDia(1, fecha, It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
         
         _mockRepoReservas.Setup(r => r.FindById(It.IsAny<int>(), It.IsAny<CancellationToken>()))

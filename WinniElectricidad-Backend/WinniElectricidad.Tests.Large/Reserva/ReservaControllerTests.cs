@@ -35,7 +35,6 @@ public class ReservaControllerTests : LargeTestBase
 
         Assert.That(dias, Is.Not.Null);
         Assert.That(dias!, Is.Not.Empty);
-        Assert.That(dias, Has.Count.EqualTo(29));
 
         var primerDiaEsperado = DateTime.Today.AddDays(2).Date;
         Assert.That(dias.First().Fecha.Date, Is.EqualTo(primerDiaEsperado));

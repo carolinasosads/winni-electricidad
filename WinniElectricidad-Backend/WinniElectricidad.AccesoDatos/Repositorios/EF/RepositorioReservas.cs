@@ -26,7 +26,7 @@ public class RepositorioReservas : IRepositorioReserva
         return await _db.Reservas
             .Include(r => r.Direccion)
             .Include(r => r.Servicios)
-            .FirstAsync(r => r.IdReserva == id, ct);
+            .FirstOrDefaultAsync(r => r.IdReserva == id, ct);
     }
 
     public Task Update(Reserva obj, CancellationToken ct = default)
@@ -64,12 +64,12 @@ public class RepositorioReservas : IRepositorioReserva
                 ct);
     }
     
-    public async Task<bool> UsuarioTieneReservaEnDia(int idUsuario, int diaReserva, CancellationToken ct = default)
+    public async Task<bool> UsuarioTieneReservaEnDia(int idUsuario, DateTime fechaReserva, CancellationToken ct = default)
     {
         return await _db.Reservas
             .AnyAsync(r =>
                     r.IdUsuarioCliente == idUsuario &&
-                    r.FechaReserva.Day == diaReserva &&
+                    r.FechaReserva.Date == fechaReserva.Date &&
                     r.EstadoReserva != EstadoReserva.Cancelada,
                 ct);
     }

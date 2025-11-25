@@ -46,11 +46,8 @@ public class AgendarReserva : IAgendarReserva
         if (await _repositorioReserva.UsuarioTieneReservaEnHorario(idUsuario, nuevaReserva.FechaReserva, ct))
             throw new ReservaException("Ya tienes una reserva en ese horario.");
         
-        if (await _repositorioReserva.UsuarioTieneReservaEnDia(idUsuario, nuevaReserva.FechaReserva.Day, ct))
+        if (await _repositorioReserva.UsuarioTieneReservaEnDia(idUsuario, nuevaReserva.FechaReserva, ct))
             throw new ReservaException("Ya tienes una reserva para este día. Si quieres agregar un nuevo servicio, simplemente comunícalo al representante que te contacte.");
-        
-        if (nuevaReserva.FechaReserva.DayOfWeek == DayOfWeek.Sunday)
-            throw new ReservaException("No se puede reservar los domingos.");
         
         var reserva = ReservaMapper.MapearNuevaReservaDtoAEntidad(nuevaReserva, idUsuario, servicios);
         await _repositorioReserva.Add(reserva, ct);
