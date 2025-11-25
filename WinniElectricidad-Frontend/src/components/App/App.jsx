@@ -32,6 +32,18 @@ export default function App() {
         <Route index element={<AgendaPage />} />
       </Route>
 
+      {/* UsuarioAdministrador*/}
+      <Route
+        path="/admin/agenda"
+        element={
+          <ProtectedRoute allowedRoles={["Administrador"]}>
+            <AgendaLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<AgendaAdminPage />} />
+      </Route>
+
       {/* catch-all */}
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
