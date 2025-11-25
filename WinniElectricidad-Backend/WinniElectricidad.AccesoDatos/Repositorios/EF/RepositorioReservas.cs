@@ -17,16 +17,16 @@ public class RepositorioReservas : IRepositorioReserva
     {
         await _db.Reservas.AddAsync(reserva, ct);
         await _db.SaveChangesAsync(ct);
-        
-        //necesario para el mapper asi el dto no queda null
-        await _db.Entry(reserva).Reference(r => r.Direccion).LoadAsync(ct);
-        await _db.Entry(reserva).Collection(r => r.Servicios).LoadAsync(ct);
+
         return reserva;
     }
 
-    public Task<Reserva?> FindById(int id, CancellationToken ct = default)
+    public async Task<Reserva?> FindById(int id, CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        return await _db.Reservas
+            .Include(r => r.Direccion)
+            .Include(r => r.Servicios)
+            .FirstOrDefaultAsync(r => r.IdReserva == id, ct);
     }
 
     public Task Update(Reserva obj, CancellationToken ct = default)
@@ -61,6 +61,16 @@ public class RepositorioReservas : IRepositorioReserva
                 r.IdUsuarioCliente == idUsuario &&
                 r.FechaReserva == fechaReserva &&
                 r.EstadoReserva != EstadoReserva.Cancelada,
+                ct);
+    }
+    
+    public async Task<bool> UsuarioTieneReservaEnDia(int idUsuario, DateTime fechaReserva, CancellationToken ct = default)
+    {
+        return await _db.Reservas
+            .AnyAsync(r =>
+                    r.IdUsuarioCliente == idUsuario &&
+                    r.FechaReserva.Date == fechaReserva.Date &&
+                    r.EstadoReserva != EstadoReserva.Cancelada,
                 ct);
     }
 

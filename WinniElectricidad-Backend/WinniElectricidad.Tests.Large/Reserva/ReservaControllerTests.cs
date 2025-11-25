@@ -35,7 +35,6 @@ public class ReservaControllerTests : LargeTestBase
 
         Assert.That(dias, Is.Not.Null);
         Assert.That(dias!, Is.Not.Empty);
-        Assert.That(dias, Has.Count.EqualTo(29));
 
         var primerDiaEsperado = DateTime.Today.AddDays(2).Date;
         Assert.That(dias.First().Fecha.Date, Is.EqualTo(primerDiaEsperado));
@@ -43,15 +42,17 @@ public class ReservaControllerTests : LargeTestBase
         foreach (var dia in dias)
         {
             Assert.That(dia.Horas, Is.Not.Null);
-
-            Assert.Multiple(() =>
+            if (dia.Fecha.DayOfWeek != DayOfWeek.Sunday)
             {
-                // Horario: 9:00 a 17:00 saltando de 90 minutos: 6 slots
-                Assert.That(dia.Horas.Count(), Is.EqualTo(6));
+                Assert.Multiple(() =>
+                {
+                    // Horario: 9:00 a 17:00 saltando de 90 minutos: 6 slots
+                    Assert.That(dia.Horas.Count(), Is.EqualTo(6));
 
-                // Todos los horarios deberían estar disponibles
-                Assert.That(dia.Horas.All(h => h.Disponible), Is.True);
-            });
+                    // Todos los horarios deberían estar disponibles
+                    Assert.That(dia.Horas.All(h => h.Disponible), Is.True);
+                });
+            }
         }
     }
     

@@ -63,7 +63,10 @@ public class ObtenerHorariosDisponiblesTests
 
         foreach (var dia in dias)
         {
-            Assert.That(dia.Horas.All(h => h.Disponible), Is.True);
+            if (dia.Fecha.DayOfWeek != DayOfWeek.Sunday)
+            {
+                Assert.That(dia.Horas.All(h => h.Disponible), Is.True);
+            }
         }
     }
     

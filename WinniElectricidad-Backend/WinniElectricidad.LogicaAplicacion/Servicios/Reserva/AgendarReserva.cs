@@ -44,10 +44,14 @@ public class AgendarReserva : IAgendarReserva
             throw new ReservaException("El horario seleccionado ya no está disponible.");
 
         if (await _repositorioReserva.UsuarioTieneReservaEnHorario(idUsuario, nuevaReserva.FechaReserva, ct))
-            throw new ReservaException("Ya tiene una reserva en ese horario.");
+            throw new ReservaException("Ya tienes una reserva en ese horario.");
+        
+        if (await _repositorioReserva.UsuarioTieneReservaEnDia(idUsuario, nuevaReserva.FechaReserva, ct))
+            throw new ReservaException("Ya tienes una reserva para este día. Si quieres agregar un nuevo servicio, simplemente comunícalo al representante que te contacte.");
         
         var reserva = ReservaMapper.MapearNuevaReservaDtoAEntidad(nuevaReserva, idUsuario, servicios);
         await _repositorioReserva.Add(reserva, ct);
-        return ReservaMapper.MapearAReservaCreadaDto(reserva);
+        var reservaCompleta = await _repositorioReserva.FindById(reserva.IdReserva, ct);
+        return reservaCompleta is not null ? ReservaMapper.MapearAReservaCreadaDto(reservaCompleta) : throw new ReservaException("Error inesperado.");
     }
 }
