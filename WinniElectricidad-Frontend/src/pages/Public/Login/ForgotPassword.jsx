@@ -45,8 +45,6 @@ function ForgotPassword({ open, handleClose }) {
       onClose={handleCloseDialog}
       slotProps={{
         paper: {
-          component: 'form',
-          onSubmit: handleSubmit,
           sx: { backgroundImage: 'none' },
         },
       }}
@@ -82,7 +80,7 @@ function ForgotPassword({ open, handleClose }) {
             <Button onClick={handleCloseDialog} disabled={loading}>
               Cancelar
             </Button>
-            <Button variant="contained" type="submit" disabled={loading}>
+            <Button variant="contained" onClick={handleSubmit} disabled={loading}>
               {loading ? (
                 <Box sx={{ display: "flex", alignItems: "center" }}>
                   <CircularProgress size={18} sx={{ mr: 1 }} />
