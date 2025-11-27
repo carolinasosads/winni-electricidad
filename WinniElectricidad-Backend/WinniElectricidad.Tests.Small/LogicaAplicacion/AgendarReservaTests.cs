@@ -13,7 +13,7 @@ public class AgendarReservaTests
     private Mock<IRepositorioReserva> _mockRepoReservas;
     private Mock<IRepositorioServicio> _mockRepoServicios;
     private Mock<IRepositorioUsuario> _mockRepoUsuarios;
-    private Mock<IResend> _mockResend;              
+    private Mock<IResend> _mockResend;
     private AgendarReserva _servicio;
 
     [SetUp]
@@ -22,30 +22,30 @@ public class AgendarReservaTests
         _mockRepoReservas = new Mock<IRepositorioReserva>();
         _mockRepoServicios = new Mock<IRepositorioServicio>();
         _mockRepoUsuarios = new Mock<IRepositorioUsuario>();
-        _mockResend = new Mock<IResend>();          
+        _mockResend = new Mock<IResend>();
 
         _servicio = new AgendarReserva(
             _mockRepoReservas.Object,
             _mockRepoUsuarios.Object,
             _mockRepoServicios.Object,
-            _mockResend.Object                    
+            _mockResend.Object
         );
     }
 
     [Test]
     public async Task Ejecutar_ReservaValida_DevuelveDto()
     {
-        // Arrange
-        var fechaBase = DateTime.Today.AddDays(3);
+        var fecha = DateTime.Today.AddDays(2);
 
-        // Si justo cae domingo, se corro a lunes
-        if (fechaBase.DayOfWeek == DayOfWeek.Sunday)
+        // Si cae domingo, mover al día siguiente
+        while (fecha.DayOfWeek == DayOfWeek.Sunday)
         {
-            fechaBase = fechaBase.AddDays(1);
+            fecha = fecha.AddDays(1);
         }
 
-        var fecha = fechaBase.AddHours(10);
-        var dto = new ReservaACrearDto()
+        fecha = fecha.AddHours(10);
+
+        var dto = new ReservaACrearDto
         {
             FechaReserva = fecha,
             TipoServicio = TipoServicioReserva.Instalacion,
@@ -67,14 +67,12 @@ public class AgendarReservaTests
         var servicios = new List<Servicio>
         {
             new("Electricidad", "Instalaciones completas", null)
+            {
+                Activo = true
+            }
         };
 
-        var admin = new UsuarioAdministrador(
-            "Admin",
-            "1234567",
-            "admin@test.com",
-            "099000000"
-        )
+        var admin = new UsuarioAdministrador("Admin", "9876543", "admin@test.com", "099000000")
         {
             IdUsuario = 2
         };
@@ -84,6 +82,9 @@ public class AgendarReservaTests
 
         _mockRepoUsuarios.Setup(r => r.FindAddressByUserId(1, It.IsAny<CancellationToken>()))
             .ReturnsAsync(direcciones);
+
+        _mockRepoUsuarios.Setup(r => r.ObtenerAdministrador(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(admin);
 
         _mockRepoServicios.Setup(r => r.FindByIds(It.IsAny<List<int>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(servicios);
@@ -97,7 +98,14 @@ public class AgendarReservaTests
         _mockRepoReservas.Setup(r => r.UsuarioTieneReservaEnDia(1, fecha, It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
 
-        _mockRepoReservas.Setup(r => r.Add(It.IsAny<Reserva>(), It.IsAny<CancellationToken>()));
+                                                 _mockRepoReservas
+            .Setup(r => r.Add(It.IsAny<Reserva>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Reserva r, CancellationToken _) =>
+            {
+                r.IdReserva = 123;
+                return r;
+            });
+
         _mockRepoReservas.Setup(r => r.FindById(It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(() =>
             {
@@ -115,16 +123,6 @@ public class AgendarReservaTests
                     Servicios = servicios
                 };
             });
-
-        _mockRepoUsuarios.Setup(r => r.ObtenerAdministrador(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(admin);
-
-        _mockResend
-            .Setup(r => r.EmailSendAsync(
-                It.IsAny<EmailMessage>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync((ResendResponse<Guid>)default!);
-        
 
         // Act
         var result = await _servicio.Ejecutar(dto, 1);

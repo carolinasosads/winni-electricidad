@@ -26,11 +26,20 @@ public class ObtenerHorariosDisponiblesTests
     {
         // Arrange
         var hoy = DateTime.Today;
-        var fechaReserva = hoy.AddDays(3).AddHours(9); // primer día válido
+
+        var fechaReserva = hoy.AddDays(2);
+
+        // Si cae domingo, pasamos al siguiente día hábil
+        while (fechaReserva.DayOfWeek == DayOfWeek.Sunday)
+        {
+            fechaReserva = fechaReserva.AddDays(1);
+        }
+        fechaReserva = fechaReserva.Date.AddHours(9);
 
         var reservas = new List<Reserva>
         {
-            new(fechaReserva,
+            new(
+                fechaReserva,
                 TipoServicioReserva.Instalacion,
                 idUsuarioCliente: 1,
                 idDireccion: 1,
@@ -44,7 +53,7 @@ public class ObtenerHorariosDisponiblesTests
 
         // Act
         var diasDisponibles = (await _servicio.Ejecutar()).ToList();
-        
+
         var dia = diasDisponibles.First(d => d.Fecha.Date == fechaReserva.Date);
         var hora = dia.Horas.First(h => h.Hora == TimeOnly.FromDateTime(fechaReserva));
 
