@@ -1,4 +1,5 @@
 ﻿using Moq;
+using Resend;
 using WinniElectricidad.Compartido.Reservas;
 using WinniElectricidad.LogicaAplicacion.Servicios.Reserva;
 using WinniElectricidad.LogicaNegocio.Entidades;
@@ -11,7 +12,8 @@ public class AgendarReservaTests
 {
     private Mock<IRepositorioReserva> _mockRepoReservas;
     private Mock<IRepositorioServicio> _mockRepoServicios;
-    private Mock<IRepositorioUsuario> _mockRepoUsuarios ;
+    private Mock<IRepositorioUsuario> _mockRepoUsuarios;
+    private Mock<IResend> _mockResend;              
     private AgendarReserva _servicio;
 
     [SetUp]
@@ -20,21 +22,29 @@ public class AgendarReservaTests
         _mockRepoReservas = new Mock<IRepositorioReserva>();
         _mockRepoServicios = new Mock<IRepositorioServicio>();
         _mockRepoUsuarios = new Mock<IRepositorioUsuario>();
+        _mockResend = new Mock<IResend>();          
 
         _servicio = new AgendarReserva(
             _mockRepoReservas.Object,
             _mockRepoUsuarios.Object,
-            _mockRepoServicios.Object
-            
+            _mockRepoServicios.Object,
+            _mockResend.Object                    
         );
     }
-    
+
     [Test]
     public async Task Ejecutar_ReservaValida_DevuelveDto()
     {
         // Arrange
-        var fecha = DateTime.Today.AddDays(3).AddHours(10);
+        var fechaBase = DateTime.Today.AddDays(3);
 
+        // Si justo cae domingo, se corro a lunes
+        if (fechaBase.DayOfWeek == DayOfWeek.Sunday)
+        {
+            fechaBase = fechaBase.AddDays(1);
+        }
+
+        var fecha = fechaBase.AddHours(10);
         var dto = new ReservaACrearDto()
         {
             FechaReserva = fecha,
@@ -44,15 +54,29 @@ public class AgendarReservaTests
             Comentario = "Prueba"
         };
 
-        var usuario = new UsuarioCliente("Sofía", "1234567", "test@test.com", "099111111", new List<Direccion>()) { IdUsuario = 1 };
+        var usuario = new UsuarioCliente("Sofía", "1234567", "test@test.com", "099111111", new List<Direccion>())
+        {
+            IdUsuario = 1
+        };
+
         var direcciones = new List<Direccion>
         {
-            new() { IdDireccion = 10, IdUsuarioCliente = 0, Calle = "X", Esquina = "Y" }
+            new() { IdDireccion = 10, IdUsuarioCliente = 1, Calle = "X", Esquina = "Y" }
         };
 
         var servicios = new List<Servicio>
         {
             new("Electricidad", "Instalaciones completas", null)
+        };
+
+        var admin = new UsuarioAdministrador(
+            "Admin",
+            "1234567",
+            "admin@test.com",
+            "099000000"
+        )
+        {
+            IdUsuario = 2
         };
 
         _mockRepoUsuarios.Setup(r => r.FindById(1, It.IsAny<CancellationToken>()))
@@ -69,27 +93,38 @@ public class AgendarReservaTests
 
         _mockRepoReservas.Setup(r => r.UsuarioTieneReservaEnHorario(1, fecha, It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
-        
+
         _mockRepoReservas.Setup(r => r.UsuarioTieneReservaEnDia(1, fecha, It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
-        
+
+        _mockRepoReservas.Setup(r => r.Add(It.IsAny<Reserva>(), It.IsAny<CancellationToken>()));
         _mockRepoReservas.Setup(r => r.FindById(It.IsAny<int>(), It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(() =>
-                    {
-                        return new Reserva(
-                            fechaReserva: fecha,
-                            tipo: TipoServicioReserva.Instalacion,
-                            idUsuarioCliente: 1,
-                            idDireccion: 10,
-                            servicios: servicios,
-                            comentario: dto.Comentario
-                        )
-                        {
-                            IdReserva = 123,
-                            Direccion = direcciones[0],
-                            Servicios = servicios
-                        };
-                    });
+            .ReturnsAsync(() =>
+            {
+                return new Reserva(
+                    fechaReserva: fecha,
+                    tipo: TipoServicioReserva.Instalacion,
+                    idUsuarioCliente: 1,
+                    idDireccion: 10,
+                    servicios: servicios,
+                    comentario: dto.Comentario
+                )
+                {
+                    IdReserva = 123,
+                    Direccion = direcciones[0],
+                    Servicios = servicios
+                };
+            });
+
+        _mockRepoUsuarios.Setup(r => r.ObtenerAdministrador(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(admin);
+
+        _mockResend
+            .Setup(r => r.EmailSendAsync(
+                It.IsAny<EmailMessage>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ResendResponse<Guid>)default!);
+        
 
         // Act
         var result = await _servicio.Ejecutar(dto, 1);
