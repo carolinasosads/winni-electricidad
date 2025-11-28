@@ -42,7 +42,7 @@ public class RecuperarContrasena : IRecuperarContrasena
             IdUsuario = usuarioEncontrado.IdUsuario,
         }, ct);
     
-        var urlRecuperacionContrasena = $"http://localhost:3001/reset-password?token={Uri.EscapeDataString(tokenPlain)}";
+        var urlRecuperacionContrasena = $"https://icy-flower-09db15f0f.3.azurestaticapps.net/reset-password?token={Uri.EscapeDataString(tokenPlain)}";
 
         var mensaje = new EmailMessage
         {
