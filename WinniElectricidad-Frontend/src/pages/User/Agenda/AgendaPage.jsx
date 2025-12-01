@@ -236,9 +236,19 @@ export default function AgendaPage({ onReserve }) {
       sx={{ minHeight: "100vh", bgcolor: (t) => t.palette.background.default }}
     >
       <Box sx={{ p: { xs: 2, sm: 3 }, flex: 1 }}>
-        <Typography variant="h4" fontWeight={700} gutterBottom>
-          Reservas
-        </Typography>
+        <Box sx={{ maxWidth: 1000, mb: 3 }}>
+          <Typography variant="h4" fontWeight={700} gutterBottom>
+            Reservas para visitas de presupuesto
+          </Typography>
+
+          <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+            Desde este panel podés reservar un turno para que uno de nuestros técnicos visite tu domicilio y realice un presupuesto sin costo.
+          </Typography>
+
+          <Alert severity="warning" variant="outlined">
+            Importante: esta reserva es solo para la visita de presupuesto. No se agendan instalaciones ni reparaciones por este medio.
+          </Alert>
+        </Box>
 
         <Grid container spacing={3} justifyContent="center">
           <Grid item xs={12} md={8} lg={8}>
