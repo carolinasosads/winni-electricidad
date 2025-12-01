@@ -9,16 +9,27 @@ namespace WinniElectricidad.Tests.Small.LogicaAplicacion;
 public class ObtenerHorariosDisponiblesTests
 {
     private Mock<IRepositorioReserva> _mockRepo;
+    private Mock<IRepositorioSettings> _mockSettingsRepo;
     private ObtenerHorariosDisponibles _servicio;
     
     [SetUp]
     public void Setup()
     {
         _mockRepo = new Mock<IRepositorioReserva>();
+        _mockSettingsRepo = new Mock<IRepositorioSettings>();
         _mockRepo.Setup(r =>
                 r.FindAllBetweenDates(It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<Reserva>());
-        _servicio = new ObtenerHorariosDisponibles(_mockRepo.Object);
+        _mockSettingsRepo.Setup(s => s.Obtener(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Settings
+            {
+                HoraInicio = new TimeOnly(9, 0),
+                HoraFin = new TimeOnly(17, 0),
+                MinutosEntreTurnos = 90,
+                DiasMinimos = 2,
+                DiasMaximos = 10
+            });
+        _servicio = new ObtenerHorariosDisponibles(_mockRepo.Object, _mockSettingsRepo.Object);
     }
     
     [Test]
