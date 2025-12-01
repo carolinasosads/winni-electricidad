@@ -135,6 +135,12 @@ builder.Services.AddScoped<IObtenerServiciosActivos, ObtenerServiciosActivos>();
 builder.Services.AddScoped<IObtenerDirecciones, ObtenerDirecciones>();
 builder.Services.AddScoped<IObtenerHorariosDisponibles, ObtenerHorariosDisponibles>();
 builder.Services.AddScoped<IAgendarReserva, AgendarReserva>();
+builder.Services.AddScoped<IObtenerHistoricoMensualReservas, ObtenerHistoricoMensualReservas>();
+builder.Services.AddScoped<IObtenerHistoricoFinalizadas, ObtenerHistoricoFinalizadas>();
+builder.Services.AddScoped<IObtenerReservasPorEstado, ObtenerReservasPorEstado>();
+builder.Services.AddScoped<IAprobarReserva, AprobarReserva>();
+builder.Services.AddScoped<ICancelarReserva, CancelarReserva>();
+builder.Services.AddScoped<IModificarReserva, ModificarReserva>();
 builder.Services.AddScoped<IEnviarEmail, EnviarEmail>();
 
 // Repositorios

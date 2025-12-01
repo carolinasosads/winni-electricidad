@@ -18,14 +18,27 @@ public class ReservaController : ControllerBase
 {
     private readonly IObtenerHorariosDisponibles _obtenerHorariosDisponibles;
     private readonly IAgendarReserva _agendarReserva;
+    private readonly IObtenerHistoricoMensualReservas _obtenerHistoricoMensualReservas;
+    private readonly IObtenerHistoricoFinalizadas _obtenerHistoricoFinalizadas;
+    private readonly IObtenerReservasPorEstado _obtenerReservasPorEstado;
+    private readonly IAprobarReserva _aprobarReserva;
+    private readonly ICancelarReserva _cancelarReserva;
+    private readonly IModificarReserva _modificarReserva;
 
     /// <summary>
     /// Inicializa una nueva instancia del <see cref="ReservaController"/> con las dependencias necesarias.
     /// </summary>
-    public ReservaController(IObtenerHorariosDisponibles obtenerHorariosDisponibles, IAgendarReserva agendarReserva)
+    public ReservaController(IObtenerHorariosDisponibles obtenerHorariosDisponibles, IAgendarReserva agendarReserva, IObtenerHistoricoMensualReservas obtenerHistoricoMensualReservas, IObtenerHistoricoFinalizadas obtenerHistoricoFinalizadas,IObtenerReservasPorEstado obtenerReservasPorEstado,  IAprobarReserva aprobarReserva,
+        ICancelarReserva cancelarReserva, IModificarReserva modificarReserva)
     {
         _obtenerHorariosDisponibles = obtenerHorariosDisponibles;
         _agendarReserva = agendarReserva;
+        _obtenerHistoricoMensualReservas = obtenerHistoricoMensualReservas;
+        _obtenerHistoricoFinalizadas = obtenerHistoricoFinalizadas;
+        _obtenerReservasPorEstado = obtenerReservasPorEstado;
+        _cancelarReserva = cancelarReserva;
+        _aprobarReserva = aprobarReserva;
+        _modificarReserva =  modificarReserva;
     }
     
     /// <summary>
@@ -144,4 +157,141 @@ public class ReservaController : ControllerBase
             return StatusCode(500, new { message = "Error inesperado." });
         }
     }
+    
+    /// <summary>
+    /// Obtiene el historial de reservas realizadas en un mes y año específico.
+    /// </summary>
+    /// <param name="mes"></param>
+    /// <param name="anio"></param>
+
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [HttpGet("historico-mensual/{mes:int}")]
+    [Authorize(Roles = "Administrador")]
+    [ProducesResponseType(typeof(IEnumerable<HistoricoReservaDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+
+    public async Task<IActionResult> GetHistoricoMensual(int mes, int anio, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var resultado = await _obtenerHistoricoMensualReservas.Ejecutar( mes, anio, cancellationToken);
+
+            return Ok(resultado);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "Error inesperado." });
+        }
+    }
+    
+    [HttpGet("historico")]
+    [Authorize(Roles = "Administrador")]
+    [ProducesResponseType(typeof(IEnumerable<HistoricoReservaDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+
+    public async Task<IActionResult> GetHistoricoFinalizadas(CancellationToken ct)
+    {
+        try
+        {
+            var resultado = await _obtenerHistoricoFinalizadas.Ejecutar(ct);
+            return Ok(resultado);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "Error inesperado." });
+        }
+    }
+    
+    [HttpGet("por-estado")]
+    [Authorize(Roles = "Administrador")]
+    [ProducesResponseType(typeof(IEnumerable<HistoricoReservaDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetPorEstado([FromQuery] string estado, CancellationToken ct)
+    {
+        try
+        {
+            var resultado = await _obtenerReservasPorEstado.Ejecutar(estado, ct);
+
+            return Ok(resultado);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "Error inesperado." });
+        }
+    }
+
+    [HttpPost("aprobar/{idReserva:int}")]
+    [Authorize(Roles = "Administrador")]
+    [ProducesResponseType(typeof(IEnumerable<HistoricoReservaDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> Aprobar([FromRoute] int idReserva, CancellationToken ct)
+        {
+            try
+            {
+                await _aprobarReserva.Ejecutar(idReserva, ct);
+                return Ok(new { message = "Reserva aprobada con exito." });
+
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Error inesperado." });
+            }
+        }
+
+        [HttpPost("cancelar/{idReserva:int}")]
+        [Authorize(Roles = "Administrador")]
+        [ProducesResponseType(typeof(IEnumerable<HistoricoReservaDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> Cancelar([FromRoute] int idReserva, CancellationToken ct)
+        {
+            try
+            {
+                await _cancelarReserva.Ejecutar(idReserva, ct);
+                return Ok(new { message = "Reserva cancelada con exito." });
+
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Error inesperado." });
+            }
+        }
+    
+        [HttpPut("modificar")]
+        [Authorize(Roles = "Administrador")]
+        [ProducesResponseType(typeof(IEnumerable<HistoricoReservaDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> Modificar([FromBody] ReservaAModificarDto dto, CancellationToken ct)
+        {
+            try
+            {
+                await _modificarReserva.Ejecutar(dto, ct);
+                return Ok(new { message = "Reserva modificada con exito." });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Error inesperado." });
+            }
+        }
+
 }

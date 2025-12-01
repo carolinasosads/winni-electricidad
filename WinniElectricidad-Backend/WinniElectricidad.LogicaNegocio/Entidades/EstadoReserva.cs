@@ -5,5 +5,4 @@ public enum EstadoReserva
     Pendiente, 
     Confirmada, 
     Cancelada,
-    Finalizada
 }

@@ -3,7 +3,7 @@ using WinniElectricidad.LogicaNegocio.Entidades;
 
 namespace WinniElectricidad.Compartido.DTOs.Mappers;
 
-public class ServicioMapper
+public static class ServicioMapper
 {
     public static ICollection<ServicioActivoDto> MapearServiciosADtos(
         IEnumerable<Servicio> serviciosActivos)

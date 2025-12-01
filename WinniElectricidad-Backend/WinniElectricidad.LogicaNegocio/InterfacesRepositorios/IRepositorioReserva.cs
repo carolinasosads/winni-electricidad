@@ -8,4 +8,8 @@ public interface IRepositorioReserva : IRepositorio<Reserva>
     Task<bool> UsuarioTieneReservaEnHorario(int idUsuario, DateTime fechaReserva, CancellationToken ct = default);
     Task<bool> UsuarioTieneReservaEnDia(int idUsuario, DateTime fechaReserva, CancellationToken ct = default);
     Task<bool> HorarioOcupado(DateTime fechaReserva, CancellationToken ct = default);
+    Task<IReadOnlyList<Reserva>> FindAllFinalizadas(CancellationToken ct = default);
+    Task<IReadOnlyList<Reserva>> FindAllSegunEstado(EstadoReserva estado, CancellationToken ct = default);
+    Task<Reserva?> ObtenerReservaPorId(int id, CancellationToken ct = default);
+    Task ActualizarReserva(Reserva reserva, CancellationToken ct = default);
 }
