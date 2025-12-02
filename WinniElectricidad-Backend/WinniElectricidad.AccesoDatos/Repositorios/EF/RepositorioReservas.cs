@@ -116,8 +116,9 @@ public class RepositorioReservas : IRepositorioReserva
     public async Task<Reserva?> ObtenerReservaPorId(int id, CancellationToken ct = default)
     {
         return await _db.Reservas
-            .Include(r => r.Servicios)       // si necesitás servicios
-            .Include(r => r.Direccion)      // si necesitás dirección
+            .Include(r => r.UsuarioCliente)
+            .Include(r => r.Servicios)       
+            .Include(r => r.Direccion)      
             .FirstOrDefaultAsync(r => r.IdReserva == id, ct);
     }
 
