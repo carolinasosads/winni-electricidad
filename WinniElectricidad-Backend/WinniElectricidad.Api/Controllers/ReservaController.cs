@@ -189,6 +189,11 @@ public class ReservaController : ControllerBase
         }
     }
     
+    /// <summary>
+    /// Devuelve todas las reservas cuyo estado es 'Finalizada',
+    /// incluyendo la información necesaria para el módulo de historial interno.
+    /// Requiere rol Administrador.
+    /// </summary>
     [HttpGet("historico")]
     [Authorize(Roles = "Administrador")]
     [ProducesResponseType(typeof(IEnumerable<HistoricoReservaDto>), StatusCodes.Status200OK)]
@@ -229,7 +234,15 @@ public class ReservaController : ControllerBase
         }
     }
 
-    [HttpPost("aprobar/{idReserva:int}")]
+    // Aprueba una reserva de presupuesto específica.
+    /// </summary>
+    /// <param name="idReserva">El identificador de la reserva a aprobar.</param>
+    /// <param name="ct">Token de cancelación para la operación asíncrona.</param>
+    /// <returns>
+    /// Retorna un mensaje de éxito si la reserva fue aprobada correctamente.
+    /// Retorna un mensaje de error si la reserva no existe o si ocurre un error inesperado.
+    /// </returns>
+    [HttpPatch("aprobar/{idReserva:int}")]
     [Authorize(Roles = "Administrador")]
     [ProducesResponseType(typeof(IEnumerable<HistoricoReservaDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -238,10 +251,13 @@ public class ReservaController : ControllerBase
             try
             {
                 await _aprobarReserva.Ejecutar(idReserva, ct);
-                return Ok(new { message = "Reserva aprobada con exito." });
-
+                return Ok(new { message = "Reserva aprobada con éxito." });
             }
             catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
@@ -251,7 +267,11 @@ public class ReservaController : ControllerBase
             }
         }
 
-        [HttpPost("cancelar/{idReserva:int}")]
+    /// <summary>
+    /// Cancela una reserva existente por su identificador.
+    /// Solo accesible para usuarios con rol Administrador.
+    /// </summary>
+        [HttpPatch("cancelar/{idReserva:int}")]
         [Authorize(Roles = "Administrador")]
         [ProducesResponseType(typeof(IEnumerable<HistoricoReservaDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -260,10 +280,13 @@ public class ReservaController : ControllerBase
             try
             {
                 await _cancelarReserva.Ejecutar(idReserva, ct);
-                return Ok(new { message = "Reserva cancelada con exito." });
-
+                return Ok(new { message = "Reserva cancelada con éxito." });
             }
             catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
@@ -282,9 +305,13 @@ public class ReservaController : ControllerBase
             try
             {
                 await _modificarReserva.Ejecutar(dto, ct);
-                return Ok(new { message = "Reserva modificada con exito." });
+                return Ok(new { message = "Reserva modificada con éxito." });
             }
             catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
