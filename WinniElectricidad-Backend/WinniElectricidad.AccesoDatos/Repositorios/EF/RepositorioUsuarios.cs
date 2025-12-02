@@ -83,4 +83,10 @@ public class RepositorioUsuarios : IRepositorioUsuario
             .SelectMany(c => c.Direcciones)
             .ToListAsync(ct);
     }
+    public async Task<UsuarioAdministrador?> ObtenerAdministrador(CancellationToken ct = default)
+    {
+        return await _db.Usuarios
+            .OfType<UsuarioAdministrador>()
+            .SingleOrDefaultAsync(ct);   
+    }
 }

@@ -6,9 +6,11 @@ using Microsoft.OpenApi.Models;
 using Resend;
 using WinniElectricidad.AccesoDatos.Repositorios.EF;
 using WinniElectricidad.Api.Servicio;
+using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Notificacion;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Reserva;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Servicio;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Usuario;
+using WinniElectricidad.LogicaAplicacion.Servicios.Notificacion;
 using WinniElectricidad.LogicaAplicacion.Servicios.Reserva;
 using WinniElectricidad.LogicaAplicacion.Servicios.Servicio;
 using WinniElectricidad.LogicaAplicacion.Servicios.Usuario;
@@ -133,6 +135,7 @@ builder.Services.AddScoped<IObtenerServiciosActivos, ObtenerServiciosActivos>();
 builder.Services.AddScoped<IObtenerDirecciones, ObtenerDirecciones>();
 builder.Services.AddScoped<IObtenerHorariosDisponibles, ObtenerHorariosDisponibles>();
 builder.Services.AddScoped<IAgendarReserva, AgendarReserva>();
+builder.Services.AddScoped<IEnviarEmail, EnviarEmail>();
 
 // Repositorios
 builder.Services.AddScoped<IRepositorioUsuario, RepositorioUsuarios>();

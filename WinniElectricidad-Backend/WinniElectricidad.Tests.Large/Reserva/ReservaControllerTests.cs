@@ -64,7 +64,19 @@ public class ReservaControllerTests : LargeTestBase
 
         await DbSeeder.CleanDatabaseAsync(Factory);
         var usuario = await DbSeeder.SeedUsuarioConDireccionesAsync(Factory);
-        var fechaReserva = DateTime.Today.AddDays(3).AddHours(9);
+
+        // ====== Fecha válida: no domingo ======
+        var fechaReserva = DateTime.Today.AddDays(3);
+
+        // Si cae en domingo, la corro al siguiente día hábil
+        while (fechaReserva.DayOfWeek == DayOfWeek.Sunday)
+        {
+            fechaReserva = fechaReserva.AddDays(1);
+        }
+
+        // Le agrego la hora deseada (09:00)
+        fechaReserva = fechaReserva.Date.AddHours(9);
+
         await DbSeeder.SeedReservaAsync(Factory, fechaReserva);
 
         var token = Jwt.GenerarTokenValido(usuario.IdUsuario, usuario.Email, "Cliente");
