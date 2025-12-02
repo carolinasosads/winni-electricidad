@@ -35,6 +35,7 @@ public class AgendarReservaTests
     [Test]
     public async Task Ejecutar_ReservaValida_DevuelveDto()
     {
+        // Arrange
         var fecha = DateTime.Today.AddDays(2);
 
         // Si cae domingo, mover al día siguiente
@@ -98,7 +99,7 @@ public class AgendarReservaTests
         _mockRepoReservas.Setup(r => r.UsuarioTieneReservaEnDia(1, fecha, It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
 
-                                                 _mockRepoReservas
+        _mockRepoReservas
             .Setup(r => r.Add(It.IsAny<Reserva>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Reserva r, CancellationToken _) =>
             {

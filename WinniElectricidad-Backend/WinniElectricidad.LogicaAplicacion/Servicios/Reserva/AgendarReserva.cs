@@ -75,7 +75,7 @@ public class AgendarReserva : IAgendarReserva
     {
         var nombreCliente = usuario.NombreCompleto;
         var emailCliente = usuario.Email;
-        var fecha = reserva.FechaReserva.ToString("dd/MM/yyyy HH:mm"); //Parseo la fecha
+        var fecha = reserva.FechaReserva.ToString("dd/MM/yyyy HH:mm");
         var direccion = reserva.Direccion;
         var comentario = string.IsNullOrWhiteSpace(reserva.Comentario)
             ? "Sin comentarios adicionales."
@@ -86,7 +86,6 @@ public class AgendarReserva : IAgendarReserva
         var admin = await _repositorioUsuario.ObtenerAdministrador(ct);
 
         if (admin is null) throw new ReservaException("No hay un usuario administrador.");
-        
 
         var mensajeAdmin = new EmailMessage
         {
@@ -98,12 +97,12 @@ public class AgendarReserva : IAgendarReserva
                     <h2>Nueva reserva de presupuesto agendada</h2>
                     <p><strong>Nombre del cliente:</strong> {nombreCliente}</p>
                     <p><strong>Email:</strong> {emailCliente}</p>
-                    <p><strong>Telefono:</strong> {numeroTelefono}</p>
+                    <p><strong>Teléfono:</strong> {numeroTelefono}</p>
                     <p><strong>Fecha:</strong> {fecha}</p>
                     <p><strong>Dirección:</strong> {direccion}</p>
                     <p><strong>Tipo de servicio:</strong> {reserva.TipoServicio}</p>
                     <p><strong>Servicios:</strong></p>
-                    <ul>{serviciosTexto}</ul>
+                    <p>{serviciosTexto}</p>
                     <p><strong>Comentario del cliente:</strong> {comentario}</p>
                 </div>"
         };
@@ -122,15 +121,15 @@ public class AgendarReserva : IAgendarReserva
            <p>Recibimos tu solicitud de reserva para un presupuesto. 
            <strong>La reserva está pendiente de revisión.</strong> </p>
 
-           <p>A continuación compartimos los datos que registrò:</p>
+           <p>A continuación compartimos los datos que registró:</p>
 
            <p><strong>Fecha solicitada:</strong> {fecha}</p>
 
            <p><strong>Servicios seleccionados:</strong></p>
-           <ul>{serviciosTexto}</ul>
+           <p>{serviciosTexto}</p>
 
            <p>Un miembro del equipo de Winni Electricidad se va a contactar contigo en breve y 
-           <strong>coordinaran la confirmación de la reserva</strong>.</p>
+           <strong>coordinarán la confirmación de la reserva</strong>.</p>
 
            <p>¡Gracias por confiar en Winni Electricidad!</p>
        </div>"
@@ -145,7 +144,5 @@ public class AgendarReserva : IAgendarReserva
         {
             throw new ReservaException("Error enviando correos de reserva.", ex);
         }
-        
     }
-    
 }
