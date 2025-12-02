@@ -3,6 +3,7 @@ using WinniElectricidad.Compartido.Reservas;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Notificacion;
 using WinniElectricidad.LogicaAplicacion.Servicios.Reserva;
 using WinniElectricidad.LogicaNegocio.Entidades;
+using WinniElectricidad.LogicaNegocio.ExcepcionesPersonalizadas.Reservas;
 using WinniElectricidad.LogicaNegocio.InterfacesRepositorios;
 
 namespace WinniElectricidad.Tests.Small.LogicaAplicacion;
@@ -150,4 +151,58 @@ public class AgendarReservaTests
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }
+    
+    [Test]
+    public void Ejecutar_SinAdministrador_LanzaReservaException()
+    {
+        // Arrange
+        var fecha = DateTime.Today.AddDays(2).AddHours(10);
+
+        var dto = new ReservaACrearDto
+        {
+            FechaReserva = fecha,
+            TipoServicio = TipoServicioReserva.Instalacion,
+            IdDireccion = 10,
+            IdServicios = new List<int> { 1 },
+            Comentario = "Prueba"
+        };
+
+        var usuario = new UsuarioCliente("Sofía", "1234567", "test@test.com", "099111111", new List<Direccion>())
+        {
+            IdUsuario = 1
+        };
+
+        _mockRepoUsuarios.Setup(r => r.FindById(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(usuario);
+
+        _mockRepoUsuarios.Setup(r => r.FindAddressByUserId(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Direccion>
+            {
+                new() { IdDireccion = 10, IdUsuarioCliente = 1, Calle = "X", Esquina = "Y" }
+            });
+
+        _mockRepoServicios.Setup(r => r.FindByIds(It.IsAny<List<int>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Servicio>
+            {
+                new("Electricidad", "Instalaciones completas", null) { Activo = true }
+            });
+
+        _mockRepoReservas.Setup(r => r.HorarioOcupado(fecha, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+        _mockRepoReservas.Setup(r => r.UsuarioTieneReservaEnHorario(1, fecha, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+        _mockRepoReservas.Setup(r => r.UsuarioTieneReservaEnDia(1, fecha, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        _mockRepoUsuarios.Setup(r => r.ObtenerAdministrador(It.IsAny<CancellationToken>()))
+            .ReturnsAsync((UsuarioAdministrador?)null);
+
+        // Act + Assert
+        Assert.ThrowsAsync<ReservaException>(() => _servicio.Ejecutar(dto, 1));
+
+        _mockEnviarEmail.Verify(
+            e => e.Ejecutar(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
 }
