@@ -91,8 +91,8 @@ public class WinniElectricidadContext : DbContext
             entity.Property(r => r.TipoServicioReserva)
                 .HasConversion<int>()
                 .IsRequired();
-
-            entity.HasOne<UsuarioCliente>()
+            
+            entity.HasOne(r => r.UsuarioCliente)
                 .WithMany(c => c.Reservas)
                 .HasForeignKey(r => r.IdUsuarioCliente)
                 .OnDelete(DeleteBehavior.Restrict);
