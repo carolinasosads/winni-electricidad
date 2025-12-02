@@ -142,7 +142,7 @@ public class UsuarioController : ControllerBase
         } 
         catch (EmailNotificacionException)
         {
-            return StatusCode(500, new { message = "Error al enviar el correo. Intenta nuevamente más tarde."});
+            return StatusCode(500, new { message = "Error al enviar el correo de notificación. Intenta nuevamente más tarde."});
         } 
         catch (Exception)
         {

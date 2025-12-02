@@ -1,6 +1,6 @@
-﻿using Resend;
-using WinniElectricidad.Compartido.DTOs.Mappers;
+﻿using WinniElectricidad.Compartido.DTOs.Mappers;
 using WinniElectricidad.Compartido.Reservas;
+using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Notificacion;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Reserva;
 using WinniElectricidad.LogicaNegocio.Entidades;
 using WinniElectricidad.LogicaNegocio.ExcepcionesPersonalizadas.Reservas;
@@ -13,14 +13,14 @@ public class AgendarReserva : IAgendarReserva
     private readonly IRepositorioReserva _repositorioReserva;
     private readonly IRepositorioUsuario _repositorioUsuario;
     private readonly IRepositorioServicio _repositorioServicio;
-    private readonly IResend _resend;
+    private readonly IEnviarEmail _enviarEmail;
 
-    public AgendarReserva(IRepositorioReserva repositorioReserva, IRepositorioUsuario repositorioUsuario, IRepositorioServicio repositorioServicio, IResend resend)
+    public AgendarReserva(IRepositorioReserva repositorioReserva, IRepositorioUsuario repositorioUsuario, IRepositorioServicio repositorioServicio, IEnviarEmail enviarEmail)
     {
         _repositorioReserva = repositorioReserva;
         _repositorioUsuario = repositorioUsuario;
         _repositorioServicio = repositorioServicio;
-        _resend = resend;
+        _enviarEmail = enviarEmail;
     }
     
     public async Task<ReservaCreadaDto> Ejecutar(ReservaACrearDto nuevaReserva, int idUsuario, CancellationToken ct = default)
@@ -86,13 +86,30 @@ public class AgendarReserva : IAgendarReserva
         var admin = await _repositorioUsuario.ObtenerAdministrador(ct);
 
         if (admin is null) throw new ReservaException("No hay un usuario administrador.");
+        
+        var cuerpoEmailCliente = $@"
+              <div style='font-family: Arial, sans-serif; color: #333;'>
+                   <h2>Reserva recibida (pendiente de confirmación)</h2>
 
-        var mensajeAdmin = new EmailMessage
-        {
-            From = "Winni Electricidad <no-replay@no-replay.winnielectricidad.tech>",
-            To = { admin.Email },  
-            Subject = "Nueva reserva de presupuesto agendada",
-            HtmlBody = $@"
+                   <p>Hola {nombreCliente},</p>
+
+                   <p>Recibimos tu solicitud de reserva para un presupuesto. 
+                   <strong>La reserva está pendiente de revisión.</strong> </p>
+
+                   <p>A continuación compartimos los datos que registró:</p>
+
+                   <p><strong>Fecha solicitada:</strong> {fecha}</p>
+
+                   <p><strong>Servicios seleccionados:</strong></p>
+                   <p>{serviciosTexto}</p>
+
+                   <p>Un miembro del equipo de Winni Electricidad se va a contactar contigo en breve y 
+                   <strong>coordinarán la confirmación de la reserva</strong>.</p>
+
+                   <p>¡Gracias por confiar en Winni Electricidad!</p>
+               </div>";
+
+        var cuerpoEmailAdmin = $@"
                 <div style='font-family: Arial, sans-serif; color: #333;'>
                     <h2>Nueva reserva de presupuesto agendada</h2>
                     <p><strong>Nombre del cliente:</strong> {nombreCliente}</p>
@@ -104,45 +121,10 @@ public class AgendarReserva : IAgendarReserva
                     <p><strong>Servicios:</strong></p>
                     <p>{serviciosTexto}</p>
                     <p><strong>Comentario del cliente:</strong> {comentario}</p>
-                </div>"
-        };
-        
-        var mensajeCliente = new EmailMessage
-        {
-            From = "Winni Electricidad <no-replay@no-replay.winnielectricidad.tech>",
-            To = { emailCliente },
-            Subject = "Reserva de presupuesto – Winni Electricidad",
-            HtmlBody = $@"
-      <div style='font-family: Arial, sans-serif; color: #333;'>
-           <h2>Reserva recibida (pendiente de confirmación)</h2>
+                    <p><strong>¡No olvides confirmarla o sugerir una modificación de fecha en tu panel de reservas!</strong></p>
+                </div>";
 
-           <p>Hola {nombreCliente},</p>
-
-           <p>Recibimos tu solicitud de reserva para un presupuesto. 
-           <strong>La reserva está pendiente de revisión.</strong> </p>
-
-           <p>A continuación compartimos los datos que registró:</p>
-
-           <p><strong>Fecha solicitada:</strong> {fecha}</p>
-
-           <p><strong>Servicios seleccionados:</strong></p>
-           <p>{serviciosTexto}</p>
-
-           <p>Un miembro del equipo de Winni Electricidad se va a contactar contigo en breve y 
-           <strong>coordinarán la confirmación de la reserva</strong>.</p>
-
-           <p>¡Gracias por confiar en Winni Electricidad!</p>
-       </div>"
-        };
-
-        try
-        {
-            await _resend.EmailSendAsync(mensajeAdmin, ct);
-            await _resend.EmailSendAsync(mensajeCliente, ct);
-        }
-        catch (Exception ex)
-        {
-            throw new ReservaException("Error enviando correos de reserva.", ex);
-        }
+        await _enviarEmail.Ejecutar(emailCliente, "Reserva de presupuesto – Winni Electricidad", cuerpoEmailCliente, ct);
+        await _enviarEmail.Ejecutar(admin.Email, "Nueva reserva de presupuesto agendada", cuerpoEmailAdmin, ct);
     }
 }

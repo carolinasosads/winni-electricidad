@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using WinniElectricidad.Compartido.DTOs.Reservas;
 using WinniElectricidad.Compartido.Reservas;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Reserva;
+using WinniElectricidad.LogicaNegocio.ExcepcionesPersonalizadas.Notificaciones;
 using WinniElectricidad.LogicaNegocio.ExcepcionesPersonalizadas.Reservas;
 
 namespace WinniElectricidad.Api.Controllers;
@@ -133,6 +134,10 @@ public class ReservaController : ControllerBase
         catch (UnauthorizedAccessException ex)
         {
             return Forbid(ex.Message);
+        }
+        catch (EmailNotificacionException)
+        {
+            return StatusCode(500, new { message = "La reserva fue creada, pero hubo un problema al enviar la notificación por email."});
         }
         catch (Exception)
         {

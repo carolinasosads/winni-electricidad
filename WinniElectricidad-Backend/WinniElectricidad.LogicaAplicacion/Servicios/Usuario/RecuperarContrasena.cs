@@ -1,7 +1,6 @@
-﻿using Resend;
+﻿using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Notificacion;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Usuario;
 using WinniElectricidad.LogicaNegocio.Entidades;
-using WinniElectricidad.LogicaNegocio.ExcepcionesPersonalizadas.Notificaciones;
 using WinniElectricidad.LogicaNegocio.ExcepcionesPersonalizadas.Tokens;
 using WinniElectricidad.LogicaNegocio.InterfacesRepositorios;
 
@@ -11,15 +10,15 @@ public class RecuperarContrasena : IRecuperarContrasena
 {
     private readonly IRepositorioUsuario _repositorioUsuario;
     private readonly IRepositorioOneTimeToken _repositorioOneTimeToken;
-    private readonly IResend _resend;
     private readonly IServicioOneTimeToken  _servicioOneTimeToken;
+    private readonly IEnviarEmail _enviarEmail;
 
-    public RecuperarContrasena(IRepositorioUsuario repositorioUsuario, IRepositorioOneTimeToken repositorioOneTimeToken, IResend resend, IServicioOneTimeToken servicioOneTimeToken)
+    public RecuperarContrasena(IRepositorioUsuario repositorioUsuario, IRepositorioOneTimeToken repositorioOneTimeToken, IServicioOneTimeToken servicioOneTimeToken, IEnviarEmail enviarEmail)
     {
         _repositorioUsuario = repositorioUsuario;
         _repositorioOneTimeToken = repositorioOneTimeToken;
-        _resend = resend;
         _servicioOneTimeToken = servicioOneTimeToken;
+        _enviarEmail = enviarEmail;
     }
     
     public async Task EnviarCorreoRecuperacion(string email, CancellationToken ct = default)
@@ -44,12 +43,7 @@ public class RecuperarContrasena : IRecuperarContrasena
     
         var urlRecuperacionContrasena = $"https://icy-flower-09db15f0f.3.azurestaticapps.net/reset-password?token={Uri.EscapeDataString(tokenPlain)}";
 
-        var mensaje = new EmailMessage
-        {
-            From = "Winni Electricidad <no-replay@no-replay.winnielectricidad.tech>",
-            To = { email },
-            Subject = "Recuperación de contraseña - Winni Electricidad",
-            HtmlBody = $@"
+        var cuerpo = $@"
             <div style='font-family: Arial, sans-serif; color: #333;'>
                 <h2>Recuperación de contraseña</h2>
                 <p>Hola {usuarioEncontrado.NombreCompleto},</p>
@@ -61,17 +55,9 @@ public class RecuperarContrasena : IRecuperarContrasena
                 <p>Si no solicitaste este cambio, podés ignorar este mensaje.</p>
                 <hr />
                 <p style='font-size:12px; color:#888;'>Este mensaje fue enviado por Winni Electricidad mediante Resend.</p>
-            </div>"
-        };
+            </div>";
 
-        try
-        {
-            await _resend.EmailSendAsync(mensaje, ct);
-        }
-        catch (Exception ex)
-        {
-            throw new EmailNotificacionException("Error enviando correo de recuperación.", ex);
-        }
+        await _enviarEmail.Ejecutar(email, "Recuperación de contraseña - Winni Electricidad", cuerpo, ct);
     }
 
     public async Task ResetearContrasena(string password, string tokenPlain, CancellationToken ct = default)

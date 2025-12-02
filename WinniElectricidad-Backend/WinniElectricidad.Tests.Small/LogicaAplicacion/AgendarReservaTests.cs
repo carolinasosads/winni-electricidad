@@ -1,6 +1,6 @@
 ﻿using Moq;
-using Resend;
 using WinniElectricidad.Compartido.Reservas;
+using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Notificacion;
 using WinniElectricidad.LogicaAplicacion.Servicios.Reserva;
 using WinniElectricidad.LogicaNegocio.Entidades;
 using WinniElectricidad.LogicaNegocio.InterfacesRepositorios;
@@ -13,7 +13,7 @@ public class AgendarReservaTests
     private Mock<IRepositorioReserva> _mockRepoReservas;
     private Mock<IRepositorioServicio> _mockRepoServicios;
     private Mock<IRepositorioUsuario> _mockRepoUsuarios;
-    private Mock<IResend> _mockResend;
+    private Mock<IEnviarEmail> _mockEnviarEmail;
     private AgendarReserva _servicio;
 
     [SetUp]
@@ -22,13 +22,13 @@ public class AgendarReservaTests
         _mockRepoReservas = new Mock<IRepositorioReserva>();
         _mockRepoServicios = new Mock<IRepositorioServicio>();
         _mockRepoUsuarios = new Mock<IRepositorioUsuario>();
-        _mockResend = new Mock<IResend>();
+        _mockEnviarEmail = new Mock<IEnviarEmail>();
 
         _servicio = new AgendarReserva(
             _mockRepoReservas.Object,
             _mockRepoUsuarios.Object,
             _mockRepoServicios.Object,
-            _mockResend.Object
+            _mockEnviarEmail.Object
         );
     }
 
@@ -135,5 +135,19 @@ public class AgendarReservaTests
             Assert.That(result.FechaReserva, Is.EqualTo(fecha));
             Assert.That(result.Servicios, Has.Count.EqualTo(1));
         });
+        
+        _mockEnviarEmail.Verify(e => e.Ejecutar(
+                usuario.Email,
+                "Reserva de presupuesto – Winni Electricidad",
+                It.Is<string>(c => c.Contains("Reserva recibida")),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+
+        _mockEnviarEmail.Verify(e => e.Ejecutar(
+                admin.Email,
+                "Nueva reserva de presupuesto agendada",
+                It.Is<string>(c => c.Contains("Nueva reserva de presupuesto agendada")),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 }
