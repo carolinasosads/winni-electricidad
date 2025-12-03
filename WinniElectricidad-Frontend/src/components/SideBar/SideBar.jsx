@@ -9,7 +9,10 @@ import Toolbar from '@mui/material/Toolbar';
 
 import PersonIcon from '@mui/icons-material/Person';
 import BarChartIcon from '@mui/icons-material/BarChart';
-import DescriptionIcon from '@mui/icons-material/Description';
+import AccountBoxIcon from '@mui/icons-material/AccountBox';
+import DateRangeIcon from '@mui/icons-material/DateRange';
+import GroupIcon from '@mui/icons-material/Group';
+import ViewAgendaIcon from '@mui/icons-material/ViewAgenda';
 import LayersIcon from '@mui/icons-material/Layers';
 import { matchPath, useLocation } from 'react-router-dom';
 
@@ -100,91 +103,103 @@ function Sidebar({
     isOverSmViewport && (!disableCollapsibleSidebar || isOverMdViewport);
 
   const getDrawerContent = React.useCallback(
-    (viewport) => (
-      <React.Fragment>
-        <Toolbar />
-        <Box
-          component="nav"
-          aria-label={`${viewport.charAt(0).toUpperCase()}${viewport.slice(1)}`}
-          sx={{
-            height: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            overflow: 'auto',
-            scrollbarGutter: mini ? 'stable' : 'auto',
-            overflowX: 'hidden',
-            pt: !mini ? 0 : 2,
-            ...(hasDrawerTransitions
-              ? getDrawerSxTransitionMixin(isFullyExpanded, 'padding')
-              : {}),
-          }}
-        >
-          <List
-            dense
+    (viewport) => {
+      const rol = localStorage.getItem("rol");
+
+      const isAdmin = rol === "Administrador";
+      const isCliente = rol === "Cliente";
+
+      return (
+        <React.Fragment>
+          <Toolbar />
+          <Box
+            component="nav"
+            aria-label={`${viewport.charAt(0).toUpperCase()}${viewport.slice(1)}`}
             sx={{
-              padding: mini ? 0 : 0.5,
-              mb: 4,
-              width: mini ? MINI_DRAWER_WIDTH : 'auto',
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              overflow: 'auto',
+              scrollbarGutter: mini ? 'stable' : 'auto',
+              overflowX: 'hidden',
+              pt: !mini ? 0 : 2,
+              ...(hasDrawerTransitions
+                ? getDrawerSxTransitionMixin(isFullyExpanded, 'padding')
+                : {}),
             }}
           >
-            <SidebarHeaderItem>Main items</SidebarHeaderItem>
-            <SidebarPageItem
-              id="employees"
-              title="Perfil"
-              icon={<PersonIcon />}
-              href="/employees"
-              selected={!!matchPath('/employees/*', pathname) || pathname === '/'}
-            />
-            <SideBarDividerItem />
-            <SidebarHeaderItem>Example items</SidebarHeaderItem>
-            <SidebarPageItem
-              id="reports"
-              title="Item de ejemplo"
-              icon={<BarChartIcon />}
-              href="/reports"
-              selected={!!matchPath('/reports', pathname)}
-              defaultExpanded={!!matchPath('/reports', pathname)}
-              expanded={expandedItemIds.includes('reports')}
-              nestedNavigation={
-                <List
-                  dense
-                  sx={{
-                    padding: 0,
-                    my: 1,
-                    pl: mini ? 0 : 1,
-                    minWidth: 240,
-                  }}
-                >
+            <List
+              dense
+              sx={{
+                padding: mini ? 0 : 0.5,
+                mb: 4,
+                width: mini ? MINI_DRAWER_WIDTH : 'auto',
+              }}
+            >
+              <SidebarHeaderItem>Menú</SidebarHeaderItem>
+
+              {/* CLIENTE */}
+              {isCliente && (
+                <>
                   <SidebarPageItem
-                    id="sales"
-                    title="Item 1"
-                    icon={<DescriptionIcon />}
-                    href="/reports/sales"
-                    selected={!!matchPath('/reports/sales', pathname)}
+                    id="perfil-cliente"
+                    title="Perfil"
+                    icon={<AccountBoxIcon />}
+                    href="/cliente"
+                    selected={pathname === "/cliente"}
                   />
+
                   <SidebarPageItem
-                    id="traffic"
-                    title="Item 2"
-                    icon={<DescriptionIcon />}
-                    href="/reports/traffic"
-                    selected={!!matchPath('/reports/traffic', pathname)}
+                    id="agenda-cliente"
+                    title="Agenda"
+                    icon={<DateRangeIcon />}
+                    href="/cliente/agenda"
+                    selected={pathname.startsWith("/cliente/agenda")}
                   />
-                </List>
-              }
-            />
-            <SidebarPageItem
-              id="integrations"
-              title="Otro botoncito mas"
-              icon={<LayersIcon />}
-              href="/integrations"
-              selected={!!matchPath('/integrations', pathname)}
-            />
-          </List>
-        </Box>
-      </React.Fragment>
-    ),
-    [mini, hasDrawerTransitions, isFullyExpanded, expandedItemIds, pathname],
+                </>
+              )}
+
+              {/* ADMINISTRADOR */}
+              {isAdmin && (
+                <>
+                  <SidebarPageItem
+                    id="admin-dashboard"
+                    title="Dashboard Admin"
+                    icon={<BarChartIcon />}
+                    href="/admin"
+                    selected={pathname === "/admin" || pathname === "/admin/"}
+                  />
+
+                  <SidebarPageItem
+                    id="admin-historico-clientes"
+                    title="Histórico de Clientes"
+                    icon={<GroupIcon />}
+                    href="/admin/historico"
+                    selected={pathname.startsWith("/admin/historico")}
+                  />
+
+                  <SidebarPageItem
+                    id="admin-panel-reservas"
+                    title="Panel de Reservas"
+                    icon={<ViewAgendaIcon />}
+                    href="/admin/panel-reservas"
+                    selected={pathname.startsWith("/admin/panel-reservas")}
+                  />
+                </>
+              )}
+            </List>
+          </Box>
+        </React.Fragment>
+      );
+    },
+    [
+      mini,
+      hasDrawerTransitions,
+      isFullyExpanded,
+      expandedItemIds,
+      pathname,
+    ]
   );
 
   const getDrawerSharedSx = React.useCallback(

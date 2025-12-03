@@ -29,7 +29,7 @@ public class RecuperarContrasena : IRecuperarContrasena
         if (usuarioEncontrado is null) return;
         
         var activo = await _repositorioOneTimeToken.GetActiveByUser(usuarioEncontrado.IdUsuario, ct);
-        if (activo is not null) return;
+        //if (activo is not null) return;
         
         var (tokenPlain, tokenHash) = _servicioOneTimeToken.Create();
 

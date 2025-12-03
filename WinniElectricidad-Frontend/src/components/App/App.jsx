@@ -7,8 +7,14 @@ import ResetPassword from "../../pages/Public/Login/ResetPassword";
 import { PrivateRoute } from "../routes/PrivateRoute.jsx";
 import { ProtectedRoute } from "../routes/ProtectedRoute.jsx";
 
-import AgendaLayout from "../../pages/User/Agenda/AgendaLayout.jsx";
-import AgendaPage from "../../pages/User/Agenda/AgendaPage.jsx"; 
+import MainLayout from "../../layout/MainLayout.jsx";
+
+import AgendaPage from "../../pages/User/Agenda/AgendaPage.jsx";
+
+import DashboardAdmin from "../../pages/Admin/Dashboard/DashboardAdmin.jsx"
+import HistoricoClientes from "../../pages/Admin/HistoricoClientes/HistoricoClientes.jsx"
+import PanelReservas from "../../pages/Admin/PanelReservas/PanelReservas.jsx"
+
 
 export default function App() {
   return (
@@ -20,28 +26,31 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/reset-password" element={<ResetPassword />} />
 
-      {/* solo UsuarioCliente */}
+      {/* UsuarioCliente */}
       <Route
-        path="/agenda"
+        path="/cliente"
         element={
           <ProtectedRoute allowedRoles={["Cliente"]}>
-            <AgendaLayout />
+            <MainLayout />
           </ProtectedRoute>
         }
       >
         <Route index element={<AgendaPage />} />
+        <Route path="agenda" element={<AgendaPage />} />
       </Route>
 
       {/* UsuarioAdministrador*/}
       <Route
-        path="/admin/agenda"
+        path="/admin"
         element={
           <ProtectedRoute allowedRoles={["Administrador"]}>
-            <AgendaLayout />
+            <MainLayout />
           </ProtectedRoute>
         }
       >
-        <Route index element={<AgendaAdminPage />} />
+        <Route index element={<DashboardAdmin />} />
+        <Route path="historico" element={<HistoricoClientes />} />
+        <Route path="panel-reservas" element={<PanelReservas />} />
       </Route>
 
       {/* catch-all */}

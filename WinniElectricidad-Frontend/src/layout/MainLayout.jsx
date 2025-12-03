@@ -4,11 +4,11 @@ import { Outlet } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 
-import AppHeader from '../../Public/Header/Header.jsx'
-import LogoutButton from '../../../components/UI/Button/Button.jsx';
-import SeccionSideBar from '../../Public/SideBar/SideBar.jsx'
+import AppHeader from '../components/Header/Header.jsx';
+import LogoutButton from '../components/UI/Button/Button.jsx';
+import SeccionSideBar from '../components/SideBar/SideBar.jsx';
 
-export default function AgendaLayout() {
+export default function MainLayout() {
   const theme = useTheme();
   const overMd = useMediaQuery(theme.breakpoints.up('md'));
 
