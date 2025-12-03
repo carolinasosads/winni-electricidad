@@ -45,7 +45,7 @@ export default function EstadoList({ titulo, color, items = [], onSelect }) {
           label={items.length}
           size="small"
           sx={{
-            bgcolor: color + "22", // mismo color pero transparente
+            bgcolor: color + "22",
             color: color.replace(".main", ""),
             fontWeight: 600,
             ml: "auto",
@@ -82,9 +82,11 @@ export default function EstadoList({ titulo, color, items = [], onSelect }) {
               },
             }}
           >
-            <Typography fontWeight={600}>{r.clienteNombre}</Typography>
+            <Typography fontWeight={600}>
+              {r.cliente?.nombre ?? r.clienteNombre ?? "Sin nombre"}
+            </Typography>
             <Typography variant="body2" sx={{ color: "text.secondary" }}>
-              {r.fechaReservaFormatted ?? r.fechaReservaTexto ?? ""}
+              {new Date(r.fechaReserva).toLocaleString("es-UY")}
             </Typography>
           </Paper>
         ))}

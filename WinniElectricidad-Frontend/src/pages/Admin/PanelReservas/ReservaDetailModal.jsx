@@ -78,13 +78,21 @@ export default function ReservaDetailModal({
           {/* DETALLE */}
           <Box sx={{ lineHeight: 1.8 }}>
             <Typography>
-              <strong>Cliente:</strong> {reserva.clienteNombre}
+              <strong>Cliente:</strong> {reserva.cliente.nombre}
             </Typography>
             <Typography>
-              <strong>Servicio:</strong> {reserva.servicioNombre}
+              <strong>Servicio:</strong> {reserva.servicios?.map(s => s.titulo).join(", ")}
             </Typography>
             <Typography>
-              <strong>Dirección:</strong> {reserva.direccion}
+              <strong>Dirección:</strong>{" "}
+              {[
+                reserva.direccion.calle?.trim(),
+                reserva.direccion.numero?.trim() || null,
+                reserva.direccion.apto ? `Apto ${reserva.direccion.apto}` : null,
+                reserva.direccion.esquina ? `Esq. ${reserva.direccion.esquina}` : null
+              ]
+                .filter(Boolean)
+                .join(", ")}
             </Typography>
             <Typography>
               <strong>Fecha:</strong> {new Date(reserva.fechaReserva).toLocaleString("es-UY")}

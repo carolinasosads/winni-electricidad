@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   startOfWeek,
   endOfWeek,
@@ -22,7 +22,7 @@ import { useTheme } from "@mui/material/styles";
 
 const HOURS = [...Array(9)].map((_, i) => 9 + i);
 
-export default function CalendarioSemanal({ reservas, onSelectReserva }) {
+export default function CalendarioSemanal({ reservas, onSelectReserva, onCambioSemana }) {
   const theme = useTheme();
 
   // Semana actualmente visible
@@ -45,6 +45,10 @@ export default function CalendarioSemanal({ reservas, onSelectReserva }) {
     });
   }, [reservas, weekStart, weekEnd]);
 
+  useEffect(() => {
+    onCambioSemana?.(weekStart);
+  }, [weekStart]);
+
   // Reservas del día × hora
   function reservasDelDiaYHora(day, hour) {
     return reservasSemana.filter((r) => {
@@ -57,7 +61,7 @@ export default function CalendarioSemanal({ reservas, onSelectReserva }) {
   function estiloReserva(reserva) {
     const fecha = new Date(reserva.fechaReserva);
     const hoy = new Date();
-    const esFinalizada = reserva.estado === "Confirmada" && fecha < hoy;
+    const esFinalizada = fecha < hoy;
 
     if (esFinalizada) {
       return {
@@ -301,7 +305,7 @@ export default function CalendarioSemanal({ reservas, onSelectReserva }) {
                   {delDia.map((r) => (
                     <Tooltip
                       key={r.id}
-                      title={`${r.clienteNombre} – ${r.servicioNombre}`}
+                      title={`${r.cliente.nombre} – ${r.servicios?.map(s => s.titulo).join(", ")}`}
                     >
                       <Paper
                         sx={{
@@ -321,7 +325,7 @@ export default function CalendarioSemanal({ reservas, onSelectReserva }) {
                             variant="body2"
                             sx={{ fontWeight: 600, fontSize: "0.75rem" }}
                           >
-                            {r.clienteNombre}
+                            {r.cliente.nombre}
                           </Typography>
                           <Typography
                             variant="caption"
@@ -332,7 +336,7 @@ export default function CalendarioSemanal({ reservas, onSelectReserva }) {
                               letterSpacing: "0.02em",
                             }}
                           >
-                            {r.servicioNombre}
+                            {r.servicios?.map(s => s.titulo).join(", ")}
                           </Typography>
                           {r.estado === "Pendiente" && (
                             <Typography

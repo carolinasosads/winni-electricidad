@@ -19,9 +19,9 @@ async function handleJsonOrText(resp) {
 }
 
 // --- GETs ---
-/*
-export async function getReservasPorMes(mes) {
-  const resp = await fetch(`${urlAPIReserva}historico-mensual/${mes}`, {
+
+export async function getReservasPorMesYAnio(mes, anio) {
+  const resp = await fetch(`${urlAPIReserva}historico-mensual/${mes}?anio=${anio}`, {
     method: "GET",
     headers: getAuthHeaders(),
   });
@@ -34,42 +34,32 @@ export async function getReservasPorMes(mes) {
   return await resp.json();
 }
 
-export async function getPendientes() {
-  const resp = await fetch(`${urlAPIReserva}pendientes`, {
+export async function getReservasPorEstado(estado) {
+  const resp = await fetch(`${urlAPIReserva}por-estado?estado=${estado}`, {
     method: "GET",
     headers: getAuthHeaders(),
   });
-  if (!resp.ok) throw new ApiError("Error obteniendo pendientes", resp.status);
+
+  if (!resp.ok) {
+    const data = await handleJsonOrText(resp);
+    throw new ApiError(data?.message || "Error obteniendo reservas", resp.status);
+  }
+  
   return await resp.json();
 }
 
-export async function getConfirmadas() {
-  const resp = await fetch(`${urlAPIReserva}confirmadas`, {
-    method: "GET",
-    headers: getAuthHeaders(),
-  });
-  if (!resp.ok) throw new ApiError("Error obteniendo confirmadas", resp.status);
-  return await resp.json();
-}
-
-export async function getCanceladas() {
-  const resp = await fetch(`${urlAPIReserva}canceladas`, {
-    method: "GET",
-    headers: getAuthHeaders(),
-  });
-  if (!resp.ok) throw new ApiError("Error obteniendo canceladas", resp.status);
-  return await resp.json();
-}
-
-export async function getFinalizadas() {
+export async function getReservasFinalizadas() {
   const resp = await fetch(`${urlAPIReserva}historico`, {
     method: "GET",
     headers: getAuthHeaders(),
   });
-  if (!resp.ok) throw new ApiError("Error obteniendo finalizadas", resp.status);
+
+  if (!resp.ok) throw new ApiError("Error cargando historial de reservas");
+
   return await resp.json();
 }
 
+/*
 // --- PATCHs ---
 
 export async function aprobarReserva(idReserva) {
@@ -169,8 +159,4 @@ export async function getFinalizadas() {
   return mockReservas.filter(r => r.estado === "Finalizada");
 }
 
-export async function getReservasPorMes(mes) {
-  // Devuelve todas
-  return mockReservas;
-}
 

@@ -1,10 +1,8 @@
 import { useEffect, useState } from "react";
 import {
-  getPendientes,
-  getConfirmadas,
-  getCanceladas,
-  getFinalizadas,
-  getReservasPorMes,
+  getReservasPorMesYAnio,
+  getReservasPorEstado,
+  getReservasFinalizadas
   // TODO:
   // aprobarReserva,
   // rechazarReserva,
@@ -28,6 +26,9 @@ import MenuIcon from "@mui/icons-material/Menu";
 
 export default function PanelReservas() {
   // ---- Estados ----
+  const [mesActual, setMesActual] = useState(new Date().getMonth() + 1);
+  const [anioActual, setAnioActual] = useState(new Date().getFullYear());
+
   const [reservasMes, setReservasMes] = useState([]);
   const [pendientes, setPendientes] = useState([]);
   const [confirmadas, setConfirmadas] = useState([]);
@@ -45,10 +46,10 @@ export default function PanelReservas() {
   useEffect(() => {
     async function loadEstados() {
       const [p, c, ca, f] = await Promise.all([
-        getPendientes(),
-        getConfirmadas(),
-        getCanceladas(),
-        getFinalizadas(),
+        getReservasPorEstado("Pendiente"),
+        getReservasPorEstado("Confirmada"),
+        getReservasPorEstado("Cancelada"),
+        getReservasFinalizadas(),
       ]);
 
       setPendientes(p);
@@ -63,22 +64,19 @@ export default function PanelReservas() {
   // ---- Cargar reservas del mes para el calendario ----
   useEffect(() => {
     async function loadMes() {
-      const month = new Date().getMonth() + 1;
-      const data = await getReservasPorMes(month);
+      const data = await getReservasPorMesYAnio(mesActual, anioActual);
       setReservasMes(data);
     }
 
     loadMes();
-  }, []);
+  }, [mesActual, anioActual]);
 
-  // ----- Handlers de acciones (con endpoints futuros comentados) -----
-
+  // ----- Handlers de acciones ) -----
   const handleAprobar = async (reserva) => {
     console.log("Aprobando.", reserva);
     // await aprobarReserva(reserva.id);
 
     setSelectedReserva(null);
-    // Después, cuando tengas los endpoints:
     // await loadEstados();
     // await loadMes();
   };
@@ -102,7 +100,7 @@ export default function PanelReservas() {
   };
 
   const handleSugerirCambio = async (reserva) => {
-    setSelectedReserva(reserva); // por si lo necesitás en el modal nuevo
+    setSelectedReserva(reserva);
     setOpenModificar(true); // abre modal de modificación
   };
 
@@ -114,7 +112,7 @@ export default function PanelReservas() {
     setOpenModificar(false);
     setSelectedReserva(null);
 
-    // recargar listas (después lo puedes implementar)
+    // recargar listas creo
     // await loadEstados();
     // await loadMes();
   };
@@ -122,6 +120,16 @@ export default function PanelReservas() {
   const handleEditarPresupuesto = async (reserva) => {
     console.log("Editar presupuesto.", reserva);
     // abrir modal presupuesto
+  };
+
+  const handleCambioSemana = (fechaInicioSemana) => {
+    const nuevoMes = fechaInicioSemana.getMonth() + 1;
+    const nuevoAnio = fechaInicioSemana.getFullYear();
+
+    if (nuevoMes !== mesActual || nuevoAnio !== anioActual) {
+      setMesActual(nuevoMes);
+      setAnioActual(nuevoAnio);
+    }
   };
 
   return (
@@ -135,13 +143,29 @@ export default function PanelReservas() {
         <Box
           sx={{
             display: "flex",
-            flexDirection: "row",
+            flexDirection: "column",
             gap: 3,
             width: "100%",
           }}
         >
-          {/* Listas a la izquierda */}
-          <Box sx={{ width: 320, flexShrink: 0 }}>
+          {/* Calendario arriba */}
+          <Box sx={{ width: "100%" }}>
+            <CalendarioSemanal
+              reservas={reservasMes}
+              onSelectReserva={setSelectedReserva}
+              onCambioSemana={handleCambioSemana}
+            />
+          </Box>
+
+          {/* Listas abajo */}
+          <Box
+            sx={{
+              width: "100%",
+              display: "grid",
+              gridTemplateColumns: "repeat(4, 1fr)",
+              gap: 2,
+            }}
+          >
             <EstadoList
               titulo="Pendientes"
               color="warning.main"
@@ -165,14 +189,6 @@ export default function PanelReservas() {
               color="success.main"
               items={finalizadas}
               onSelect={setSelectedReserva}
-            />
-          </Box>
-
-          {/* Calendario a la derecha */}
-          <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-            <CalendarioSemanal
-              reservas={reservasMes}
-              onSelectReserva={setSelectedReserva}
             />
           </Box>
         </Box>
@@ -200,6 +216,7 @@ export default function PanelReservas() {
           <CalendarioSemanal
             reservas={reservasMes}
             onSelectReserva={setSelectedReserva}
+            onCambioSemana={handleCambioSemana}
           />
 
           <Drawer
