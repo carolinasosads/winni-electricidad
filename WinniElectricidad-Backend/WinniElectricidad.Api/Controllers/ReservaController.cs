@@ -159,14 +159,41 @@ public class ReservaController : ControllerBase
     }
     
     /// <summary>
-    /// Obtiene el historial de reservas realizadas en un mes y año específico.
+    /// Obtiene el historial de reservas realizadas en un mes y año específicos.
     /// </summary>
-    /// <param name="mes"></param>
-    /// <param name="anio"></param>
-
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    [HttpGet("historico-mensual/{mes:int}")]
+    /// <remarks>
+    /// Este endpoint devuelve el listado de reservas correspondientes al período indicado,
+    /// pensado para el análisis interno del administrador.
+    ///
+    /// **Flujo:**
+    /// 1. Se valida que el mes y el año sean valores válidos.  
+    /// 2. Se consulta el servicio <see cref="IObtenerHistoricoMensualReservas"/> con los parámetros recibidos.  
+    /// 3. Se retorna una colección de <see cref="HistoricoReservaDto"/> con la información de las reservas.
+    ///
+    /// **Requiere autenticación:**  
+    /// - Rol permitido: <c>Administrador</c>.
+    ///
+    /// **Códigos de respuesta:**
+    /// - `200 OK` → Historial mensual obtenido correctamente.  
+    /// - `400 Bad Request` → Parámetros de mes o año inválidos.  
+    /// - `500 Internal Server Error` → Error inesperado del servidor.
+    /// </remarks>
+    /// <param name="mes">
+    /// Número de mes (1–12) para el cual se desea obtener el historial.
+    /// </param>
+    /// <param name="anio">
+    /// Año correspondiente al período a consultar.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Token de cancelación para interrumpir la operación si es necesario.
+    /// </param>
+    /// <returns>
+    /// Una respuesta HTTP que contiene la lista de reservas del mes y año especificados.
+    /// </returns>
+    /// <response code="200">Historial mensual obtenido correctamente.</response>
+    /// <response code="400">Parámetros de mes o año inválidos.</response>
+    /// <response code="500">Error inesperado del servidor.</response>
+    [HttpGet("historico-mensual/{mes:int}/{anio:int}")]
     [Authorize(Roles = "Administrador")]
     [ProducesResponseType(typeof(IEnumerable<HistoricoReservaDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -190,11 +217,32 @@ public class ReservaController : ControllerBase
     }
     
     /// <summary>
-    /// Devuelve todas las reservas cuyo estado es 'Finalizada',
-    /// incluyendo la información necesaria para el módulo de historial interno.
-    /// Requiere rol Administrador.
+    /// Obtiene el historial de todas las reservas finalizadas.
     /// </summary>
-    [HttpGet("historico")]
+    /// <remarks>
+    /// Este endpoint recupera las reservas cuyo estado es <c>Finalizada</c>,
+    /// para su visualización en el módulo de historial interno.
+    ///
+    /// **Flujo:**
+    /// 1. Se invoca el servicio <see cref="IObtenerHistoricoFinalizadas"/>.  
+    /// 2. Se retorna una colección de <see cref="HistoricoReservaDto"/> con la información de cada reserva finalizada.
+    ///
+    /// **Requiere autenticación:**  
+    /// - Rol permitido: <c>Administrador</c>.
+    ///
+    /// **Códigos de respuesta:**
+    /// - `200 OK` → Historial de reservas finalizadas obtenido correctamente.  
+    /// - `500 Internal Server Error` → Error inesperado del servidor.
+    /// </remarks>
+    /// <param name="ct">
+    /// Token de cancelación para detener la operación si es necesario.
+    /// </param>
+    /// <returns>
+    /// Una respuesta HTTP que contiene la lista de reservas finalizadas.
+    /// </returns>
+    /// <response code="200">Historial de reservas finalizadas obtenido correctamente.</response>
+    /// <response code="500">Error inesperado del servidor.</response>
+    [HttpGet("finalizadas")]
     [Authorize(Roles = "Administrador")]
     [ProducesResponseType(typeof(IEnumerable<HistoricoReservaDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -212,6 +260,38 @@ public class ReservaController : ControllerBase
         }
     }
     
+    /// <summary>
+    /// Obtiene las reservas filtradas por estado.
+    /// </summary>
+    /// <remarks>
+    /// Este endpoint permite consultar las reservas según su estado actual
+    /// (por ejemplo: Pendiente, Confirmada, Finalizada, Cancelada).
+    ///
+    /// **Flujo:**
+    /// 1. Se recibe el estado como parámetro de consulta (<c>query string</c>).  
+    /// 2. Se valida el valor del estado y se invoca el servicio <see cref="IObtenerReservasPorEstado"/>.  
+    /// 3. Se retorna una colección de <see cref="HistoricoReservaDto"/> con las reservas que coinciden con el estado solicitado.
+    ///
+    /// **Requiere autenticación:**  
+    /// - Rol permitido: <c>Administrador</c>.
+    ///
+    /// **Códigos de respuesta:**
+    /// - `200 OK` → Reservas obtenidas correctamente.  
+    /// - `400 Bad Request` → El estado proporcionado es inválido.  
+    /// - `500 Internal Server Error` → Error inesperado del servidor.
+    /// </remarks>
+    /// <param name="estado">
+    /// Estado por el cual se filtrarán las reservas (ej.: <c>Pendiente</c>, <c>Confirmada</c>).
+    /// </param>
+    /// <param name="ct">
+    /// Token de cancelación para detener la operación si es necesario.
+    /// </param>
+    /// <returns>
+    /// Una respuesta HTTP con la lista de reservas que coinciden con el estado solicitado.
+    /// </returns>
+    /// <response code="200">Reservas obtenidas correctamente.</response>
+    /// <response code="400">El estado proporcionado es inválido.</response>
+    /// <response code="500">Error inesperado del servidor.</response>
     [HttpGet("por-estado")]
     [Authorize(Roles = "Administrador")]
     [ProducesResponseType(typeof(IEnumerable<HistoricoReservaDto>), StatusCodes.Status200OK)]
@@ -234,14 +314,38 @@ public class ReservaController : ControllerBase
         }
     }
 
-    // Aprueba una reserva de presupuesto específica.
+    /// <summary>
+    /// Aprueba una reserva de presupuesto específica.
     /// </summary>
-    /// <param name="idReserva">El identificador de la reserva a aprobar.</param>
-    /// <param name="ct">Token de cancelación para la operación asíncrona.</param>
+    /// <remarks>
+    /// Este endpoint permite cambiar el estado de una reserva a <c>Confirmada</c>,
+    /// siempre que la misma se encuentre en un estado válido para ser aprobada.
+    ///
+    /// **Flujo:**
+    /// 1. Se recibe el identificador de la reserva por ruta.  
+    /// 2. Se invoca el servicio <see cref="IAprobarReserva"/> para aplicar la lógica de negocio.  
+    /// 3. Si la operación es exitosa, se retorna un mensaje de confirmación.
+    ///
+    /// **Requiere autenticación:**  
+    /// - Rol permitido: <c>Administrador</c>.
+    ///
+    /// **Códigos de respuesta:**
+    /// - `200 OK` → Reserva aprobada correctamente.  
+    /// - `400 Bad Request` → La reserva no existe o no puede ser aprobada en su estado actual.  
+    /// - `500 Internal Server Error` → Error inesperado del servidor.
+    /// </remarks>
+    /// <param name="idReserva">
+    /// Identificador de la reserva que se desea aprobar.
+    /// </param>
+    /// <param name="ct">
+    /// Token de cancelación para la operación asíncrona.
+    /// </param>
     /// <returns>
-    /// Retorna un mensaje de éxito si la reserva fue aprobada correctamente.
-    /// Retorna un mensaje de error si la reserva no existe o si ocurre un error inesperado.
+    /// Una respuesta HTTP con un mensaje indicando el resultado de la operación.
     /// </returns>
+    /// <response code="200">Reserva aprobada correctamente.</response>
+    /// <response code="400">La reserva no existe o no puede ser aprobada.</response>
+    /// <response code="500">Error inesperado del servidor.</response>
     [HttpPatch("aprobar/{idReserva:int}")]
     [Authorize(Roles = "Administrador")]
     [ProducesResponseType(typeof(IEnumerable<HistoricoReservaDto>), StatusCodes.Status200OK)]
@@ -269,8 +373,37 @@ public class ReservaController : ControllerBase
 
     /// <summary>
     /// Cancela una reserva existente por su identificador.
-    /// Solo accesible para usuarios con rol Administrador.
     /// </summary>
+    /// <remarks>
+    /// Este endpoint permite marcar una reserva como <c>Cancelada</c>, aplicando las reglas
+    /// de negocio correspondientes (por ejemplo, que la reserva exista y se encuentre en un
+    /// estado que permita la cancelación).
+    ///
+    /// **Flujo:**
+    /// 1. Se recibe el identificador de la reserva por ruta.  
+    /// 2. Se invoca el servicio <see cref="ICancelarReserva"/> para ejecutar la cancelación.  
+    /// 3. Si la operación es exitosa, se retorna un mensaje de confirmación.
+    ///
+    /// **Requiere autenticación:**  
+    /// - Rol permitido: <c>Administrador</c>.
+    ///
+    /// **Códigos de respuesta:**
+    /// - `200 OK` → Reserva cancelada correctamente.  
+    /// - `400 Bad Request` → La reserva no existe o no puede ser cancelada.  
+    /// - `500 Internal Server Error` → Error inesperado del servidor.
+    /// </remarks>
+    /// <param name="idReserva">
+    /// Identificador de la reserva que se desea cancelar.
+    /// </param>
+    /// <param name="ct">
+    /// Token de cancelación para la operación asíncrona.
+    /// </param>
+    /// <returns>
+    /// Una respuesta HTTP con un mensaje indicando el resultado de la operación.
+    /// </returns>
+    /// <response code="200">Reserva cancelada correctamente.</response>
+    /// <response code="400">La reserva no existe o no puede ser cancelada.</response>
+    /// <response code="500">Error inesperado del servidor.</response>
         [HttpPatch("cancelar/{idReserva:int}")]
         [Authorize(Roles = "Administrador")]
         [ProducesResponseType(typeof(IEnumerable<HistoricoReservaDto>), StatusCodes.Status200OK)]
@@ -296,7 +429,42 @@ public class ReservaController : ControllerBase
             }
         }
     
-        [HttpPut("modificar")]
+    
+    /// <summary>
+    /// Modifica una reserva existente.
+    /// </summary>
+    /// <remarks>
+    /// Este endpoint permite actualizar ciertos datos de una reserva (fecha, horario, dirección,
+    /// servicios, etc.), siempre que se encuentre en un estado que lo permita (por ejemplo, Pendiente
+    /// o Confirmada).
+    ///
+    /// **Flujo:**
+    /// 1. Se recibe un objeto <see cref="ReservaAModificarDto"/> con los nuevos datos de la reserva.  
+    /// 2. Se valida que la reserva exista y que su estado permita la modificación.  
+    /// 3. Se invoca el servicio <see cref="IModificarReserva"/> para aplicar los cambios.  
+    /// 4. Si la operación es exitosa, se retorna un mensaje de confirmación.
+    ///
+    /// **Requiere autenticación:**  
+    /// - Rol permitido: <c>Administrador</c>.
+    ///
+    /// **Códigos de respuesta:**
+    /// - `200 OK` → Reserva modificada correctamente.  
+    /// - `400 Bad Request` → La reserva no existe o los datos proporcionados son inválidos.  
+    /// - `500 Internal Server Error` → Error inesperado del servidor.
+    /// </remarks>
+    /// <param name="dto">
+    /// Datos necesarios para modificar la reserva, incluyendo su identificador y los campos a actualizar.
+    /// </param>
+    /// <param name="ct">
+    /// Token de cancelación para la operación asíncrona.
+    /// </param>
+    /// <returns>
+    /// Una respuesta HTTP con un mensaje indicando el resultado de la modificación.
+    /// </returns>
+    /// <response code="200">Reserva modificada correctamente.</response>
+    /// <response code="400">La reserva no existe o los datos son inválidos.</response>
+    /// <response code="500">Error inesperado del servidor.</response>
+        [HttpPatch("modificar")]
         [Authorize(Roles = "Administrador")]
         [ProducesResponseType(typeof(IEnumerable<HistoricoReservaDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

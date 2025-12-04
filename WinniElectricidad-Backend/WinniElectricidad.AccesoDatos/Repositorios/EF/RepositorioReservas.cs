@@ -52,12 +52,24 @@ public class RepositorioReservas : IRepositorioReserva
             .Include(r => r.UsuarioCliente)
             .Include(r => r.Direccion)
             .Include(r => r.Servicios)
-            .Where(r => r.FechaReserva.Date >= fechaMinima
-                        && r.FechaReserva.Date <= fechaLimite
-                        && r.EstadoReserva != EstadoReserva.Cancelada)
+            .Where(r => r.FechaReserva >= fechaMinima
+                         && r.FechaReserva <= fechaLimite
+                         && r.EstadoReserva != EstadoReserva.Cancelada)
             .ToListAsync(ct);
     }
-
+    
+    public async Task<IReadOnlyList<Reserva>> FindHistoricoReservas(DateTime fechaMinima, DateTime fechaLimite,
+        CancellationToken ct = default)
+    {
+        return await _db.Reservas
+            .AsNoTracking()
+            .Include(r => r.UsuarioCliente)
+            .Include(r => r.Direccion)
+            .Include(r => r.Servicios)
+            .Where(r => r.FechaReserva.Date >= fechaMinima
+                        && r.FechaReserva.Date <= fechaLimite)
+            .ToListAsync(ct);
+    }
     public async Task<bool> UsuarioTieneReservaEnHorario(int idUsuario, DateTime fechaReserva,
         CancellationToken ct = default)
     {

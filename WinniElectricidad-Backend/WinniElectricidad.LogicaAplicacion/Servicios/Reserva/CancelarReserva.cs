@@ -26,6 +26,8 @@ public class CancelarReserva : ICancelarReserva
             throw new ArgumentException("La reserva no existe.");
 
         reserva.Cancelar();
+        await _repositorioReserva.ActualizarReserva(reserva, cancellationToken);
+
         var cliente = reserva.UsuarioCliente 
                       ?? throw new InvalidOperationException("El cliente asociado a la reserva no existe.");
 

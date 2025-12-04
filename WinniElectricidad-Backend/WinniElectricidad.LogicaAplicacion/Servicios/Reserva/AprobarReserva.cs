@@ -28,7 +28,6 @@ public class AprobarReserva : IAprobarReserva
             throw new ArgumentException("La reserva no existe.");
 
         reserva.Aprobar();
-        reserva.EstadoReserva = EstadoReserva.Confirmada;
         await _repositorioReserva.ActualizarReserva(reserva, cancellationToken);
 
        var cliente = reserva.UsuarioCliente;

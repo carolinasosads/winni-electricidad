@@ -26,7 +26,7 @@ public class ObtenerHistoricoMensualReservas : IObtenerHistoricoMensualReservas
         var inicioMes = new DateTime(anio, mes, 1);
         var finMes = inicioMes.AddMonths(1).AddTicks(-1);
 
-        var reservas = await _repositorioReserva.FindAllBetweenDates(inicioMes, finMes, cancellationToken);
+        var reservas = await _repositorioReserva.FindHistoricoReservas(inicioMes, finMes, cancellationToken);
 
         var resultado = reservas
             .Select(r => ReservaMapper.MapearAHistoricoReservaDto(r))
