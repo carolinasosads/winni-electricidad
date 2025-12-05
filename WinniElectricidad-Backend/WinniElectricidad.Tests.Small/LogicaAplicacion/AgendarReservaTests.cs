@@ -158,6 +158,11 @@ public class AgendarReservaTests
         // Arrange
         var fecha = DateTime.Today.AddDays(2).AddHours(10);
 
+        if (fecha.DayOfWeek == DayOfWeek.Sunday)
+        {
+            fecha = fecha.AddDays(1);
+        }
+
         var dto = new ReservaACrearDto
         {
             FechaReserva = fecha,

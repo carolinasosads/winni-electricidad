@@ -91,6 +91,11 @@ public class ObtenerHorariosDisponiblesTests
 
         var esperado = DateTime.Today.AddDays(2).Date;
 
+        if (esperado.DayOfWeek == DayOfWeek.Sunday)
+        {
+            esperado = esperado.AddDays(1);
+        }
+
         Assert.Multiple(() =>
         {
             // Primer día debe ser hoy + 2 días
