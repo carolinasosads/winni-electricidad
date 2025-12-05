@@ -44,37 +44,79 @@ export default function ModalModificarReserva({
 
   const [fecha, setFecha] = useState(originalDate);
   const [horaSeleccionada, setHoraSeleccionada] = useState(null);
+  const [errorBack, setErrorBack] = useState(null);
 
-  const buildDateTime = (date, timeStr) => {
-    const [hh, mm] = timeStr.split(":").map(Number);
-    return new Date(date.getFullYear(), date.getMonth(), date.getDate(), hh, mm);
-  };
+  // Horarios del sistema
+  const SLOTS = [
+    { key: "09:00", hour: 9, minute: 0 },
+    { key: "10:30", hour: 10, minute: 30 },
+    { key: "12:00", hour: 12, minute: 0 },
+    { key: "13:30", hour: 13, minute: 30 },
+    { key: "15:00", hour: 15, minute: 0 },
+    { key: "16:30", hour: 16, minute: 30 },
+  ];
+
+  const reservasDia = useMemo(() => {
+    return reservasMes.filter(r => {
+      const d = new Date(r.fechaReserva);
+      return (
+        d.getFullYear() === fecha.getFullYear() &&
+        d.getMonth() === fecha.getMonth() &&
+        d.getDate() === fecha.getDate()
+      );
+    });
+  }, [fecha, reservasMes]);
 
   // horas ocupadas para el día elegido
   const horasOcupadas = useMemo(() => {
+    if (!reserva) return [];
+
+    // Normalizo la fecha elegida a AAAA-MM-DD según lo que ve el usuario
+    const yyyy = fecha.getFullYear();
+    const MM = (fecha.getMonth() + 1).toString().padStart(2, "0");
+    const dd = fecha.getDate().toString().padStart(2, "0");
+    const fechaSeleccionada = `${yyyy}-${MM}-${dd}`;
+
     return reservasMes
-      .filter(r => {
-        const d = new Date(r.fechaReserva);
-        return (
-          d.getFullYear() === fecha.getFullYear() &&
-          d.getMonth() === fecha.getMonth() &&
-          d.getDate() === fecha.getDate() &&
-          r.id !== reserva.id
-        );
+      .filter((r) => {
+        if (!r) return false;
+
+        if (r.estado === "Cancelada") return false;
+
+        if (r.id === reserva.id) return false;
+
+        const [fechaStr] = String(r.fechaReserva).split("T");
+
+        return fechaStr === fechaSeleccionada;
       })
-      .map(r => {
-        const d = new Date(r.fechaReserva);
-        const hh = d.getHours().toString().padStart(2, "0");
-        const mm = d.getMinutes().toString().padStart(2, "0");
+      .map((r) => {
+        const [, timeStr] = String(r.fechaReserva).split("T");
+        if (!timeStr) return null;
+
+        const [hh, mm] = timeStr.split(":");
         return `${hh}:${mm}`;
-      });
-  }, [fecha, reservasMes, reserva.id]);
+      })
+      .filter(Boolean);
+  }, [fecha, reservasMes, reserva?.id]);
+
 
   const handleGuardar = () => {
     if (!horaSeleccionada) return;
 
-    const nuevaFecha = buildDateTime(fecha, horaSeleccionada);
-    onSubmit(nuevaFecha);
+    const [hh, mm] = horaSeleccionada.split(":");
+    const yyyy = fecha.getFullYear();
+    const MM = (fecha.getMonth() + 1).toString().padStart(2, "0");
+    const dd = fecha.getDate().toString().padStart(2, "0");
+
+    const fechaLocalString = `${yyyy}-${MM}-${dd}T${hh}:${mm}:00`;
+
+    onSubmit(fechaLocalString)
+    .then(() => {
+      setErrorBack(null);
+    })
+    .catch((err) => {
+      setErrorBack(err?.message || "No se pudo modificar la reserva.");
+    });
   };
 
   return (
@@ -129,6 +171,7 @@ export default function ModalModificarReserva({
                 <ListItemButton
                   key={h}
                   selected={horaSeleccionada === h}
+                  disabled={horasOcupadas.includes(h)}
                   onClick={() => setHoraSeleccionada(h)}
                   sx={{
                     borderRadius: 2,
@@ -164,7 +207,6 @@ export default function ModalModificarReserva({
               );
             })}
           </List>
-
           <Button
             variant="contained"
             fullWidth

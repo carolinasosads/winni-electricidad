@@ -2,12 +2,10 @@ import { useEffect, useState } from "react";
 import {
   getReservasPorMesYAnio,
   getReservasPorEstado,
-  getReservasFinalizadas
-  // TODO:
-  // aprobarReserva,
-  // rechazarReserva,
-  // sugerirModificacion,
-  // cancelarReservaConfirmada,
+  getReservasFinalizadas,
+  aprobarReserva,
+  cancelarReserva,
+  modificarReserva
 } from "../../../services/reservaService";
 
 import CalendarioSemanal from "./CalendarioSemanal";
@@ -21,6 +19,8 @@ import {
   Drawer,
   IconButton,
   useMediaQuery,
+  Snackbar,
+  Alert
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 
@@ -38,30 +38,36 @@ export default function PanelReservas() {
   const [selectedReserva, setSelectedReserva] = useState(null);
   const [openModificar, setOpenModificar] = useState(false);
 
+  const [mensajeOk, setMensajeOk] = useState(null);
+  const [mensajeError, setMensajeError] = useState(null);
+
   // mobile / desktop
   const isMobile = useMediaQuery("(max-width:900px)");
   const [openDrawer, setOpenDrawer] = useState(false);
 
-  // ---- Cargar reservas de todos los estados ----
+  // ---- Cargar reservas de todos los estados y cargar reservas del mes para el calendario ----
+  async function recargarTodo() {
+    const [p, c, ca, f] = await Promise.all([
+      getReservasPorEstado("Pendiente"),
+      getReservasPorEstado("Confirmada"),
+      getReservasPorEstado("Cancelada"),
+      getReservasFinalizadas(),
+    ]);
+
+    setPendientes(p);
+    setConfirmadas(c);
+    setCanceladas(ca);
+    setFinalizadas(f);
+
+    const data = await getReservasPorMesYAnio(mesActual, anioActual);
+    setReservasMes(data);
+  }
+
   useEffect(() => {
-    async function loadEstados() {
-      const [p, c, ca, f] = await Promise.all([
-        getReservasPorEstado("Pendiente"),
-        getReservasPorEstado("Confirmada"),
-        getReservasPorEstado("Cancelada"),
-        getReservasFinalizadas(),
-      ]);
-
-      setPendientes(p);
-      setConfirmadas(c);
-      setCanceladas(ca);
-      setFinalizadas(f);
-    }
-
-    loadEstados();
+    recargarTodo();
   }, []);
 
-  // ---- Cargar reservas del mes para el calendario ----
+  // ---- Cargar reservas del un nuevo mes al calendario ----
   useEffect(() => {
     async function loadMes() {
       const data = await getReservasPorMesYAnio(mesActual, anioActual);
@@ -71,32 +77,30 @@ export default function PanelReservas() {
     loadMes();
   }, [mesActual, anioActual]);
 
-  // ----- Handlers de acciones ) -----
-  const handleAprobar = async (reserva) => {
-    console.log("Aprobando.", reserva);
-    // await aprobarReserva(reserva.id);
 
-    setSelectedReserva(null);
-    // await loadEstados();
-    // await loadMes();
+  // ----- Handlers de acciones -----
+  const handleAprobar = async (reserva) => {
+    try {
+      const resp = await aprobarReserva(reserva.idReserva);
+
+      setSelectedReserva(null);
+      recargarTodo()
+      setMensajeOk(resp.message);
+    } catch (err) {
+      setMensajeError(err?.message || "Error al aprobar la reserva.");
+    }
   };
 
   const handleCancelar = async (reserva) => {
-    console.log("Cancelando.", reserva);
-    // await cancelarReserva(reserva.id);
+    try {
+      const resp = await cancelarReserva(reserva.idReserva);
 
-    setSelectedReserva(null);
-    // await loadEstados();
-    // await loadMes();
-  };
-
-  const handleRechazar = async (reserva) => {
-    console.log("Rechazando.", reserva);
-    // await rechazarReserva(reserva.id);
-
-    setSelectedReserva(null);
-    // await loadEstados();
-    // await loadMes();
+      setSelectedReserva(null);
+      recargarTodo()
+      setMensajeOk(resp.message);
+    } catch (err) {
+      setMensajeError(err?.message || "Error al cancelar la reserva.");
+    }
   };
 
   const handleSugerirCambio = async (reserva) => {
@@ -105,21 +109,17 @@ export default function PanelReservas() {
   };
 
   const handleModificarReserva = async (nuevaFecha) => {
-    console.log("Modificando reserva a:", nuevaFecha);
+    try {
+      const resp = await modificarReserva(selectedReserva.idReserva, nuevaFecha);
 
-    // await reservaService.modificarReserva(selectedReserva.id, nuevaFecha);
+      setOpenModificar(false);
+      setSelectedReserva(null);
 
-    setOpenModificar(false);
-    setSelectedReserva(null);
-
-    // recargar listas creo
-    // await loadEstados();
-    // await loadMes();
-  };
-
-  const handleEditarPresupuesto = async (reserva) => {
-    console.log("Editar presupuesto.", reserva);
-    // abrir modal presupuesto
+      recargarTodo()
+      setMensajeOk(resp.message);
+    } catch (err) {
+      setMensajeError(err?.message || "Error al modificar la reserva.");
+    }
   };
 
   const handleCambioSemana = (fechaInicioSemana) => {
@@ -287,9 +287,7 @@ export default function PanelReservas() {
         onClose={() => setSelectedReserva(null)}
         onAprobar={handleAprobar}
         onCancelar={handleCancelar}
-        onRechazar={handleRechazar}
         onSugerirCambio={handleSugerirCambio}
-        onEditarPresupuesto={handleEditarPresupuesto}
       />
 
       {/* Modal modificar reserva */}
@@ -300,6 +298,36 @@ export default function PanelReservas() {
         reservasMes={reservasMes}
         onSubmit={handleModificarReserva}
       />
+
+      <Snackbar
+        open={!!mensajeOk}
+        autoHideDuration={4000}
+        onClose={() => setMensajeOk(null)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setMensajeOk(null)}
+          severity="success"
+          variant="filled"
+        >
+          {mensajeOk}
+        </Alert>
+      </Snackbar>
+      <Snackbar
+        open={!!mensajeError}
+        autoHideDuration={5000}
+        onClose={() => setMensajeError(null)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setMensajeError(null)}
+          severity="error"
+          variant="filled"
+        >
+          {mensajeError}
+        </Alert>
+      </Snackbar>
     </Box>
+    
   );
 }

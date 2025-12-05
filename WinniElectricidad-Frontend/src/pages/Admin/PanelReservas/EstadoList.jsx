@@ -24,7 +24,7 @@ export default function EstadoList({ titulo, color, items = [], onSelect }) {
         mb: 2,
       }}
     >
-      {/* --- Título + badge de cantidad --- */}
+      {/* Título y badge de cantidad */}
       <Stack
         direction="row"
         alignItems="center"
@@ -55,7 +55,7 @@ export default function EstadoList({ titulo, color, items = [], onSelect }) {
 
       <Box sx={{ borderBottom: "1px solid", borderColor: "divider", mb: 1 }} />
 
-      {/* --- Lista de items --- */}
+      {/* Items */}
       <Stack spacing={1}>
         {items.length === 0 && (
           <Typography

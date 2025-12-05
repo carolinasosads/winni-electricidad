@@ -20,24 +20,33 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { useTheme } from "@mui/material/styles";
 
-const HOURS = [...Array(9)].map((_, i) => 9 + i);
+const SLOTS = [
+  { key: "09:00", hour: 9, minute: 0, label: "09:00" },
+  { key: "10:30", hour: 10, minute: 30, label: "10:30" },
+  { key: "12:00", hour: 12, minute: 0, label: "12:00" },
+  { key: "13:30", hour: 13, minute: 30, label: "13:30" },
+  { key: "15:00", hour: 15, minute: 0, label: "15:00" },
+  { key: "16:30", hour: 16, minute: 30, label: "16:30" },
+];
 
-export default function CalendarioSemanal({ reservas, onSelectReserva, onCambioSemana }) {
+export default function CalendarioSemanal({
+  reservas,
+  onSelectReserva,
+  onCambioSemana,
+}) {
   const theme = useTheme();
+  const rojoCancelada = "#d32f2f";
 
-  // Semana actualmente visible
   const [currentWeek, setCurrentWeek] = useState(new Date());
 
   const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 });
   const weekEnd = endOfWeek(currentWeek, { weekStartsOn: 1 });
 
-  // Arreglo de lunes a domingo
   const days = useMemo(
-    () => [...Array(7)].map((_, i) => addDays(weekStart, i)),
+    () => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)),
     [weekStart]
   );
 
-  // Reservas dentro de esta semana
   const reservasSemana = useMemo(() => {
     return reservas.filter((r) => {
       const dt = parseISO(r.fechaReserva);
@@ -47,117 +56,99 @@ export default function CalendarioSemanal({ reservas, onSelectReserva, onCambioS
 
   useEffect(() => {
     onCambioSemana?.(weekStart);
-  }, [weekStart]);
+  }, [weekStart, onCambioSemana]);
 
-  // Reservas del día × hora
-  function reservasDelDiaYHora(day, hour) {
+  function reservasDelDiaYSlot(day, slot) {
     return reservasSemana.filter((r) => {
       const dt = parseISO(r.fechaReserva);
-      return isSameDay(dt, day) && dt.getHours() === hour;
+      return (
+        isSameDay(dt, day) &&
+        dt.getHours() === slot.hour &&
+        dt.getMinutes() === slot.minute
+      );
     });
   }
 
-  // Estilo según el tipo de reserva
-  function estiloReserva(reserva) {
-    const fecha = new Date(reserva.fechaReserva);
-    const hoy = new Date();
-    const esFinalizada = fecha < hoy;
+  const prioridadEstado = {
+    Pendiente: 1,
+    Confirmada: 1,
+    Finalizada: 2,
+    Cancelada: 3,
+  };
 
+  function estiloReservaBase(r) {
+    const fechaReserva = new Date(r.fechaReserva);
+    const esFinalizada = fechaReserva < new Date();
+
+    // CANCELADA
+    if (r.estado === "Cancelada") {
+      return {
+        border: `2px solid ${rojoCancelada}`,
+        borderRadius: 2,
+        color: rojoCancelada,
+        fontSize: "0.70rem",
+        fontWeight: 600,
+        textDecoration: "line-through",
+        px: 1,
+        py: 0.5,
+        cursor: "pointer",
+
+        backgroundColor: "#f7dede",
+        backgroundImage:
+          "repeating-linear-gradient(135deg, #f7dede 0px, #f7dede 6px, #f2c1c1 6px, #f2c1c1 12px)",
+      };
+    }
+
+    // FINALIZADA
     if (esFinalizada) {
       return {
         backgroundColor: "#BDBDBD",
         color: "white",
-        fontFamily: "inherit",
-        fontSize: "0.75rem",
+        borderRadius: 2,
+        px: 1,
+        py: 0.6,
         fontWeight: 600,
-        borderRadius: 1,
+        cursor: "pointer",
+      };
+    }
+
+    // CONFIRMADA
+    if (r.estado === "Confirmada") {
+      return {
+        backgroundColor: "#E8F5E9",
+        border: "1px solid #4CAF50",
+        color: "#2E7D32",
+        borderRadius: 2,
         px: 1,
         py: 0.6,
         cursor: "pointer",
-        "&:hover": {
-          backgroundColor: "#9E9E9E",
-        },
-      };
-    }
-
-    if (reserva.estado === "Confirmada") {
-      return {
-        backgroundColor: theme.palette.primary.main,
-        color: "white",
-        fontFamily: "inherit",
-        fontSize: "0.75rem",
         fontWeight: 600,
-        borderRadius: 1,
-        px: 1,
-        py: 0.8,
-        cursor: "pointer",
-        transition: "box-shadow 0.2s ease, background-color 0.2s ease",
-        "&:hover": {
-          backgroundColor: theme.palette.primary.dark,
-          boxShadow: "0px 3px 10px rgba(0,0,0,0.25)",
-        },
+        boxShadow: "0 1px 2px rgba(0,0,0,0.10)",
       };
-    }
+}
 
-    if (reserva.estado === "Pendiente") {
+    // PENDIENTE
+    if (r.estado === "Pendiente") {
       return {
-        backgroundColor: "white",
+        backgroundColor: "#fff",
         color: theme.palette.primary.main,
         border: `2px solid ${theme.palette.primary.main}`,
-        borderRadius: 1,
-        fontFamily: "inherit",
-        fontSize: "0.75rem",
-        fontWeight: 600,
-        px: 1,
-        py: 0.8,
-        cursor: "pointer",
-        position: "relative",
-        "&::after": {
-          fontSize: "0.7rem",
-          position: "absolute",
-          top: -6,
-          right: -6,
-          backgroundColor: "white",
-          border: `1px solid ${theme.palette.primary.main}`,
-          borderRadius: "50%",
-          width: 18,
-          height: 18,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        },
-        "&:hover": {
-          backgroundColor: "#F5F9FF",
-        },
-      };
-    }
-
-    if (reserva.estado === "Cancelada") {
-      return {
-        backgroundColor: "#E0E0E0",
-        color: "#555",
-        fontFamily: "inherit",
-        fontSize: "0.75rem",
-        fontWeight: 600,
-        borderRadius: 1,
+        borderRadius: 2,
         px: 1,
         py: 0.6,
-        cursor: "default",
-        "&:hover": {
-          backgroundColor: "#D5D5D5",
-        },
+        cursor: "pointer",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
       };
     }
 
+    // DEFAULT
     return {
       backgroundColor: "#EEEEEE",
       color: "#555",
-      borderRadius: 1,
+      borderRadius: 2,
       px: 1,
       py: 0.6,
-      fontFamily: "inherit",
-      fontSize: "0.75rem",
-      fontWeight: 600,
+      cursor: "pointer",
     };
   }
 
@@ -169,18 +160,15 @@ export default function CalendarioSemanal({ reservas, onSelectReserva, onCambioS
         p: 2,
         boxSizing: "border-box",
         overflowX: "hidden",
-        m: 0,
-        maxWidth: "none",
       }}
     >
-      {/* Header superior */}
+      {/* HEADER */}
       <Box
         sx={{
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "center",
           mb: 2,
-          px: 1,
+          alignItems: "center",
         }}
       >
         <IconButton onClick={() => setCurrentWeek(addDays(currentWeek, -7))}>
@@ -196,168 +184,167 @@ export default function CalendarioSemanal({ reservas, onSelectReserva, onCambioS
         </IconButton>
       </Box>
 
-      {/* Encabezado de días */}
+      {/* HEADER DÍAS */}
       <Box
         sx={{
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-          pt: 2,
-          pb: 1.5,
-          borderBottom: "1px solid",
-          borderColor: "divider",
-          mb: 2,
-          width: "100%",
+          display: "grid",
+          gridTemplateColumns: "80px repeat(7, 1fr)",
+          borderBottom: "1px solid #ddd",
+          pb: 1,
         }}
       >
-        {/* Columna vacía del horario */}
-        <Box sx={{ flex: 1, minWidth: 0 }}></Box>
-
-        {/* Días */}
+        <Box />
         {days.map((day) => (
           <Box
             key={day}
             sx={{
-              flex: 1,
-              minWidth: 0,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
+              textAlign: "center",
               textTransform: "uppercase",
-              gap: 0.6,
-              px: 1,
             }}
           >
-            <Typography
-              variant="caption"
-              fontWeight={600}
-              color="text.secondary"
-              sx={{
-                letterSpacing: "0.12em",
-                fontSize: "0.75rem",
-              }}
-            >
+            <Typography variant="caption" fontWeight={600}>
               {format(day, "eee", { locale: es })}
             </Typography>
-
-            <Typography
-              variant="body1"
-              fontWeight={700}
-              sx={{
-                fontSize: "0.9rem",
-                lineHeight: 1.1,
-              }}
-            >
-              {format(day, "dd", { locale: es })}
-            </Typography>
+            <Typography fontWeight={700}>{format(day, "dd")}</Typography>
           </Box>
         ))}
       </Box>
 
-      {/* Grilla de horas */}
-      <Grid container direction="column" sx={{ width: "100%" }}>
-        {HOURS.map((hour) => (
+      {/* GRILLA */}
+      <Grid container direction="column">
+        {SLOTS.map((slot) => (
           <Grid
+            key={slot.key}
             item
-            key={hour}
             sx={{
-              display: "flex",
-              borderBottom: "1px solid",
-              borderColor: "divider",
-              height: 90,
-              width: "100%",
+              display: "grid",
+              gridTemplateColumns: "80px repeat(7, 1fr)",
+              borderBottom: "1px solid #eee",
+              height: 95,
             }}
           >
-            {/* Columna de la hora */}
+            {/* HORA */}
             <Box
               sx={{
-                flex: 1,
-                minWidth: 0,
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "flex-start",
-                pt: 1,
-                borderRight: "1px solid",
-                borderColor: "divider",
+                p: 1,
+                borderRight: "1px solid #eee",
+                textAlign: "center",
               }}
             >
-              <Typography variant="body2">{hour}:00</Typography>
+              <Typography variant="body2">{slot.label}</Typography>
             </Box>
 
-            {/* Celdas de cada día */}
+            {/* COLUMNAS DE DÍAS */}
             {days.map((day) => {
-              const delDia = reservasDelDiaYHora(day, hour);
+              let delDia = reservasDelDiaYSlot(day, slot);
+
+              delDia = delDia.sort(
+                (a, b) => prioridadEstado[a.estado] - prioridadEstado[b.estado]
+              );
+
+              const hayActivas = delDia.some((x) => x.estado !== "Cancelada");
 
               return (
                 <Box
-                  key={day + hour}
+                  key={slot.key + day}
                   sx={{
-                    flex: 1,
-                    minWidth: 0,
-                    height: "100%",
+                    borderRight: "1px solid #eee",
                     position: "relative",
-                    borderRight: "1px solid",
-                    borderColor: "divider",
                     p: 0.5,
                   }}
                 >
-                  {delDia.map((r) => (
-                    <Tooltip
-                      key={r.id}
-                      title={`${r.cliente.nombre} – ${r.servicios?.map(s => s.titulo).join(", ")}`}
-                    >
-                      <Paper
-                        sx={{
-                          ...estiloReserva(r),
-                          maxWidth: "95%",
-                        }}
-                        onClick={() => onSelectReserva(r)}
+                  {delDia.map((r) => {
+                    const esCancelada = r.estado === "Cancelada";
+
+                    const topPosition =
+                      esCancelada && hayActivas ? 50 : 4;
+
+                    return (
+                      <Tooltip
+                        key={r.id}
+                        title={`${r.cliente?.nombre} — ${r.servicios
+                          ?.map((s) => s.titulo)
+                          .join(", ")}`}
                       >
-                        <Box
+                        <Paper
+                          onClick={() => onSelectReserva(r)}
                           sx={{
-                            display: "flex",
-                            flexDirection: "column",
-                            lineHeight: 1.1,
+                            ...estiloReservaBase(r),
+                            position: "absolute",
+                            top: topPosition,
+                            left: 4,
+                            right: 4,
+                            overflow: "hidden",
+                            whiteSpace: "nowrap",
+                            textOverflow: "ellipsis",
+                            cursor: "pointer",
+
+                            zIndex: esCancelada ? 1 : 10,
+
+                            opacity: esCancelada && hayActivas ? 0.35 : 1,
                           }}
                         >
+                          {/* Nombre */}
                           <Typography
-                            variant="body2"
-                            sx={{ fontWeight: 600, fontSize: "0.75rem" }}
-                          >
-                            {r.cliente.nombre}
-                          </Typography>
-                          <Typography
-                            variant="caption"
                             sx={{
-                              fontSize: "0.65rem",
-                              opacity: 0.9,
-                              mt: 0.3,
-                              letterSpacing: "0.02em",
+                              fontWeight: 600,
+                              fontSize: esCancelada ? "0.7rem" : "0.78rem",
+                              textDecoration: esCancelada
+                                ? "line-through"
+                                : "none",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
                             }}
                           >
-                            {r.servicios?.map(s => s.titulo).join(", ")}
+                            {r.cliente?.nombre}
                           </Typography>
-                          {r.estado === "Pendiente" && (
+
+                          {/* Servicios */}
+                          {!esCancelada && (
+                            <Typography
+                              sx={{
+                                fontSize: "0.65rem",
+                                opacity: 0.9,
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                              }}
+                            >
+                              {r.servicios?.map((s) => s.titulo).join(", ")}
+                            </Typography>
+                          )}
+
+                          {/* Pendiente */}
+                          {r.estado === "Pendiente" && new Date(r.fechaReserva) >= new Date() && (
                             <Typography
                               sx={{
                                 fontSize: "0.65rem",
                                 fontWeight: 600,
                                 mt: 0.4,
                                 color: theme.palette.primary.main,
-                                letterSpacing: "0.02em",
-                                "@media (max-width: 600px)": {
-                                  fontSize: "0.6rem",
-                                },
                               }}
                             >
-                              ⚠️ Requiere confirmación
+                              ⚠ Requiere confirmación
                             </Typography>
                           )}
-                        </Box>
-                      </Paper>
-                    </Tooltip>
-                  ))}
+
+                          {/* Finalizada */}
+                          {new Date(r.fechaReserva) < new Date() && r.estado !== "Cancelada" && (
+                            <Typography
+                              sx={{
+                                fontSize: "0.63rem",
+                                fontWeight: 600,
+                                mt: 0.3,
+                                color: "#555",
+                                opacity: 0.8,
+                              }}
+                            >
+                              Reserva pasada
+                            </Typography>
+                          )}
+                        </Paper>
+                      </Tooltip>
+                    );
+                  })}
                 </Box>
               );
             })}
