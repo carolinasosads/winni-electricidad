@@ -47,20 +47,22 @@ export default function PanelReservas() {
 
   // ---- Cargar reservas de todos los estados y cargar reservas del mes para el calendario ----
   async function recargarTodo() {
-    const [p, c, ca, f] = await Promise.all([
-      getReservasPorEstado("Pendiente"),
-      getReservasPorEstado("Confirmada"),
-      getReservasPorEstado("Cancelada"),
-      getReservasFinalizadas(),
-    ]);
-
-    setPendientes(p);
-    setConfirmadas(c);
-    setCanceladas(ca);
-    setFinalizadas(f);
-
-    const data = await getReservasPorMesYAnio(mesActual, anioActual);
-    setReservasMes(data);
+    try {
+      const [p, c, ca, f] = await Promise.all([
+        getReservasPorEstado("Pendiente"),
+        getReservasPorEstado("Confirmada"),
+        getReservasPorEstado("Cancelada"),
+        getReservasFinalizadas(),
+      ]);
+      setPendientes(p);
+      setConfirmadas(c);
+      setCanceladas(ca);
+      setFinalizadas(f);
+      const data = await getReservasPorMesYAnio(mesActual, anioActual);
+      setReservasMes(data);
+    } catch (error) {
+      setMensajeError("Error al cargar las reservas. Por favor, intente nuevamente.");
+    }
   }
 
   useEffect(() => {
@@ -70,8 +72,12 @@ export default function PanelReservas() {
   // ---- Cargar reservas del un nuevo mes al calendario ----
   useEffect(() => {
     async function loadMes() {
-      const data = await getReservasPorMesYAnio(mesActual, anioActual);
-      setReservasMes(data);
+      try {
+        const data = await getReservasPorMesYAnio(mesActual, anioActual);
+        setReservasMes(data);
+      } catch (err) {
+        setMensajeError(err?.message || "Error al cargar las reservas del mes.");
+      }
     }
 
     loadMes();
@@ -84,7 +90,7 @@ export default function PanelReservas() {
       const resp = await aprobarReserva(reserva.idReserva);
 
       setSelectedReserva(null);
-      recargarTodo()
+      recargarTodo();
       setMensajeOk(resp.message);
     } catch (err) {
       setMensajeError(err?.message || "Error al aprobar la reserva.");
@@ -96,7 +102,7 @@ export default function PanelReservas() {
       const resp = await cancelarReserva(reserva.idReserva);
 
       setSelectedReserva(null);
-      recargarTodo()
+      recargarTodo();
       setMensajeOk(resp.message);
     } catch (err) {
       setMensajeError(err?.message || "Error al cancelar la reserva.");
@@ -115,7 +121,7 @@ export default function PanelReservas() {
       setOpenModificar(false);
       setSelectedReserva(null);
 
-      recargarTodo()
+      recargarTodo();
       setMensajeOk(resp.message);
     } catch (err) {
       setMensajeError(err?.message || "Error al modificar la reserva.");

@@ -23,18 +23,15 @@ export default function ReservaDetailModal({
 }) {
   if (!reserva) return null;
 
-  const btnStyle = {
+  const baseBtnStyle = {
     fontWeight: 400,
     py: 1.2,
     textTransform: "uppercase",
     borderRadius: 2,
   };
-
+  const btnStyle = { ...baseBtnStyle };
   const btnStyleOutline = {
-    fontWeight: 400,
-    py: 1.2,
-    textTransform: "uppercase",
-    borderRadius: 2,
+    ...baseBtnStyle,
     borderWidth: 2,
   };
 

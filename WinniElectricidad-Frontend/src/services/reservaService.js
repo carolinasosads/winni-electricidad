@@ -1,6 +1,6 @@
 import ApiError from "./ApiError";
 
-const urlAPIReserva  = "https://winnielectricidadbe-dev-adgqcbd7gvbgg7fy.eastus2-01.azurewebsites.net/WinniElectricidadApi/Reserva/"
+const urlAPIReserva  = "https://winnielectricidadbe-dev-adgqcbd7gvbgg7fy.eastus2-01.azurewebsites.net/WinniElectricidadApi/Reserva/";
 ;
 
 function getAuthHeaders() {
@@ -54,7 +54,10 @@ export async function getReservasFinalizadas() {
     headers: getAuthHeaders(),
   });
 
-  if (!resp.ok) throw new ApiError("Error cargando historial de reservas");
+  if (!resp.ok) {
+    const data = await handleJsonOrText(resp);
+    throw new ApiError(data?.message || "Error cargando historial de reservas", resp.status);
+  }
 
   return await resp.json();
 }
