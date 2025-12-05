@@ -1,4 +1,6 @@
-﻿using WinniElectricidad.Compartido.Reservas;
+﻿using WinniElectricidad.Compartido.DTOs.Reservas;
+using WinniElectricidad.Compartido.DTOs.Usuarios.Reserva;
+using WinniElectricidad.Compartido.Reservas;
 using WinniElectricidad.LogicaNegocio.Entidades;
 
 namespace WinniElectricidad.Compartido.DTOs.Mappers;
@@ -33,4 +35,28 @@ public class ReservaMapper
             Comentario = reserva.Comentario
         };
     }
+    public static HistoricoReservaDto MapearAHistoricoReservaDto(Reserva reserva)
+    {
+        return new HistoricoReservaDto
+        {
+            IdReserva = reserva.IdReserva,
+            FechaReserva = reserva.FechaReserva,
+            Estado = reserva.EstadoReserva.ToString(),
+            TipoServicio = reserva.TipoServicioReserva.ToString(),
+            Comentario = reserva.Comentario,
+
+            Cliente = new UsuarioReservaDto
+            {
+                IdUsuario = reserva.UsuarioCliente.IdUsuario,
+                Nombre = reserva.UsuarioCliente.NombreCompleto,
+                Email = reserva.UsuarioCliente.Email,
+                Telefono = reserva.UsuarioCliente.Telefono
+            },
+
+            Direccion = DireccionMapper.MapearDireccionADto(reserva.Direccion),
+            Servicios = ServicioMapper.MapearServiciosADtos(reserva.Servicios),
+                
+        };
+    }
+
 }

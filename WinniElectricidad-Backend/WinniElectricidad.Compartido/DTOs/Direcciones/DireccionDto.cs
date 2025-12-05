@@ -4,6 +4,8 @@ namespace WinniElectricidad.Compartido.DTOs.Direcciones;
 
 public class DireccionDto
 {
+        public int IdDireccion { get; set; }
+
         [Required(ErrorMessage = "La calle es obligatoria.")]
         [MaxLength(100, ErrorMessage = "La calle no puede superar los 100 caracteres.")]
         public string Calle { get; set; }

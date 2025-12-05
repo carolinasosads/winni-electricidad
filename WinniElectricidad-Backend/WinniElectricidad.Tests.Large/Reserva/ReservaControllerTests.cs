@@ -37,6 +37,12 @@ public class ReservaControllerTests : LargeTestBase
         Assert.That(dias!, Is.Not.Empty);
 
         var primerDiaEsperado = DateTime.Today.AddDays(2).Date;
+
+        if (primerDiaEsperado.DayOfWeek == DayOfWeek.Sunday)
+        {
+            primerDiaEsperado = primerDiaEsperado.AddDays(1);
+        }
+        
         Assert.That(dias.First().Fecha.Date, Is.EqualTo(primerDiaEsperado));
 
         foreach (var dia in dias)

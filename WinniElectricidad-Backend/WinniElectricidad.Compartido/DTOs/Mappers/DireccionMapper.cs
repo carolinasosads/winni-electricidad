@@ -3,7 +3,7 @@ using WinniElectricidad.LogicaNegocio.Entidades;
 
 namespace WinniElectricidad.Compartido.DTOs.Mappers;
 
-public class DireccionMapper
+public static class DireccionMapper
 {
     public static ICollection<DireccionDetalleDto> MapearDireccionesADtos(
         IEnumerable<Direccion> direcciones)
@@ -16,5 +16,15 @@ public class DireccionMapper
             Apto = direccion.Apto,
             Numero = direccion.Numero
         }).ToList();
+    }
+    public static DireccionDto MapearDireccionADto(Direccion direccion)
+    {
+        return new DireccionDto
+        {
+            Calle = direccion.Calle,
+            Esquina = direccion.Esquina,
+            Apto = direccion.Apto,
+            Numero = direccion.Numero
+        };
     }
 }

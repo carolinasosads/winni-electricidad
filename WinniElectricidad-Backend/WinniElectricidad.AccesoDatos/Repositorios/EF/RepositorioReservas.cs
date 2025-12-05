@@ -44,27 +44,45 @@ public class RepositorioReservas : IRepositorioReserva
         throw new NotImplementedException();
     }
 
-    public async Task<IReadOnlyList<Reserva>> FindAllBetweenDates(DateTime fechaMinima, DateTime fechaLimite, CancellationToken ct = default)
+    public async Task<IReadOnlyList<Reserva>> FindAllBetweenDates(DateTime fechaMinima, DateTime fechaLimite,
+        CancellationToken ct = default)
     {
         return await _db.Reservas
             .AsNoTracking()
-            .Where(r => r.FechaReserva.Date >= fechaMinima 
-                        && r.FechaReserva.Date <= fechaLimite
-                        && r.EstadoReserva != EstadoReserva.Cancelada)
+            .Include(r => r.UsuarioCliente)
+            .Include(r => r.Direccion)
+            .Include(r => r.Servicios)
+            .Where(r => r.FechaReserva >= fechaMinima
+                         && r.FechaReserva <= fechaLimite
+                         && r.EstadoReserva != EstadoReserva.Cancelada)
             .ToListAsync(ct);
     }
-
-    public async Task<bool> UsuarioTieneReservaEnHorario(int idUsuario, DateTime fechaReserva, CancellationToken ct = default)
+    
+    public async Task<IReadOnlyList<Reserva>> FindHistoricoReservas(DateTime fechaMinima, DateTime fechaLimite,
+        CancellationToken ct = default)
+    {
+        return await _db.Reservas
+            .AsNoTracking()
+            .Include(r => r.UsuarioCliente)
+            .Include(r => r.Direccion)
+            .Include(r => r.Servicios)
+            .Where(r => r.FechaReserva.Date >= fechaMinima
+                        && r.FechaReserva.Date <= fechaLimite)
+            .ToListAsync(ct);
+    }
+    public async Task<bool> UsuarioTieneReservaEnHorario(int idUsuario, DateTime fechaReserva,
+        CancellationToken ct = default)
     {
         return await _db.Reservas
             .AnyAsync(r =>
-                r.IdUsuarioCliente == idUsuario &&
-                r.FechaReserva == fechaReserva &&
-                r.EstadoReserva != EstadoReserva.Cancelada,
+                    r.IdUsuarioCliente == idUsuario &&
+                    r.FechaReserva == fechaReserva &&
+                    r.EstadoReserva != EstadoReserva.Cancelada,
                 ct);
     }
-    
-    public async Task<bool> UsuarioTieneReservaEnDia(int idUsuario, DateTime fechaReserva, CancellationToken ct = default)
+
+    public async Task<bool> UsuarioTieneReservaEnDia(int idUsuario, DateTime fechaReserva,
+        CancellationToken ct = default)
     {
         return await _db.Reservas
             .AnyAsync(r =>
@@ -77,7 +95,51 @@ public class RepositorioReservas : IRepositorioReserva
     public async Task<bool> HorarioOcupado(DateTime fechaReserva, CancellationToken ct = default)
     {
         return await _db.Reservas
-            .AnyAsync(r => r.FechaReserva == fechaReserva && 
+            .AnyAsync(r => r.FechaReserva == fechaReserva &&
                            r.EstadoReserva != EstadoReserva.Cancelada, ct);
     }
+
+    public async Task<IReadOnlyList<Reserva>> FindAllFinalizadas(CancellationToken ct = default)
+    {
+        var hoy = DateTime.Today;
+
+        return await _db.Reservas
+            .AsNoTracking()
+            .Include(r => r.UsuarioCliente)
+            .Include(r => r.Direccion)
+            .Include(r => r.Servicios)
+            .Where(r =>
+                r.FechaReserva.Date < hoy &&
+                r.EstadoReserva != EstadoReserva.Cancelada)
+            .ToListAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<Reserva>> FindAllSegunEstado(EstadoReserva estado, CancellationToken ct = default)
+    {
+        return await _db.Reservas
+            .AsNoTracking()
+            .Include(r => r.UsuarioCliente)
+            .Include(r => r.Direccion)
+            .Include(r => r.Servicios)
+            .Where(r => r.EstadoReserva == estado)
+            .ToListAsync(ct);
+        
+    }
+    public async Task<Reserva?> ObtenerReservaPorId(int id, CancellationToken ct = default)
+    {
+        return await _db.Reservas
+            .Include(r => r.UsuarioCliente)
+            .Include(r => r.Servicios)       
+            .Include(r => r.Direccion)      
+            .FirstOrDefaultAsync(r => r.IdReserva == id, ct);
+    }
+
+    public async Task ActualizarReserva(Reserva reserva, CancellationToken ct = default)
+    {
+        _db.Reservas.Update(reserva);
+        await _db.SaveChangesAsync(ct);
+        
+    }
+
+  
 }
