@@ -70,8 +70,12 @@ export default function SignInCard() {
 
     try{
       await login(email, password);
-      navigate("/agenda", { replace: true });
-
+      const rol = localStorage.getItem("rol");
+      if (rol === "Administrador") {
+        navigate("/admin", { replace: true });
+      } else {
+        navigate("/cliente", { replace: true });
+      }
     }catch(error){
       if(error instanceof ApiError){
         setLoginError(true);

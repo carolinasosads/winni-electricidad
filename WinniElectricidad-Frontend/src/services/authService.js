@@ -1,12 +1,12 @@
 import ApiError from "./ApiError";
 
-const urlAPI = "https://winnielectricidadbe-dev-adgqcbd7gvbgg7fy.eastus2-01.azurewebsites.net/WinniElectricidadApi/Usuario/"
+const urlAPIUsuario = "https://winnielectricidadbe-dev-adgqcbd7gvbgg7fy.eastus2-01.azurewebsites.net/WinniElectricidadApi/Usuario/"
 const urlAPIServicio = "https://winnielectricidadbe-dev-adgqcbd7gvbgg7fy.eastus2-01.azurewebsites.net/WinniElectricidadApi/Servicio/";
 const urlAPIReserva  = "https://winnielectricidadbe-dev-adgqcbd7gvbgg7fy.eastus2-01.azurewebsites.net/WinniElectricidadApi/Reserva/"
 
 export const login = async (email, password) => {
     try{
-        const response = await fetch(`${urlAPI}login`,{
+        const response = await fetch(`${urlAPIUsuario}login`,{
             method: "POST", 
             headers: {
                 "Content-Type": "application/json",
@@ -57,7 +57,7 @@ export const registro = async (p) => {
         ].filter(d => d.calle || d.esquina || d.numero || d.apto),
       };
     
-      const resp = await fetch(`${urlAPI}registro`, {
+      const resp = await fetch(`${urlAPIUsuario}registro`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -101,7 +101,7 @@ export const logout = () => {
 
 export const sendPasswordRecoveryEmail = async (email) => {
     try {
-        const response = await fetch(`${urlAPI}forgot-password`, {
+        const response = await fetch(`${urlAPIUsuario}forgot-password`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -131,7 +131,7 @@ export const sendPasswordRecoveryEmail = async (email) => {
 
 export const resetPassword = async (password, tokenPlain) => {
     try {
-        const response = await fetch(`${urlAPI}reset-password`, {
+        const response = await fetch(`${urlAPIUsuario}reset-password`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -233,7 +233,7 @@ export async function getDireccionesUsuario(signal) {
     throw new ApiError("Usuario no autenticado.", 401);
   }
 
-  const resp = await fetch(`${urlAPI}direcciones`, {
+  const resp = await fetch(`${urlAPIUsuario}direcciones`, {
     method: "GET",
     headers: {
       Accept: "application/json",
