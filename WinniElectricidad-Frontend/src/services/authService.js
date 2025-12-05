@@ -1,8 +1,8 @@
 import ApiError from "./ApiError";
 
-const urlAPIUsuario = "http://localhost:5269/WinniElectricidadApi/Usuario/"
-const urlAPIServicio = "http://localhost:5269/WinniElectricidadApi/Servicio/";
-const urlAPIReserva  = "http://localhost:5269/WinniElectricidadApi/Reserva/"
+const urlAPIUsuario = "https://winnielectricidadbe-dev-adgqcbd7gvbgg7fy.eastus2-01.azurewebsites.net/WinniElectricidadApi/Usuario/"
+const urlAPIServicio = "https://winnielectricidadbe-dev-adgqcbd7gvbgg7fy.eastus2-01.azurewebsites.net/WinniElectricidadApi/Servicio/";
+const urlAPIReserva  = "https://winnielectricidadbe-dev-adgqcbd7gvbgg7fy.eastus2-01.azurewebsites.net/WinniElectricidadApi/Reserva/"
 
 export const login = async (email, password) => {
     try{

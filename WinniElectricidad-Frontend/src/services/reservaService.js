@@ -1,6 +1,6 @@
 import ApiError from "./ApiError";
 
-const urlAPIReserva  = "http://localhost:5269/WinniElectricidadApi/Reserva/"
+const urlAPIReserva  = "https://winnielectricidadbe-dev-adgqcbd7gvbgg7fy.eastus2-01.azurewebsites.net/WinniElectricidadApi/Reserva/"
 ;
 
 function getAuthHeaders() {
