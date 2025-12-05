@@ -21,7 +21,7 @@ async function handleJsonOrText(resp) {
 // --- GETs ---
 
 export async function getReservasPorMesYAnio(mes, anio) {
-  const resp = await fetch(`${urlAPIReserva}historico-mensual/${mes}?anio=${anio}`, {
+  const resp = await fetch(`${urlAPIReserva}historico-mensual/${mes}/${anio}`, {
     method: "GET",
     headers: getAuthHeaders(),
   });
@@ -49,7 +49,7 @@ export async function getReservasPorEstado(estado) {
 }
 
 export async function getReservasFinalizadas() {
-  const resp = await fetch(`${urlAPIReserva}historico`, {
+  const resp = await fetch(`${urlAPIReserva}finalizadas`, {
     method: "GET",
     headers: getAuthHeaders(),
   });
@@ -92,7 +92,7 @@ export async function cancelarReserva(idReserva) {
 
 export async function modificarReserva(idReserva, nuevaFecha) {
   const resp = await fetch(`${urlAPIReserva}modificar`, {
-    method: "PUT",
+    method: "PATCH",
     headers: getAuthHeaders(),
     body: JSON.stringify({ idReserva, nuevaFecha }),
   });
