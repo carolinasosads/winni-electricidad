@@ -240,9 +240,8 @@ export default function AgendaPage({ onReserve }) {
           Reservas
         </Typography>
 
-        <Grid container spacing={3}>
-          {/* Columna izquierda: filtros + calendario */}
-          <Grid item xs={12} md={7} lg={8}>
+        <Grid container spacing={3} justifyContent="center">
+          <Grid item xs={12} md={8} lg={8}>
             <AgendaFilters
               width={CALENDAR_WIDTH}
               servicioOpciones={serviciosOpts}
@@ -257,10 +256,12 @@ export default function AgendaPage({ onReserve }) {
               errorServicios={errorServicios}
             />
 
+            {/* CALENDARIO */}
             <Paper
               variant="outlined"
               sx={{
                 p: 2,
+                mt: 2,
                 mx: "auto",
                 width: CALENDAR_WIDTH,
                 overflow: "hidden",
@@ -297,14 +298,17 @@ export default function AgendaPage({ onReserve }) {
               </Box>
 
               {/* Nombres de días */}
-              <Grid
-                container
-                columns={7}
-                spacing={1}
-                sx={{ textAlign: "center", mb: 1 }}
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(7, 1fr)",
+                  textAlign: "center",
+                  mb: 1,
+                  columnGap: 1,
+                }}
               >
                 {["lun", "mar", "mié", "jue", "vie", "sáb", "dom"].map((d) => (
-                  <Grid key={d} item xs={1}>
+                  <Box key={d}>
                     <Typography
                       variant="caption"
                       fontWeight={700}
@@ -312,16 +316,16 @@ export default function AgendaPage({ onReserve }) {
                     >
                       {d.toUpperCase()}
                     </Typography>
-                  </Grid>
+                  </Box>
                 ))}
-              </Grid>
+              </Box>
 
               {/* Grilla de días */}
-              <Grid
-                container
-                columns={7}
-                spacing={1}
+              <Box
                 sx={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(7, 1fr)",
+                  gap: 1,
                   minHeight: {
                     xs: 6 * DAY_MIN_HEIGHT.xs,
                     sm: 6 * DAY_MIN_HEIGHT.sm,
@@ -336,7 +340,7 @@ export default function AgendaPage({ onReserve }) {
                     !!selectedDate && isSameDay(selectedDate, date);
 
                   return (
-                    <Grid key={date.toISOString()} item xs={1}>
+                    <Box key={date.toISOString()}>
                       <Button
                         variant={isSelected ? "outlined" : "text"}
                         onClick={() => {
@@ -367,6 +371,7 @@ export default function AgendaPage({ onReserve }) {
                         <Typography variant="body2">
                           {format(date, "d", { locale: es })}
                         </Typography>
+
                         <Chip
                           size="small"
                           label={
@@ -382,18 +387,23 @@ export default function AgendaPage({ onReserve }) {
                           }}
                         />
                       </Button>
-                    </Grid>
+                    </Box>
                   );
                 })}
-              </Grid>
+              </Box>
             </Paper>
-          </Grid>
 
-          {/* Columna derecha: horarios */}
-          <Grid item xs={12} md={5} lg={4}>
+            {/* HORARIOS DISPONIBLES */}
             <Paper
               variant="outlined"
-              sx={{ p: 2, maxHeight: 500, overflow: "auto" }}
+              sx={{
+                p: 2,
+                mt: 3,
+                mx: "auto",
+                width: CALENDAR_WIDTH,
+                maxHeight: 500,
+                overflow: "auto",
+              }}
             >
               <Typography variant="h6" fontWeight={700} gutterBottom>
                 Horarios disponibles

@@ -60,12 +60,14 @@ public class ModificarReserva : IModificarReserva
                 <p>Esta nueva fecha es una <strong>propuesta</strong> y nos estaremos comunicando contigo a la brevedad
                 para confirmar si te queda bien o coordinar otro horario en caso de ser necesario.</p>
 
+                <p>Tu reserva volverá a estado <strong>Pendiente</strong> hasta que confirmemos juntos la nueva fecha.</p>
+
                 <p>Ante cualquier duda o ajuste que quieras realizar, no dudes en responder este correo.</p>
 
                 <p>¡Gracias por confiar en Winni Electricidad!</p>
             </div>";
 
-        await _enviarEmail.Ejecutar(cliente.Email, "Reserva reprogramada – Winni Electricidad", cuerpoCliente, cancellationToken);
+        await _enviarEmail.Ejecutar(cliente.Email, "Winni Electricidad - Reserva reprogramada", cuerpoCliente, cancellationToken);
 
  
         var admin = await _repositorioUsuario.ObtenerAdministrador(cancellationToken);

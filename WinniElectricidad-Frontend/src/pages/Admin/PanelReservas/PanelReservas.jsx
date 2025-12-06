@@ -24,6 +24,14 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 
+// ---- Helper para ordenar por horario ----
+const ordenarPorHorario = (reservas) => {
+  if (!Array.isArray(reservas)) return [];
+  return [...reservas].sort(
+    (a, b) => new Date(a.fechaReserva) - new Date(b.fechaReserva)
+  );
+};
+
 export default function PanelReservas() {
   // ---- Estados ----
   const [mesActual, setMesActual] = useState(new Date().getMonth() + 1);
@@ -54,10 +62,10 @@ export default function PanelReservas() {
         getReservasPorEstado("Cancelada"),
         getReservasFinalizadas(),
       ]);
-      setPendientes(p);
-      setConfirmadas(c);
-      setCanceladas(ca);
-      setFinalizadas(f);
+      setPendientes(ordenarPorHorario(p));
+      setConfirmadas(ordenarPorHorario(c));
+      setCanceladas(ordenarPorHorario(ca));
+      setFinalizadas(ordenarPorHorario(f));
       const data = await getReservasPorMesYAnio(mesActual, anioActual);
       setReservasMes(data);
     } catch (error) {

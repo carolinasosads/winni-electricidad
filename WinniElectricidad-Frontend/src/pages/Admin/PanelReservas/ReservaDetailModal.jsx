@@ -189,7 +189,7 @@ export default function ReservaDetailModal({
                     >
                       Cancelar
                     </Button>
-                  {/*
+                  {
                     <Button
                       variant="outlined"
                       color="primary"
@@ -198,7 +198,7 @@ export default function ReservaDetailModal({
                       onClick={() => onSugerirCambio(reserva)}
                     >
                       Sugerir modificación
-                    </Button>*/}
+                    </Button>}
                   </>
                 );
               }
