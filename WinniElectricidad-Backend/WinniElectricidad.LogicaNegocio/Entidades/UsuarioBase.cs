@@ -29,7 +29,6 @@ public abstract class UsuarioBase
     private void Validar()
     {
         ValidarNombreCompleto(NombreCompleto);
-        ValidarPassword(PasswordHash);
         ValidarEmail(Email);
         ValidarTelefono(Telefono);
     }
@@ -38,14 +37,6 @@ public abstract class UsuarioBase
     {
         if (string.IsNullOrWhiteSpace(nombreCompleto))        {
             throw new Exception("Ingrese nombre completo");
-        }
-    }
-    
-    private void ValidarPassword(string pass)
-    {
-        if (string.IsNullOrEmpty(pass.Trim()) || pass.Length < 6)
-        {
-            throw new Exception("Ingrese una contraseña mayor a 6 dígitos");
         }
     }
     
@@ -72,7 +63,6 @@ public abstract class UsuarioBase
         if (telefono.Length < 7)
             throw new Exception("El teléfono debe tener al menos 7 dígitos.");
 
-        //El.All es como el char
         if (!telefono.All(c => c >= '0' && c <= '9'))
             throw new Exception("El teléfono solo puede contener números.");
     } 

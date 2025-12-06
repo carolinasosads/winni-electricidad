@@ -12,13 +12,15 @@ public class RecuperarContrasena : IRecuperarContrasena
     private readonly IRepositorioOneTimeToken _repositorioOneTimeToken;
     private readonly IServicioOneTimeToken  _servicioOneTimeToken;
     private readonly IEnviarEmail _enviarEmail;
+    private readonly IServicioHash _servicioHash;
 
-    public RecuperarContrasena(IRepositorioUsuario repositorioUsuario, IRepositorioOneTimeToken repositorioOneTimeToken, IServicioOneTimeToken servicioOneTimeToken, IEnviarEmail enviarEmail)
+    public RecuperarContrasena(IRepositorioUsuario repositorioUsuario, IRepositorioOneTimeToken repositorioOneTimeToken, IServicioOneTimeToken servicioOneTimeToken, IEnviarEmail enviarEmail,  IServicioHash servicioHash)
     {
         _repositorioUsuario = repositorioUsuario;
         _repositorioOneTimeToken = repositorioOneTimeToken;
         _servicioOneTimeToken = servicioOneTimeToken;
         _enviarEmail = enviarEmail;
+        _servicioHash = servicioHash;
     }
     
     public async Task EnviarCorreoRecuperacion(string email, CancellationToken ct = default)
@@ -69,8 +71,10 @@ public class RecuperarContrasena : IRecuperarContrasena
         OneTimeToken? tokenActivo = await _repositorioOneTimeToken.GetActiveByHash(tokenHash, ct);
 
         if (tokenActivo is null) throw new OneTimeTokenException("No existen tokens activos con el string proporcionado o el token ya expiró.");
-        // TODO: si es valido, hashear la contrasena 
-        await _repositorioUsuario.ChangePassword(tokenActivo.IdUsuario, password, ct);
+        
+        var passwordHash = _servicioHash.Hash(password);
+        
+        await _repositorioUsuario.ChangePassword(tokenActivo.IdUsuario, passwordHash, ct);
         
         await _repositorioOneTimeToken.MarkUsed(tokenHash, ct);
     }

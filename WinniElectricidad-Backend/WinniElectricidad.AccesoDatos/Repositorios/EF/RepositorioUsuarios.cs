@@ -44,18 +44,7 @@ public class RepositorioUsuarios : IRepositorioUsuario
         var usuario = await _db.Usuarios.Where(x => x.Email == email).FirstOrDefaultAsync(ct);
         return usuario;
     }
-
-    public async Task<UsuarioBase?> Login(string email, string password, CancellationToken ct = default)
-    {
-        var usuarioBuscado = await FindbyEmail(email, ct);
-        
-        if (usuarioBuscado is not null && usuarioBuscado.PasswordHash == password)
-        {
-            return  usuarioBuscado;
-        }
-        
-        return null;
-    }
+    
     public async Task<UsuarioCliente?> Registro(UsuarioCliente usuarioCliente, CancellationToken ct = default)
     {
         await _db.Usuarios.AddAsync(usuarioCliente, ct);

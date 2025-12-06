@@ -142,6 +142,7 @@ builder.Services.AddScoped<IAprobarReserva, AprobarReserva>();
 builder.Services.AddScoped<ICancelarReserva, CancelarReserva>();
 builder.Services.AddScoped<IModificarReserva, ModificarReserva>();
 builder.Services.AddScoped<IEnviarEmail, EnviarEmail>();
+builder.Services.AddScoped<IServicioHash, ServicioHash>();
 
 // Repositorios
 builder.Services.AddScoped<IRepositorioUsuario, RepositorioUsuarios>();
