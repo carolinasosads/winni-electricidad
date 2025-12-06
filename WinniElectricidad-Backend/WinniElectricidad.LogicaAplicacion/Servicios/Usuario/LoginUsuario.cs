@@ -8,9 +8,9 @@ namespace WinniElectricidad.LogicaAplicacion.Servicios.Usuario;
 public class LoginUsuario : ILoginUsuario
 {
     private readonly IRepositorioUsuario _repositorioUsuario;
-    private readonly IServicioHash  _servicioHash;
+    private readonly IServicioHash _servicioHash;
 
-    public LoginUsuario(IRepositorioUsuario repositorioUsuario,  IServicioHash  servicioHash)
+    public LoginUsuario(IRepositorioUsuario repositorioUsuario, IServicioHash servicioHash)
     {
         _repositorioUsuario = repositorioUsuario;
         _servicioHash = servicioHash;
@@ -23,8 +23,8 @@ public class LoginUsuario : ILoginUsuario
         
         if (usuarioParaLoguear == null){ return null; }
 
-        var passwordHashed = usuarioParaLoguear.PasswordHash;
-        var credencialesCorrectas = _servicioHash.VerificarPassword(password, passwordHashed);
+        var passwordHash = usuarioParaLoguear.PasswordHash;
+        var credencialesCorrectas = _servicioHash.VerificarPassword(password, passwordHash);
         
         if (!credencialesCorrectas) return null;
         

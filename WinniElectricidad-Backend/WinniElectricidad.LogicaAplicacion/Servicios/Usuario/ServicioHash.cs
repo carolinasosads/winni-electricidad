@@ -30,18 +30,25 @@ public class ServicioHash : IServicioHash
         if (parts.Length != 3)
             return false;
 
-        var iterations = int.Parse(parts[0]);
-        var salt = Convert.FromBase64String(parts[1]);
-        var key = Convert.FromBase64String(parts[2]);
+        try
+        {
+            var iterations = int.Parse(parts[0]);
+            var salt = Convert.FromBase64String(parts[1]);
+            var key = Convert.FromBase64String(parts[2]);
+            
+            var keyToCheck = Rfc2898DeriveBytes.Pbkdf2(
+                password,
+                salt,
+                iterations,
+                HashAlgorithmName.SHA256,
+                key.Length
+            );
 
-        var keyToCheck = Rfc2898DeriveBytes.Pbkdf2(
-            password,
-            salt,
-            iterations,
-            HashAlgorithmName.SHA256,
-            key.Length
-        );
-
-        return CryptographicOperations.FixedTimeEquals(key, keyToCheck);
+            return CryptographicOperations.FixedTimeEquals(key, keyToCheck);
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

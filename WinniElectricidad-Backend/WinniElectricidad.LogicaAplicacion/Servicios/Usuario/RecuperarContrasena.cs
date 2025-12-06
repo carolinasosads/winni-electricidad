@@ -14,7 +14,7 @@ public class RecuperarContrasena : IRecuperarContrasena
     private readonly IEnviarEmail _enviarEmail;
     private readonly IServicioHash _servicioHash;
 
-    public RecuperarContrasena(IRepositorioUsuario repositorioUsuario, IRepositorioOneTimeToken repositorioOneTimeToken, IServicioOneTimeToken servicioOneTimeToken, IEnviarEmail enviarEmail,  IServicioHash servicioHash)
+    public RecuperarContrasena(IRepositorioUsuario repositorioUsuario, IRepositorioOneTimeToken repositorioOneTimeToken, IServicioOneTimeToken servicioOneTimeToken, IEnviarEmail enviarEmail, IServicioHash servicioHash)
     {
         _repositorioUsuario = repositorioUsuario;
         _repositorioOneTimeToken = repositorioOneTimeToken;
@@ -71,6 +71,12 @@ public class RecuperarContrasena : IRecuperarContrasena
         OneTimeToken? tokenActivo = await _repositorioOneTimeToken.GetActiveByHash(tokenHash, ct);
 
         if (tokenActivo is null) throw new OneTimeTokenException("No existen tokens activos con el string proporcionado o el token ya expiró.");
+        
+        if (password.Length < 6)
+            throw new ArgumentException("La contraseña debe tener al menos 6 dígitos.");
+        
+        if (string.IsNullOrWhiteSpace(password))
+            throw new ArgumentException("Debes ingresar una contraseña.");
         
         var passwordHash = _servicioHash.Hash(password);
         

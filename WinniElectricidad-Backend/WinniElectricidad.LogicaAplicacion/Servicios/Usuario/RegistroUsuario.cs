@@ -13,7 +13,7 @@ public class RegistroUsuario : IRegistroUsuario
     private readonly IRepositorioUsuario _repositorioUsuario;
     private readonly IServicioHash _servicioHash;
 
-    public RegistroUsuario(IRepositorioUsuario repositorioUsuario,  IServicioHash servicioHash)
+    public RegistroUsuario(IRepositorioUsuario repositorioUsuario, IServicioHash servicioHash)
     {
         _repositorioUsuario = repositorioUsuario;
         _servicioHash = servicioHash;
@@ -25,7 +25,7 @@ public class RegistroUsuario : IRegistroUsuario
             throw new ArgumentException("La contraseña es obligatoria.");
 
         if (usuarioRegistroDto.Password.Length < 6)
-            throw new ArgumentException("La contraseña debe tener al menos 6 caracteres.");
+            throw new ArgumentException("La contraseña debe tener al menos 6 dígitos.");
         
         var existente = await _repositorioUsuario.FindbyEmail(usuarioRegistroDto.Email, ct);
         if (existente is not null)
