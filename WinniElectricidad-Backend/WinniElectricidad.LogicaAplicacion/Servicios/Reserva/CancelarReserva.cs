@@ -46,7 +46,7 @@ public class CancelarReserva : ICancelarReserva
                 <p>¡Gracias por confiar en Winni Electricidad!</p>
             </div>";
 
-        await _enviarEmail.Ejecutar(cliente.Email, "Reserva cancelada – Winni Electricidad", cuerpoCliente, cancellationToken);
+        await _enviarEmail.Ejecutar(cliente.Email, "Winni Electricidad - Reserva cancelada", cuerpoCliente, cancellationToken);
 
  
         var admin = await _repositorioUsuario.ObtenerAdministrador(cancellationToken);

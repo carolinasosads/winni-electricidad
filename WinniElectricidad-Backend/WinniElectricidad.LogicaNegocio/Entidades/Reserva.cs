@@ -131,6 +131,8 @@ public class Reserva
 
     public void Reprogramar(DateTime nuevaFecha, IEnumerable<Reserva> reservasEnRango)
     {
+        var estabaConfirmada = (EstadoReserva == EstadoReserva.Confirmada);
+
         if (EstadoReserva != EstadoReserva.Pendiente &&
             EstadoReserva != EstadoReserva.Confirmada)
         {
@@ -155,6 +157,11 @@ public class Reserva
         }
 
         FechaReserva = nuevaFecha;
+        
+        if (estabaConfirmada)
+        {
+            EstadoReserva = EstadoReserva.Pendiente;
+        }
     }
 
 }

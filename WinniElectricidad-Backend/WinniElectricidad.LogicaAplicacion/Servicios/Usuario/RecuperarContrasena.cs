@@ -59,7 +59,7 @@ public class RecuperarContrasena : IRecuperarContrasena
                 <p style='font-size:12px; color:#888;'>Este mensaje fue enviado por Winni Electricidad mediante Resend.</p>
             </div>";
 
-        await _enviarEmail.Ejecutar(email, "Recuperación de contraseña - Winni Electricidad", cuerpo, ct);
+        await _enviarEmail.Ejecutar(email, "Winni Electricidad - Recuperación de contraseña", cuerpo, ct);
     }
 
     public async Task ResetearContrasena(string password, string tokenPlain, CancellationToken ct = default)

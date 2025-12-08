@@ -124,7 +124,7 @@ public class AgendarReserva : IAgendarReserva
                     <p><strong>¡No olvides confirmarla o sugerir una modificación de fecha en tu panel de reservas!</strong></p>
                 </div>";
 
-        await _enviarEmail.Ejecutar(emailCliente, "Reserva de presupuesto – Winni Electricidad", cuerpoEmailCliente, ct);
+        await _enviarEmail.Ejecutar(emailCliente, "Winni Electricidad - Reserva de presupuesto", cuerpoEmailCliente, ct);
         await _enviarEmail.Ejecutar(admin.Email, "Nueva reserva de presupuesto agendada", cuerpoEmailAdmin, ct);
     }
 }
