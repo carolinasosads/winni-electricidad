@@ -35,6 +35,7 @@ public class ReservaMapper
             Comentario = reserva.Comentario
         };
     }
+    
     public static HistoricoReservaDto MapearAHistoricoReservaDto(Reserva reserva)
     {
         return new HistoricoReservaDto

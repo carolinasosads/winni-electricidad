@@ -1,6 +1,5 @@
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Notificacion;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Reserva;
-using WinniElectricidad.LogicaNegocio.Entidades;
 using WinniElectricidad.LogicaNegocio.InterfacesRepositorios;
 
 namespace WinniElectricidad.LogicaAplicacion.Servicios.Reserva;
@@ -28,7 +27,7 @@ public class AprobarReserva : IAprobarReserva
             throw new ArgumentException("La reserva no existe.");
 
         reserva.Aprobar();
-        await _repositorioReserva.ActualizarReserva(reserva, cancellationToken);
+        await _repositorioReserva.Update(reserva, cancellationToken);
 
        var cliente = reserva.UsuarioCliente;
 

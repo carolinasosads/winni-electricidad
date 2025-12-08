@@ -78,7 +78,7 @@ public class Reserva
     {
         if (!Enum.IsDefined(typeof(TipoServicioReserva), tipoServicioReserva))
         {
-            throw new ArgumentException("Debe seleccionar un tipo correcto: Instalación o Mantenimiento.");
+            throw new ArgumentException("Debes seleccionar un tipo correcto: Instalación o Mantenimiento.");
         }
     }
 
@@ -86,12 +86,12 @@ public class Reserva
     {
         if (idDireccion <= 0)
         {
-            throw new ArgumentException("Debe seleccionar una direccion válida.");
+            throw new ArgumentException("Debes seleccionar una direccion válida.");
         }
 
         if (idUsuarioCliente <= 0)
         {
-            throw new ArgumentException("Debe seleccionar un cliente válido.");
+            throw new ArgumentException("Debes seleccionar un cliente válido.");
         }
     }
 

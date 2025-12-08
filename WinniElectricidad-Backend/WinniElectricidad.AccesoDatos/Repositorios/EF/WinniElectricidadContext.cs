@@ -14,6 +14,7 @@ public class WinniElectricidadContext : DbContext
     public DbSet<Pago>  Pagos { get; set; }
     public DbSet<Notificacion>  Notificaciones { get; set; }
     public DbSet<Servicio>  Servicios { get; set; }
+    public DbSet<Reseña>  Reseñas { get; set; }
     public DbSet<OneTimeToken> OneTimeTokens { get; set; }
     public DbSet<Settings> Settings { get; set; }
 

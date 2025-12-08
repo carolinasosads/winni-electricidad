@@ -8,6 +8,7 @@ public class Servicio
     public string? Descripcion { get; set; }
     public string? ImagenUrl { get; set; }
     public bool Activo { get; set; } = true;
+    public ICollection<Reseña>  Reseñas { get; set; } = new List<Reseña>();
     #endregion  
 
     public Servicio() {}
@@ -17,6 +18,7 @@ public class Servicio
         Titulo = titulo;
         Descripcion = descripcion;
         ImagenUrl = imagenUrl;
+        Reseñas = new List<Reseña>();
         Validar();
     }
 
@@ -29,14 +31,14 @@ public class Servicio
     private void ValidarTitulo(string titulo)
     {
         if (string.IsNullOrWhiteSpace(titulo)) {
-            throw new ArgumentException("Ingrese un título válido.", nameof(titulo));
+            throw new ArgumentException("Ingresa un título válido.", nameof(titulo));
         }
     }
 
     private void ValidarDescripcion(string? descripcion)
     {
         if (descripcion is not null && descripcion.Length <= 15) {
-            throw new ArgumentException("Ingrese una descripción más detallada.", nameof(descripcion));
+            throw new ArgumentException("Ingresa una descripción más detallada.", nameof(descripcion));
         }
     }
 }

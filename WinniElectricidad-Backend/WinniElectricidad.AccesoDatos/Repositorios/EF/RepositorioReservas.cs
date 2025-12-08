@@ -29,9 +29,10 @@ public class RepositorioReservas : IRepositorioReserva
             .FirstOrDefaultAsync(r => r.IdReserva == id, ct);
     }
 
-    public Task Update(Reserva obj, CancellationToken ct = default)
+    public async Task Update(Reserva reserva, CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        _db.Reservas.Update(reserva);
+        await _db.SaveChangesAsync(ct);
     }
 
     public Task Delete(int id, CancellationToken ct = default)
@@ -133,13 +134,4 @@ public class RepositorioReservas : IRepositorioReserva
             .Include(r => r.Direccion)      
             .FirstOrDefaultAsync(r => r.IdReserva == id, ct);
     }
-
-    public async Task ActualizarReserva(Reserva reserva, CancellationToken ct = default)
-    {
-        _db.Reservas.Update(reserva);
-        await _db.SaveChangesAsync(ct);
-        
-    }
-
-  
 }
