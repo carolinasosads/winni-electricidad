@@ -139,7 +139,7 @@ public class AgendarReservaTests
         
         _mockEnviarEmail.Verify(e => e.Ejecutar(
                 usuario.Email,
-                "Reserva de presupuesto – Winni Electricidad",
+                "Winni Electricidad - Reserva de presupuesto",
                 It.Is<string>(c => c.Contains("Reserva recibida")),
                 It.IsAny<CancellationToken>()),
             Times.Once);
