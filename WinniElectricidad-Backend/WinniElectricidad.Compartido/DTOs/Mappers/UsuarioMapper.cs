@@ -17,7 +17,7 @@ public class UsuarioMapper
         };
     }
 
-    public static UsuarioCliente MapearDtoRegistroAEntidad(UsuarioRegistroDto usuarioRegistroDto)
+    public static UsuarioCliente MapearDtoRegistroAEntidad(UsuarioRegistroDto usuarioRegistroDto, string passwordHash)
     {
         var direcciones = (usuarioRegistroDto.Direcciones ?? new List<DireccionDto>())
             .Where(d => !string.IsNullOrWhiteSpace(d.Calle)
@@ -33,7 +33,7 @@ public class UsuarioMapper
 
         return new UsuarioCliente(
             usuarioRegistroDto.NombreCompleto.Trim(),
-            usuarioRegistroDto.Password,
+            passwordHash,
             usuarioRegistroDto.Email.Trim().ToLowerInvariant(),
             usuarioRegistroDto.Telefono,
             direcciones
