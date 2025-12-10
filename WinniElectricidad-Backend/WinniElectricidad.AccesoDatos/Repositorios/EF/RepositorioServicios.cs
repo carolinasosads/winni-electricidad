@@ -18,9 +18,10 @@ public class RepositorioServicios : IRepositorioServicio
         throw new NotImplementedException();
     }
 
-    public Task<Servicio?> FindById(int id, CancellationToken ct = default)
+    public async Task<Servicio?> FindById(int id, CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        var servicio = await _db.Servicios.Where(x => x.Id == id).FirstOrDefaultAsync(ct);
+        return servicio;
     }
 
     public Task Update(Servicio obj, CancellationToken ct = default)

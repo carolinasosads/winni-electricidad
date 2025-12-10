@@ -23,7 +23,7 @@ public class ServicioTests
         var ex = Assert.Throws<ArgumentException>(() =>
             new Servicio("", "Descripción válida y larga", null));
 
-        Assert.That(ex.Message, Does.Contain("Ingrese un título válido"));
+        Assert.That(ex.Message, Does.Contain("Ingresa un título válido"));
     }
 
     [Test]
@@ -32,7 +32,7 @@ public class ServicioTests
         var ex = Assert.Throws<ArgumentException>(() =>
             new Servicio("Sanitaria", "Muy corta", null));
 
-        Assert.That(ex.Message, Does.Contain("Ingrese una descripción más detallada"));
+        Assert.That(ex.Message, Does.Contain("Ingresa una descripción más detallada"));
     }
 
     [Test]
