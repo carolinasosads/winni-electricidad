@@ -41,6 +41,9 @@ public class ServicioImagenes : IServicioImagenes
     /// </exception>
     public async Task<string> GuardarAsync(IFormFile archivo)
     {
+        if (archivo == null || archivo.Length == 0)
+            throw new ArgumentException("Para ser procesado, el archivo de imagen es obligatorio y no puede estar vacío.");
+        
         if (archivo.Length > TamanioMaximo)
             throw new ArgumentException("La imagen supera el tamaño máximo permitido (5 MB).");
 

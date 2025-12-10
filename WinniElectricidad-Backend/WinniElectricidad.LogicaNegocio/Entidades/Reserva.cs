@@ -86,7 +86,7 @@ public class Reserva
     {
         if (idDireccion <= 0)
         {
-            throw new ArgumentException("Debes seleccionar una direccion válida.");
+            throw new ArgumentException("Debes seleccionar una dirección válida.");
         }
 
         if (idUsuarioCliente <= 0)
