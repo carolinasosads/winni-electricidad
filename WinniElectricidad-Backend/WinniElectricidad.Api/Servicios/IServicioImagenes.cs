@@ -1,4 +1,4 @@
-﻿namespace WinniElectricidad.Api.Servicio;
+﻿namespace WinniElectricidad.Api.Servicios;
 
 /// <summary>
 /// Define el contrato para el servicio encargado de almacenar imágenes en el servidor.

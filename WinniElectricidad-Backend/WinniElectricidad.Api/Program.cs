@@ -5,7 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Resend;
 using WinniElectricidad.AccesoDatos.Repositorios.EF;
-using WinniElectricidad.Api.Servicio;
+using WinniElectricidad.Api.Servicios;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Notificacion;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Reseña;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Reserva;
@@ -153,6 +153,7 @@ builder.Services.AddScoped<IEnviarEmail, EnviarEmail>();
 builder.Services.AddScoped<IServicioHash, ServicioHash>();
 // - Reseña -
 builder.Services.AddScoped<IAgregarReseña, AgregarReseña>();
+builder.Services.AddScoped<IServicioImagenes, ServicioImagenes>();
 
 // -- Repositorios --
 builder.Services.AddScoped<IRepositorioUsuario, RepositorioUsuarios>();

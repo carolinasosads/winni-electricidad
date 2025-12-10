@@ -1,4 +1,4 @@
-﻿namespace WinniElectricidad.Api.Servicio;
+﻿namespace WinniElectricidad.Api.Servicios;
 
 /// <summary>
 /// Servicio encargado de gestionar el almacenamiento de imágenes en el servidor.
@@ -44,7 +44,8 @@ public class ServicioImagenes : IServicioImagenes
         if (archivo.Length > TamanioMaximo)
             throw new ArgumentException("La imagen supera el tamaño máximo permitido (5 MB).");
 
-        var extension = Path.GetExtension(archivo.FileName).ToLowerInvariant();
+        var sanitizedFileName = Path.GetFileName(archivo.FileName);
+        var extension = Path.GetExtension(sanitizedFileName).ToLowerInvariant();
 
         if (!FormatosPermitidos.Contains(extension))
             throw new ArgumentException("Formato de imagen no permitido. Solo se aceptan JPG y PNG.");

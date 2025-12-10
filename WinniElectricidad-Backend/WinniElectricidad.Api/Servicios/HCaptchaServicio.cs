@@ -2,7 +2,7 @@
 using WinniElectricidad.Compartido.DTOs.Seguridad;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Usuario;
 
-namespace WinniElectricidad.Api.Servicio;
+namespace WinniElectricidad.Api.Servicios;
 
 /// <summary>
 /// Servicio responsable de verificar los tokens de <b>hCaptcha</b> enviados desde el frontend.

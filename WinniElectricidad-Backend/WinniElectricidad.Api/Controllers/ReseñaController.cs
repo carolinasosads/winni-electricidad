@@ -1,7 +1,7 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using WinniElectricidad.Api.Servicio;
+using WinniElectricidad.Api.Servicios;
 using WinniElectricidad.Compartido.DTOs.Reseñas;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Reseña;
 using WinniElectricidad.LogicaNegocio.ExcepcionesPersonalizadas.Reseñas;
