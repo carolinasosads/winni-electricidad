@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WinniElectricidad.Compartido.DTOs.Direcciones;
+using WinniElectricidad.Compartido.DTOs.Registro;
 using WinniElectricidad.Compartido.DTOs.Usuarios;
+using WinniElectricidad.Compartido.DTOs.Usuarios.Busqueda;
 using WinniElectricidad.Compartido.DTOs.Usuarios.Login;
 using WinniElectricidad.Compartido.DTOs.Usuarios.RecuperacionContrasena;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Usuario;
@@ -26,6 +28,8 @@ public class UsuarioController : ControllerBase
     
     private readonly IRecuperarContrasena _recuperarContrasena;
     private readonly IObtenerDirecciones _obtenerDirecciones;
+    private readonly ICrearUsuarioDesdeAdmin _crearUsuarioDesdeAdmin;
+    private readonly IBuscarUsuarios _buscarUsuarios;
 
     /// <summary>
     /// Inicializa una nueva instancia del <see cref="UsuarioController"/> con las dependencias necesarias.
@@ -36,7 +40,8 @@ public class UsuarioController : ControllerBase
     /// <param name="recuperarContrasena">Servicio de recuperación de contraseña.</param>
     /// <param name="registroUsuario">Servicio para registrar usuarios.</param>
     /// <param name="obtenerDirecciones">Servicio para obtener las direcciones de un usuario.</param>
-    public UsuarioController(ILoginUsuario loginUsuario, IServicioToken token, IRegistroUsuario registroUsuario, IHCaptchaVerifier captcha, IRecuperarContrasena recuperarContrasena, IObtenerDirecciones obtenerDirecciones)
+    public UsuarioController(ILoginUsuario loginUsuario, IServicioToken token, IRegistroUsuario registroUsuario, IHCaptchaVerifier captcha, IRecuperarContrasena recuperarContrasena, IObtenerDirecciones obtenerDirecciones,
+        ICrearUsuarioDesdeAdmin crearUsuarioDesdeAdmin, IBuscarUsuarios buscarUsuarios)
     {
         _loginUsuario = loginUsuario;
         _token = token;
@@ -44,6 +49,8 @@ public class UsuarioController : ControllerBase
         _captcha = captcha;
         _recuperarContrasena = recuperarContrasena;
         _obtenerDirecciones = obtenerDirecciones;
+        _crearUsuarioDesdeAdmin = crearUsuarioDesdeAdmin;
+        _buscarUsuarios = buscarUsuarios;
     }
 
     /// <summary>
@@ -293,4 +300,99 @@ public class UsuarioController : ControllerBase
             return StatusCode(500, new{message = "Error inesperado." });
         }
     }
-}
+    
+     /// <summary>
+    /// Crea un nuevo usuario desde el panel de administración (sin hCaptcha).
+    /// </summary>
+    /// <remarks>
+    /// Solo disponible para usuarios con rol <c>Administrador</c>.
+    ///
+    /// **Flujo:**
+    /// 1. El administrador envía los datos básicos del usuario (nombre, email, etc.).  
+    /// 2. Se reutiliza el caso de uso de registro <see cref="IRegistroUsuario"/> para crear el usuario.  
+    /// 3. No se valida hCaptcha ni se devuelve un token de login.  
+    ///
+    /// **Códigos de respuesta:**
+    /// - `201 Created` → Usuario creado correctamente.  
+    /// - `409 Conflict` → El email ya está en uso.  
+    /// - `500 Internal Server Error` → Error inesperado del servidor.
+    /// </remarks>
+    /// <param name="usuarioRegistroDto">Datos del usuario a crear.</param>
+    /// <param name="ct">Token de cancelación.</param>
+    /// <response code="201">Usuario creado correctamente.</response>
+    /// <response code="409">El email ya está en uso.</response>
+    /// <response code="500">Error inesperado.</response>
+    [HttpPost("admin/usuarios")]
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> CrearUsuarioComoAdmin([FromBody] UsuarioRegistroAdminDto usuarioRegistroAdminDto, CancellationToken ct)
+    {
+        try
+        {
+            var creado = await _crearUsuarioDesdeAdmin.CrearUsuario(usuarioRegistroAdminDto, ct);
+
+            if (creado is null)
+            {
+                return StatusCode(500, new { message = "No se pudo crear el usuario." });
+            }
+
+            return StatusCode(StatusCodes.Status201Created, new
+            {
+                creado.Id,
+                creado.Email
+            });
+        }
+        catch (EmailEnUsoException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "Error inesperado." });
+        }
+    }
+    
+    
+    /// <summary>
+    /// Busca usuarios cliente por nombre, email o teléfono (solo administrador).
+    /// </summary>
+    [HttpGet("busqueda/usuarios")]
+    [Authorize(Roles = "Administrador")]
+    [ProducesResponseType(typeof(IEnumerable<UsuarioBusquedaDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> BuscarUsuariosAdmin([FromQuery] string query, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(query) || query.Trim().Length < 2)
+        {
+            return BadRequest(new { message = "La búsqueda debe tener al menos 2 caracteres." });
+        }
+
+        try
+        {
+            var resultado = await _buscarUsuarios.BuscarUsuariosAsync(query, ct);
+            return Ok(resultado);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "Ocurrió un error al buscar usuarios." });
+        }
+    }
+
+    /// <summary>
+    /// Obtiene las direcciones de un usuario por id (solo administrador).
+    /// </summary>
+    [HttpGet("admin/usuarios/{id:int}/direcciones")]
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> GetDireccionesDeUsuarioAdmin([FromRoute] int id, CancellationToken ct)
+    {
+        try
+        {
+            var direcciones = await _obtenerDirecciones.Ejecutar(id, ct);
+            return Ok(direcciones);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "Error inesperado." });
+        }
+    }
+    }

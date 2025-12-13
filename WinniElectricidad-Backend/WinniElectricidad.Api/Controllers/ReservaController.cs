@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WinniElectricidad.Compartido.DTOs.Reservas;
+using WinniElectricidad.Compartido.DTOs.Usuarios.Reserva;
 using WinniElectricidad.Compartido.Reservas;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Reserva;
 using WinniElectricidad.LogicaNegocio.ExcepcionesPersonalizadas.Notificaciones;
@@ -24,12 +25,14 @@ public class ReservaController : ControllerBase
     private readonly IAprobarReserva _aprobarReserva;
     private readonly ICancelarReserva _cancelarReserva;
     private readonly IModificarReserva _modificarReserva;
+    private readonly IObtenerReservasPorCliente _obtenerReservasPorCliente;
+    private readonly IRegistrarReservaHistoricaAdmin _registrarReservaHistoricaAdmin;
 
     /// <summary>
     /// Inicializa una nueva instancia del <see cref="ReservaController"/> con las dependencias necesarias.
     /// </summary>
     public ReservaController(IObtenerHorariosDisponibles obtenerHorariosDisponibles, IAgendarReserva agendarReserva, IObtenerHistoricoMensualReservas obtenerHistoricoMensualReservas, IObtenerHistoricoFinalizadas obtenerHistoricoFinalizadas,IObtenerReservasPorEstado obtenerReservasPorEstado,  IAprobarReserva aprobarReserva,
-        ICancelarReserva cancelarReserva, IModificarReserva modificarReserva)
+        ICancelarReserva cancelarReserva, IModificarReserva modificarReserva, IObtenerReservasPorCliente obtenerReservasPorCliente, IRegistrarReservaHistoricaAdmin registarReservaHistoricaAdmin)
     {
         _obtenerHorariosDisponibles = obtenerHorariosDisponibles;
         _agendarReserva = agendarReserva;
@@ -39,6 +42,8 @@ public class ReservaController : ControllerBase
         _cancelarReserva = cancelarReserva;
         _aprobarReserva = aprobarReserva;
         _modificarReserva =  modificarReserva;
+        _obtenerReservasPorCliente = obtenerReservasPorCliente;
+        _registrarReservaHistoricaAdmin = registarReservaHistoricaAdmin;
     }
     
     /// <summary>
@@ -480,6 +485,115 @@ public class ReservaController : ControllerBase
                 return BadRequest(new { message = ex.Message });
             }
             catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Error inesperado." });
+            }
+        }
+    
+    
+        /// <summary>
+    /// Crea una reserva de presupuesto para un usuario específico (flujo administrador).
+    /// </summary>
+    /// <remarks>
+    /// Solo disponible para usuarios con rol <c>Administrador</c>.
+    ///
+    /// **Flujo:**
+    /// 1. El administrador selecciona un usuario (cliente) en el panel.  
+    /// 2. Envía el id de ese usuario y los datos de la reserva.  
+    /// 3. Se reutiliza el caso de uso <see cref="IAgendarReserva"/> para crear la reserva
+    ///    asociada al usuario seleccionado.
+    ///
+    /// **Códigos de respuesta:**
+    /// - `200 OK` → Reserva creada correctamente.  
+    /// - `400 Bad Request` → Datos inválidos.  
+    /// - `409 Conflict` → Conflicto de reserva (horario ocupado, etc.).  
+    /// - `500 Internal Server Error` → Error inesperado.
+    /// </remarks>
+    /// <param name="idUsuario">
+    /// Identificador del usuario para el que se creará la reserva.
+    /// </param>
+    /// <param name="nuevaReserva">
+    /// Datos necesarios para crear la reserva (fecha, hora, dirección, servicios).
+    /// </param>
+    /// <param name="ct">Token de cancelación.</param>
+    [HttpPost("admin/agendar/{idUsuario:int}")] //todo: ver en git cual es el nombre correcto
+    [Authorize(Roles = "Administrador")]
+    [ProducesResponseType(typeof(ReservaCreadaDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> AgendarParaUsuario(
+        [FromRoute] int idUsuario,
+        [FromBody] ReservaACrearDto nuevaReserva,
+        CancellationToken ct)
+    {
+        try
+        {
+            if (idUsuario <= 0)
+            {
+                return BadRequest(new { message = "El id de usuario es inválido." });
+            }
+
+            var reservaCreada = await _agendarReserva.Ejecutar(nuevaReserva, idUsuario, ct);
+
+            return Ok(reservaCreada);
+        }
+        catch (ReservaException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (EmailNotificacionException)
+        {
+            return StatusCode(500, new { message = "La reserva fue creada, pero hubo un problema al enviar la notificación por email." });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "Error inesperado." });
+        }
+    }
+
+    
+        /// <summary>
+        /// Obtiene todas las reservas de un cliente (solo admin).
+        /// </summary>
+        [HttpGet("Admin/Cliente/{clienteId:int}")]
+        [Authorize(Roles = "Administrador")] // ajusta el nombre del rol si usas otro
+        public async Task<ActionResult<IEnumerable<ReservaListadoDto>>> GetReservasPorClienteAdmin(int clienteId, CancellationToken ct)
+        {
+            var reservas = await _obtenerReservasPorCliente.EjecutarAsync(clienteId, ct);
+            return Ok(reservas);
+        }
+    
+        /// <summary>
+        /// Crea una reserva histórica (pasada) para un usuario específico (solo admin).
+        /// No aplica validaciones de agenda (48h, domingo, etc).
+        /// </summary>
+        [HttpPost("admin/registrar-historico/{idUsuario:int}")]
+        [Authorize(Roles = "Administrador")]
+        [ProducesResponseType(typeof(ReservaCreadaDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> RegistrarHistoricoParaUsuario(
+            [FromRoute] int idUsuario,
+            [FromBody] ReservaACrearDto nuevaReserva,
+            CancellationToken ct)
+        {
+            try
+            {
+                if (idUsuario <= 0)
+                    return BadRequest(new { message = "El id de usuario es inválido." });
+
+                var reservaCreada = await _registrarReservaHistoricaAdmin.Ejecutar(nuevaReserva, idUsuario, ct);
+
+                return Ok(reservaCreada);
+            }
+            catch (ArgumentException ex)
             {
                 return BadRequest(new { message = ex.Message });
             }

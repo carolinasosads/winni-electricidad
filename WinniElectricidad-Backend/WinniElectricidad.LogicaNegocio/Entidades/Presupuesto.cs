@@ -6,8 +6,10 @@ public class Presupuesto
     public int Id { get; set; }
     public int IdReserva { get; set; }
     public Reserva Reserva { get; set; } = null!;
-
     public int IdUsuario { get; set; }
+    public decimal Monto { get; set; }
+    public string? Notas { get; set; }
+    public DateTime FechaPresupuesto { get; set; } = DateTime.UtcNow;
     #endregion
     
     public Presupuesto(){}

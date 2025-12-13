@@ -7,20 +7,15 @@ public class Reserva
     #region Propiedades
     [Key] 
     public int IdReserva { get; set; }
-
     public DateTime FechaReserva { get; set; }
     public EstadoReserva EstadoReserva { get; set; }
     public TipoServicioReserva TipoServicioReserva { get; set; }
     public string? Comentario { get; set; }
-
     [Required] public int IdUsuarioCliente { get; set; }
     public UsuarioCliente UsuarioCliente { get; set; } = null!;
-
     [Required] public int IdDireccion { get; set; }
     public Direccion Direccion { get; set; } = null!;
-
     public Presupuesto? Presupuesto { get; set; }
-
     public ICollection<Servicio> Servicios { get; set; } = new List<Servicio>();
 
     #endregion
@@ -29,12 +24,7 @@ public class Reserva
     {
     }
 
-    public Reserva(DateTime fechaReserva,
-        TipoServicioReserva tipo,
-        int idUsuarioCliente,
-        int idDireccion,
-        ICollection<Servicio> servicios,
-        string? comentario)
+    public Reserva(DateTime fechaReserva, TipoServicioReserva tipo, int idUsuarioCliente, int idDireccion, ICollection<Servicio> servicios, string? comentario)
     {
         FechaReserva = fechaReserva;
         EstadoReserva = EstadoReserva.Pendiente;
@@ -44,6 +34,31 @@ public class Reserva
         Servicios = servicios;
         Comentario = comentario;
         Validar();
+    }
+    
+    public static Reserva CrearHistoricaAdmin(
+        DateTime fechaReserva,
+        TipoServicioReserva tipo,
+        int idUsuarioCliente,
+        int idDireccion,
+        ICollection<Servicio> servicios,
+        string? comentario)
+    {
+        var r = new Reserva
+        {
+            FechaReserva = fechaReserva,
+            EstadoReserva = EstadoReserva.Confirmada, //todo: cambiar a finalizada
+            TipoServicioReserva = tipo,
+            IdUsuarioCliente = idUsuarioCliente,
+            IdDireccion = idDireccion,
+            Servicios = servicios,
+            Comentario = comentario
+        };
+
+        ValidarTipoServicioReserva(r.TipoServicioReserva);
+        ValidarIds(r.IdDireccion, r.IdUsuarioCliente);
+        ValidarServicios(r.Servicios);
+        return r;
     }
 
     private void Validar()

@@ -7,11 +7,13 @@ using Resend;
 using WinniElectricidad.AccesoDatos.Repositorios.EF;
 using WinniElectricidad.Api.Servicios;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Notificacion;
+using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Presupuesto;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Reseña;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Reserva;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Servicio;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Usuario;
 using WinniElectricidad.LogicaAplicacion.Servicios.Notificacion;
+using WinniElectricidad.LogicaAplicacion.Servicios.Presupuesto;
 using WinniElectricidad.LogicaAplicacion.Servicios.Reseña;
 using WinniElectricidad.LogicaAplicacion.Servicios.Reserva;
 using WinniElectricidad.LogicaAplicacion.Servicios.Servicio;
@@ -154,6 +156,11 @@ builder.Services.AddScoped<IServicioHash, ServicioHash>();
 // - Reseña -
 builder.Services.AddScoped<IAgregarReseña, AgregarReseña>();
 builder.Services.AddScoped<IServicioImagenes, ServicioImagenes>();
+builder.Services.AddScoped<ICrearUsuarioDesdeAdmin, CrearUsuarioDesdeAdmin>();
+builder.Services.AddScoped<IBuscarUsuarios, BuscarUsuarios>();
+builder.Services.AddScoped<IObtenerReservasPorCliente, ObtenerReservasPorCliente>();
+builder.Services.AddScoped<ICrearPresupuesto, CrearPresupuesto>();
+builder.Services.AddScoped<IRegistrarReservaHistoricaAdmin, RegistrarReservaHistoricaAdmin>();
 
 // -- Repositorios --
 builder.Services.AddScoped<IRepositorioUsuario, RepositorioUsuarios>();
@@ -162,6 +169,7 @@ builder.Services.AddScoped<IRepositorioServicio, RepositorioServicios>();
 builder.Services.AddScoped<IRepositorioReserva, RepositorioReservas>();
 builder.Services.AddScoped<IRepositorioSettings, RepositorioSettings>();
 builder.Services.AddScoped<IRepositorioReseña, RepositorioReseñas>();
+builder.Services.AddScoped<IRepositorioPresupuesto, RepositorioPresupuestos>();
 
 var app = builder.Build();
 

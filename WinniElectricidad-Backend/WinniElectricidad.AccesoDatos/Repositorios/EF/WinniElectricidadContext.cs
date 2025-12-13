@@ -22,6 +22,7 @@ public class WinniElectricidadContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        // -------------------- USUARIOS --------------------
         modelBuilder.Entity<UsuarioBase>()
             .HasDiscriminator<string>("Discriminator")
             .HasValue<UsuarioAdministrador>("UsuarioAdministrador")
@@ -33,6 +34,7 @@ public class WinniElectricidadContext : DbContext
             .HasForeignKey(r => r.IdUsuario)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // -------------------- DIRECCIONES --------------------
         modelBuilder.Entity<Direccion>(e =>
         {
             e.HasOne(d => d.UsuarioCliente)
@@ -44,6 +46,7 @@ public class WinniElectricidadContext : DbContext
                 .HasColumnName("IdUsuario");
         });
 
+        // -------------------- ONE TIME TOKEN --------------------
         modelBuilder.Entity<OneTimeToken>(e =>
         {
             e.ToTable("OneTimeTokens");
@@ -66,6 +69,7 @@ public class WinniElectricidadContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
+        // -------------------- SERVICIOS --------------------
         modelBuilder.Entity<Servicio>(entity =>
         {
             entity.HasIndex(s => s.Titulo)
@@ -89,7 +93,8 @@ public class WinniElectricidadContext : DbContext
                 .HasForeignKey(r => r.IdServicio)
                 .OnDelete(DeleteBehavior.Restrict);
         });
-        
+
+        // -------------------- RESERVAS --------------------
         modelBuilder.Entity<Reserva>(entity =>
         {
             entity.HasKey(r => r.IdReserva);
@@ -153,6 +158,23 @@ public class WinniElectricidadContext : DbContext
                 DiasMaximos = 30
             }
         );
+        // -------------------- PRESUPUESTOS --------------------
+        modelBuilder.Entity<Presupuesto>(entity =>
+        {
+            entity.HasKey(p => p.Id);
+
+            entity.Property(p => p.Monto)
+                .HasPrecision(18, 2);
+
+            entity.Property(p => p.Notas)
+                .HasMaxLength(500);
+
+            entity.Property(p => p.FechaPresupuesto)
+                .IsRequired();
+
+            entity.Property(p => p.IdUsuario)
+                .IsRequired();
+        });
 
         modelBuilder.Entity<Servicio>().HasData(
                 new Servicio

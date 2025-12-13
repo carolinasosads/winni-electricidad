@@ -134,4 +134,25 @@ public class RepositorioReservas : IRepositorioReserva
             .Include(r => r.Direccion)      
             .FirstOrDefaultAsync(r => r.IdReserva == id, ct);
     }
+
+    public async Task ActualizarReserva(Reserva reserva, CancellationToken ct = default)
+    {
+        _db.Reservas.Update(reserva);
+        await _db.SaveChangesAsync(ct);
+        
+    }
+    public async Task<IEnumerable<Reserva>> GetReservaSegunClienteId(int clienteId, CancellationToken ct = default)
+    {
+        var hoy = DateTime.UtcNow;  
+        return await _db.Reservas
+            .Include(r => r.Servicios)
+            .Include(r => r.Direccion)
+            .Include(r => r.Presupuesto)
+            .Where(r =>
+                r.IdUsuarioCliente == clienteId &&
+                r.FechaReserva < hoy)  
+            .OrderByDescending(r => r.FechaReserva)
+            .AsNoTracking()
+            .ToListAsync(ct);
+    }
 }
