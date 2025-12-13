@@ -5,4 +5,5 @@ namespace WinniElectricidad.LogicaAplicacion.InterfacesServicios.Usuario;
 
 public interface ICrearUsuarioDesdeAdmin
 {
-    Task<UsuarioCreadoDesdeAdminDto?> CrearUsuario(UsuarioRegistroAdminDto dto, CancellationToken ct = default);}
+    Task<UsuarioCreadoDesdeAdminDto?> CrearUsuario(UsuarioRegistroAdminDto dto, CancellationToken ct = default);
+}

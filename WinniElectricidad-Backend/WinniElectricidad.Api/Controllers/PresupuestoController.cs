@@ -52,7 +52,18 @@ public class PresupuestoController : ControllerBase
     [Authorize(Roles = "Administrador")]
     public async Task<IActionResult> CrearPresupuestoParaReserva([FromRoute] int idReserva, [FromBody] PresupuestoCrearDto dto, CancellationToken ct)
     {
-        var presupuestoCreado = await _crearPresupuesto.Ejecutar(idReserva, dto, ct);
-        return StatusCode(StatusCodes.Status201Created, presupuestoCreado);
+        try
+        {
+            var presupuestoCreado = await _crearPresupuesto.Ejecutar(idReserva, dto, ct);
+            return StatusCode(StatusCodes.Status201Created, presupuestoCreado);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Ocurrió un error inesperado al crear el presupuesto." });
+        }
     }
 }

@@ -359,17 +359,23 @@ function getAuthHeaders() {
 }
 
 export async function buscarUsuariosAdmin(query) {
-  const resp = await fetch(`${urlAPIUsuario}busqueda/usuarios?query=${query}`,
+  const resp = await fetch(
+    `${urlAPIUsuario}busqueda/usuarios?query=${encodeURIComponent(query)}`,
     {
+      method: "GET",
       headers: getAuthHeaders(),
     }
   );
 
   if (!resp.ok) {
-    throw new ApiError("Error al buscar usuarios.", resp.status);
+    const data = await handleJsonOrText(resp);
+    throw new ApiError(
+      data?.message || "Error al buscar usuarios.",
+      resp.status
+    );
   }
 
-  return resp.json();
+  return await resp.json();
 }
 
 export async function getDireccionesUsuarioAdmin(userId, signal) {

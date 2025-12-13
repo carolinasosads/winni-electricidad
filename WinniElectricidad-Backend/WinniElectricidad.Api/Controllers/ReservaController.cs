@@ -32,7 +32,7 @@ public class ReservaController : ControllerBase
     /// Inicializa una nueva instancia del <see cref="ReservaController"/> con las dependencias necesarias.
     /// </summary>
     public ReservaController(IObtenerHorariosDisponibles obtenerHorariosDisponibles, IAgendarReserva agendarReserva, IObtenerHistoricoMensualReservas obtenerHistoricoMensualReservas, IObtenerHistoricoFinalizadas obtenerHistoricoFinalizadas,IObtenerReservasPorEstado obtenerReservasPorEstado,  IAprobarReserva aprobarReserva,
-        ICancelarReserva cancelarReserva, IModificarReserva modificarReserva, IObtenerReservasPorCliente obtenerReservasPorCliente, IRegistrarReservaHistoricaAdmin registarReservaHistoricaAdmin)
+        ICancelarReserva cancelarReserva, IModificarReserva modificarReserva, IObtenerReservasPorCliente obtenerReservasPorCliente, IRegistrarReservaHistoricaAdmin registrarReservaHistoricaAdmin)
     {
         _obtenerHorariosDisponibles = obtenerHorariosDisponibles;
         _agendarReserva = agendarReserva;
@@ -43,7 +43,7 @@ public class ReservaController : ControllerBase
         _aprobarReserva = aprobarReserva;
         _modificarReserva =  modificarReserva;
         _obtenerReservasPorCliente = obtenerReservasPorCliente;
-        _registrarReservaHistoricaAdmin = registarReservaHistoricaAdmin;
+        _registrarReservaHistoricaAdmin = registrarReservaHistoricaAdmin;
     }
     
     /// <summary>
@@ -520,7 +520,7 @@ public class ReservaController : ControllerBase
     /// Datos necesarios para crear la reserva (fecha, hora, dirección, servicios).
     /// </param>
     /// <param name="ct">Token de cancelación.</param>
-    [HttpPost("admin/agendar/{idUsuario:int}")] //todo: ver en git cual es el nombre correcto
+    [HttpPost("admin/agendar/{idUsuario:int}")]
     [Authorize(Roles = "Administrador")]
     [ProducesResponseType(typeof(ReservaCreadaDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]

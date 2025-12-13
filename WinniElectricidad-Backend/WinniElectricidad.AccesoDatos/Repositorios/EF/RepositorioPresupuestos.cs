@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using WinniElectricidad.LogicaNegocio.Entidades;
 using WinniElectricidad.LogicaNegocio.InterfacesRepositorios;
 
@@ -19,23 +20,32 @@ public class RepositorioPresupuestos : IRepositorioPresupuesto
     }
 
 
-    public Task<Presupuesto?> FindById(int id, CancellationToken ct = default)
+    public async Task<Presupuesto?> FindById(int id, CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        return await _db.Presupuestos
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == id, ct);    }
+
+    public async Task Update(Presupuesto presupuesto, CancellationToken ct = default)
+    {
+        _db.Presupuestos.Update(presupuesto);
+        await _db.SaveChangesAsync(ct);
     }
 
-    public Task Update(Presupuesto obj, CancellationToken ct = default)
+    public async Task Delete(int id, CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        var presupuesto = await _db.Presupuestos
+            .FirstOrDefaultAsync(p => p.Id == id, ct);
+        
+        _db.Presupuestos.Remove(presupuesto);
+        await _db.SaveChangesAsync(ct);
+        
     }
 
-    public Task Delete(int id, CancellationToken ct = default)
+    public async Task<IReadOnlyList<Presupuesto>> FindAll(CancellationToken ct = default)
     {
-        throw new NotImplementedException();
-    }
-
-    public Task<IReadOnlyList<Presupuesto>> FindAll(CancellationToken ct = default)
-    {
-        throw new NotImplementedException();
-    }
+        return await _db.Presupuestos
+            .AsNoTracking()
+            .OrderByDescending(p => p.FechaPresupuesto)
+            .ToListAsync(ct);    }
 }
