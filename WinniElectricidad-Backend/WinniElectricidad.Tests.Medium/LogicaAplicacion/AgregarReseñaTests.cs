@@ -76,7 +76,7 @@ public class AgregarReseñaTests
                 Assert.That(result.Servicio.Id, Is.EqualTo(50));
             });
 
-            var reseñaEnDb = context.Reseñas.Single(r => r.Id == result.IdReseña);
+            var reseñaEnDb = context.Resenias.Single(r => r.Id == result.IdReseña);
             Assert.Multiple(() =>
             {
                 Assert.That(reseñaEnDb.Descripcion, Is.EqualTo("Medium test reseña"));
@@ -130,7 +130,7 @@ public class AgregarReseñaTests
                     imagenUrl: null,
                     ct: CancellationToken.None));
 
-            Assert.That(context.Reseñas.Count(), Is.EqualTo(0));
+            Assert.That(context.Resenias.Count(), Is.EqualTo(0));
         }
     }
 
@@ -180,7 +180,7 @@ public class AgregarReseñaTests
                     imagenUrl: null,
                     ct: CancellationToken.None));
 
-            Assert.That(context.Reseñas.Count(), Is.EqualTo(0));
+            Assert.That(context.Resenias.Count(), Is.EqualTo(0));
         }
     }
 }

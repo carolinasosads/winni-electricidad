@@ -94,7 +94,7 @@ public class ReseñaControllerTests : LargeTestBase
             var db = scope.ServiceProvider
                 .GetRequiredService<AccesoDatos.Repositorios.EF.WinniElectricidadContext>();
 
-            var reseñaEnDb = db.Reseñas.Single(r => r.Id == dto!.IdReseña);
+            var reseñaEnDb = db.Resenias.Single(r => r.Id == dto!.IdReseña);
 
             Assert.Multiple(() =>
             {

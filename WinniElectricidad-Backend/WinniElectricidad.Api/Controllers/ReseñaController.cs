@@ -11,7 +11,7 @@ namespace WinniElectricidad.Api.Controllers;
 /// <summary>
 /// Controlador que gestiona las operaciones de reseñas.
 /// </summary>
-[Route("WinniElectricidadApi/[controller]")]
+[Route("WinniElectricidadApi/Resena")]
 [ApiController]
 public class ReseñaController : ControllerBase
 {
@@ -74,7 +74,7 @@ public class ReseñaController : ControllerBase
     [ProducesResponseType(typeof(ReseñaCreadaDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize(Roles = "Cliente")]
-    public async Task<IActionResult> Reseñar([FromForm] ReseñaACrearDto nuevaReseña, [FromForm] IFormFile? imagen, CancellationToken cancellationToken)
+    public async Task<IActionResult> Reseñar([FromForm] ReseñaACrearDto nuevaReseña, IFormFile? imagen, CancellationToken cancellationToken)
     {
         try
         {

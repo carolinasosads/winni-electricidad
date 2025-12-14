@@ -7,13 +7,12 @@ import Drawer from '@mui/material/Drawer';
 import List from '@mui/material/List';
 import Toolbar from '@mui/material/Toolbar';
 
-import PersonIcon from '@mui/icons-material/Person';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import DateRangeIcon from '@mui/icons-material/DateRange';
 import GroupIcon from '@mui/icons-material/Group';
 import ViewAgendaIcon from '@mui/icons-material/ViewAgenda';
-import LayersIcon from '@mui/icons-material/Layers';
+import RateReviewIcon from '@mui/icons-material/RateReview';
 import { matchPath, useLocation } from 'react-router-dom';
 
 import SidebarContext from './Context/SideBarContext';
@@ -156,6 +155,14 @@ function Sidebar({
                     icon={<DateRangeIcon />}
                     href="/cliente/agenda"
                     selected={pathname.startsWith("/cliente/agenda")}
+                  />
+
+                  <SidebarPageItem
+                    id="resena-cliente"
+                    title="Nueva reseña"
+                    icon={<RateReviewIcon />}
+                    href="/cliente/resenas/crear"
+                    selected={pathname.startsWith("/cliente/resenas/crear")}
                   />
                 </>
               )}

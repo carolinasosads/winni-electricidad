@@ -31,7 +31,7 @@ public class RepositorioReseñasTests
             // Assert
             Assert.That(agregada.Id, Is.GreaterThan(0));
 
-            var reseñaEnDb = context.Reseñas.Single(r => r.Id == agregada.Id);
+            var reseñaEnDb = context.Resenias.Single(r => r.Id == agregada.Id);
 
             Assert.Multiple(() =>
             {
@@ -53,7 +53,7 @@ public class RepositorioReseñasTests
         await using (connection)
         await using (context)
         {
-            context.Reseñas.AddRange(
+            context.Resenias.AddRange(
                 new Reseña("Reseña aprobada 1", 5, 1, 1, null)
                 {
                     Estado = EstadoReseña.Aprobada

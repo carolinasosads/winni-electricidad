@@ -14,7 +14,7 @@ public class RepositorioReseñas : IRepositorioReseña
     }
     public async Task<Reseña?> Add(Reseña reseña, CancellationToken ct = default)
     {
-        await _db.Reseñas.AddAsync(reseña, ct);
+        await _db.Resenias.AddAsync(reseña, ct);
         await _db.SaveChangesAsync(ct);
 
         return reseña;
@@ -37,7 +37,7 @@ public class RepositorioReseñas : IRepositorioReseña
 
     public async Task<IReadOnlyList<Reseña>> FindAll(CancellationToken ct = default)
     {
-        return await _db.Reseñas
+        return await _db.Resenias
             .Where(r => r.Estado == EstadoReseña.Aprobada)
             .ToListAsync(ct);
     }

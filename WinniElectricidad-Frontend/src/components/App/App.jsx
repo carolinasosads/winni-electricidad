@@ -10,6 +10,7 @@ import { ProtectedRoute } from "../routes/ProtectedRoute.jsx";
 import MainLayout from "../../layout/MainLayout.jsx";
 
 import AgendaPage from "../../pages/User/Agenda/AgendaPage.jsx";
+import CrearResena from "../../pages/User/Reseña/CrearResena.jsx";
 
 import DashboardAdmin from "../../pages/Admin/Dashboard/DashboardAdmin.jsx"
 import HistoricoClientes from "../../pages/Admin/HistoricoClientes/HistoricoClientes.jsx"
@@ -37,6 +38,7 @@ export default function App() {
       >
         <Route index element={<AgendaPage />} />
         <Route path="agenda" element={<AgendaPage />} />
+        <Route path="resenas/crear" element={<CrearResena />} />
       </Route>
 
       {/* UsuarioAdministrador*/}
