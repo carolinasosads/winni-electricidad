@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
-import {  crearUsuarioComoAdmin,  buscarUsuariosAdmin,  getServiciosActivos,  getDireccionesUsuarioAdmin,} from "../../../services/authService";
+import { crearUsuarioComoAdmin, buscarUsuariosAdmin, getServiciosActivos, getDireccionesUsuarioAdmin, } from "../../../services/authService";
 
-import {  crearReservaAdmin,  crearReservaHistoricaAdmin,  getReservasPorClienteAdmin,
-  crearPresupuestoParaReserva,} from "../../../services/reservaService";
+import { crearReservaAdmin, crearReservaHistoricaAdmin, getReservasPorClienteAdmin } from "../../../services/reservaService";
+
+import { crearPresupuestoParaReserva, } from "../../../services/presupuestoService";
 
 import {
-  Box,  Paper,  Typography,  Grid,  RadioGroup,  FormControlLabel,  Radio,  TextField,  Button,  Divider,
-  Alert,  FormControl,  InputLabel, Select,  MenuItem,  FormHelperText,  Chip,} from "@mui/material";
+  Box, Paper, Typography, Grid, RadioGroup, FormControlLabel, Radio, TextField, Button, Divider,
+  Alert, FormControl, InputLabel, Select, MenuItem, FormHelperText, Chip,
+} from "@mui/material";
 
 import ApiError from "../../../services/ApiError";
 
@@ -275,7 +277,6 @@ export default function AdminCrearReservaPage() {
 
     setReservaSeleccionada(null);
     setModoReserva("nueva");
-    setReservasCliente([]);
 
     setReservaParaPresupuesto(null);
     resetPresupuesto();
@@ -704,117 +705,128 @@ export default function AdminCrearReservaPage() {
 
         {clienteSeleccionado && (
           <>
-            <RadioGroup row value={modoReserva} onChange={handleChangeModoReserva} sx={{ mb: 2 }}>
+            <RadioGroup
+              row
+              value={modoReserva}
+              onChange={handleChangeModoReserva}
+              sx={{ mb: 2 }}
+            >
               <FormControlLabel value="nueva" control={<Radio />} label="Crear nueva reserva" />
               <FormControlLabel value="existente" control={<Radio />} label="Usar reserva existente" />
             </RadioGroup>
 
             {/* Nueva Reserva */}
             {modoReserva === "nueva" && (
-              <Grid container spacing={2}>
-                <Grid item xs={12} md={6}>
-                  <FormControl
-                    fullWidth
-                    disabled={loadingServicios}
-                    error={!!errorServiciosSelect || !!errorServicios}
-                  >
-                    <InputLabel id="servicios-label">Servicios</InputLabel>
-                    <Select
-                      labelId="servicios-label"
-                      label="Servicios"
-                      multiple
-                      value={reserva.servicios}
-                      onChange={handleChangeServicios}
-                      renderValue={(selected) => (
-                        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-                          {selected.map((idStr) => (
-                            <Chip key={idStr} label={labelById(idStr)} size="small" />
-                          ))}
-                        </Box>
+              <>
+                <Grid container spacing={2} sx={{ mb: 2 }}>
+                  <Grid item xs={12} md={6}>
+                    <FormControl
+                      fullWidth
+                      disabled={loadingServicios}
+                      error={!!errorServiciosSelect || !!errorServicios}
+                    >
+                      <InputLabel id="servicios-label">Servicios</InputLabel>
+                      <Select
+                        labelId="servicios-label"
+                        label="Servicios"
+                        multiple
+                        value={reserva.servicios}
+                        onChange={handleChangeServicios}
+                        renderValue={(selected) => (
+                          <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                            {selected.map((idStr) => (
+                              <Chip key={idStr} label={labelById(idStr)} size="small" />
+                            ))}
+                          </Box>
+                        )}
+                      >
+                        {serviciosOpts.map((s) => (
+                          <MenuItem key={s.id} value={String(s.id)}>
+                            {s.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
+
+                      {!!errorServiciosSelect && <FormHelperText>{errorServiciosSelect}</FormHelperText>}
+                      {!errorServiciosSelect && !!errorServicios && <FormHelperText>{errorServicios}</FormHelperText>}
+                      {!errorServiciosSelect && !errorServicios && (
+                        <FormHelperText>Elegí uno o más servicios (mínimo 1).</FormHelperText>
                       )}
+                    </FormControl>
+                  </Grid>
+
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      type="datetime-local"
+                      label="Fecha y hora"
+                      value={reserva.fechaHora}
+                      onChange={handleChangeReserva("fechaHora")}
+                      InputLabelProps={{ shrink: true }}
+                    />
+                  </Grid>
+                </Grid>
+
+                <Grid container spacing={2} sx={{ mb: 2 }}>
+                  <Grid item xs={12} md={6}>
+                    <FormControl fullWidth>
+                      <InputLabel id="tipo-trabajo-label">Tipo de trabajo</InputLabel>
+                      <Select
+                        labelId="tipo-trabajo-label"
+                        label="Tipo de trabajo"
+                        value={reserva.tipoTrabajo}
+                        onChange={handleChangeReserva("tipoTrabajo")}
+                      >
+                        <MenuItem value="instalacion">Instalación</MenuItem>
+                        <MenuItem value="reparacion">Reparación</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+
+                  <Grid item xs={12} md={6}>
+                    <FormControl
+                      fullWidth
+                      disabled={loadingDirecciones}
+                      error={!loadingDirecciones && direccionesCliente.length === 0}
                     >
-                      {serviciosOpts.map((s) => (
-                        <MenuItem key={s.id} value={String(s.id)}>
-                          {s.label}
-                        </MenuItem>
-                      ))}
-                    </Select>
+                      <InputLabel id="direccion-label">Dirección</InputLabel>
+                      <Select
+                        labelId="direccion-label"
+                        label="Dirección"
+                        value={reserva.idDireccion}
+                        onChange={(e) => setReserva((prev) => ({ ...prev, idDireccion: e.target.value }))}
+                      >
+                        {direccionesCliente.map((d) => (
+                          <MenuItem key={d.id} value={String(d.id)}>
+                            {labelDireccion(d)}
+                          </MenuItem>
+                        ))}
+                      </Select>
 
-                    {!!errorServiciosSelect && <FormHelperText>{errorServiciosSelect}</FormHelperText>}
-                    {!errorServiciosSelect && !!errorServicios && <FormHelperText>{errorServicios}</FormHelperText>}
-                    {!errorServiciosSelect && !errorServicios && (
-                      <FormHelperText>Elegí uno o más servicios (mínimo 1).</FormHelperText>
-                    )}
-                  </FormControl>
+                      <FormHelperText>
+                        {loadingDirecciones
+                          ? "Cargando direcciones..."
+                          : direccionesCliente.length === 0
+                            ? "El cliente no tiene direcciones cargadas."
+                            : "Seleccioná una dirección existente del cliente."}
+                      </FormHelperText>
+                    </FormControl>
+                  </Grid>
                 </Grid>
 
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    type="datetime-local"
-                    label="Fecha y hora"
-                    value={reserva.fechaHora}
-                    onChange={handleChangeReserva("fechaHora")}
-                    InputLabelProps={{ shrink: true }}
-                  />
+                <Grid container spacing={2}>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="Comentarios (opcional)"
+                      multiline
+                      rows={4}
+                      value={reserva.comentarios}
+                      onChange={handleChangeReserva("comentarios")}
+                    />
+                  </Grid>
                 </Grid>
-
-                <Grid item xs={12} md={6}>
-                  <FormControl fullWidth>
-                    <InputLabel id="tipo-trabajo-label">Tipo de trabajo</InputLabel>
-                    <Select
-                      labelId="tipo-trabajo-label"
-                      label="Tipo de trabajo"
-                      value={reserva.tipoTrabajo}
-                      onChange={handleChangeReserva("tipoTrabajo")}
-                    >
-                      <MenuItem value="instalacion">Instalación</MenuItem>
-                      <MenuItem value="reparacion">Reparación</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-
-                {/* Direcciones */}
-                <Grid item xs={12} md={6}>
-                  <FormControl
-                    fullWidth
-                    disabled={loadingDirecciones}
-                    error={!loadingDirecciones && direccionesCliente.length === 0}
-                  >
-                    <InputLabel id="direccion-label">Dirección</InputLabel>
-                    <Select
-                      labelId="direccion-label"
-                      label="Dirección"
-                      value={reserva.idDireccion}
-                      onChange={(e) => setReserva((prev) => ({ ...prev, idDireccion: e.target.value }))}
-                    >
-                      {direccionesCliente.map((d) => (
-                        <MenuItem key={d.id} value={String(d.id)}>
-                          {labelDireccion(d)}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                    <FormHelperText>
-                      {loadingDirecciones
-                        ? "Cargando direcciones..."
-                        : direccionesCliente.length === 0
-                        ? "El cliente no tiene direcciones cargadas."
-                        : "Seleccioná una dirección existente del cliente."}
-                    </FormHelperText>
-                  </FormControl>
-                </Grid>
-
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Comentarios (opcional)"
-                    multiline
-                    rows={3}
-                    value={reserva.comentarios}
-                    onChange={handleChangeReserva("comentarios")}
-                  />
-                </Grid>
-              </Grid>
+              </>
             )}
 
             {/* Reserva existente */}
@@ -828,7 +840,7 @@ export default function AdminCrearReservaPage() {
 
                 {!loadingReservasCliente && reservasCliente.length === 0 && (
                   <Typography variant="body2" color="text.secondary">
-                    Este cliente no tiene reservas registradas (o el endpoint está filtrando por estado/fecha).
+                    Este cliente no tiene reservas registradas.
                   </Typography>
                 )}
 
@@ -853,7 +865,10 @@ export default function AdminCrearReservaPage() {
                         }}
                       >
                         <Box>
-                          <Typography variant="subtitle2">{res.nombreServicio || "Servicio"}</Typography>
+                          <Typography variant="subtitle2">
+                            {res.nombreServicio || "Servicio"}
+                          </Typography>
+
                           <Typography variant="body2" color="text.secondary">
                             {res.fechaReserva &&
                               new Date(res.fechaReserva).toLocaleString("es-UY", {
@@ -864,9 +879,11 @@ export default function AdminCrearReservaPage() {
                                 minute: "2-digit",
                               })}
                           </Typography>
+
                           <Typography variant="body2" color="text.secondary">
                             Estado: {res.estado || "Sin estado"}
                           </Typography>
+
                           {res.direccionDescripcion && (
                             <Typography variant="body2" color="text.secondary">
                               Dirección: {res.direccionDescripcion}
@@ -898,10 +915,14 @@ export default function AdminCrearReservaPage() {
                                 descripcionTrabajo: "",
                                 notasInternas: "",
                               }));
-                              setSuccess("Esta reserva ya tiene presupuesto. Se muestra el monto.");
+                              setSuccess(
+                                "Esta reserva ya tiene presupuesto. Se muestra el monto."
+                              );
                             } else {
                               resetPresupuesto();
-                              setSuccess("Reserva seleccionada. Ahora podés cargar el presupuesto.");
+                              setSuccess(
+                                "Reserva seleccionada. Ahora podés cargar el presupuesto."
+                              );
                             }
                           }}
                         >
@@ -913,6 +934,7 @@ export default function AdminCrearReservaPage() {
               </Box>
             )}
 
+
             <Box sx={{ mt: 2 }}>
               <Button variant="contained" onClick={handleCrearReserva} disabled={loadingReserva}>
                 {loadingReserva
@@ -920,8 +942,8 @@ export default function AdminCrearReservaPage() {
                     ? "Creando reserva..."
                     : "Confirmando..."
                   : modoReserva === "nueva"
-                  ? "Crear reserva"
-                  : "Confirmar selección"}
+                    ? "Crear reserva"
+                    : "Confirmar selección"}
               </Button>
             </Box>
           </>
@@ -941,10 +963,11 @@ export default function AdminCrearReservaPage() {
             </Alert>
           )}
 
-          <Grid container spacing={2}>
-            <Grid item xs={12} md={4}>
+          <Grid container spacing={2} sx={{ mb: 2 }}>
+            <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
+                size="small"
                 label="Monto total"
                 type="number"
                 value={presupuesto.montoTotal}
@@ -952,9 +975,11 @@ export default function AdminCrearReservaPage() {
                 disabled={reservaYaTienePresupuesto}
               />
             </Grid>
-            <Grid item xs={12} md={4}>
+
+            <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
+                size="small"
                 label="Monto pagado (opcional)"
                 type="number"
                 value={presupuesto.montoPagado}
@@ -962,23 +987,27 @@ export default function AdminCrearReservaPage() {
                 disabled={reservaYaTienePresupuesto}
               />
             </Grid>
-            <Grid item xs={12}>
+          </Grid>
+
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
                 label="Descripción del trabajo"
                 multiline
-                rows={2}
+                minRows={4}
                 value={presupuesto.descripcionTrabajo}
                 onChange={handleChangePresupuesto("descripcionTrabajo")}
                 disabled={reservaYaTienePresupuesto}
               />
             </Grid>
-            <Grid item xs={12}>
+
+            <Grid item xs={12} md={4}>
               <TextField
                 fullWidth
                 label="Notas internas"
                 multiline
-                rows={3}
+                minRows={4}
                 value={presupuesto.notasInternas}
                 onChange={handleChangePresupuesto("notasInternas")}
                 disabled={reservaYaTienePresupuesto}
@@ -988,7 +1017,11 @@ export default function AdminCrearReservaPage() {
 
           {!reservaYaTienePresupuesto && (
             <Box sx={{ mt: 2 }}>
-              <Button variant="contained" onClick={handleCrearPresupuesto} disabled={loadingPresupuesto}>
+              <Button
+                variant="contained"
+                onClick={handleCrearPresupuesto}
+                disabled={loadingPresupuesto}
+              >
                 {loadingPresupuesto ? "Creando presupuesto..." : "Crear presupuesto"}
               </Button>
             </Box>

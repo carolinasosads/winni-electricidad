@@ -41,14 +41,14 @@ public class UsuarioMapper
         );
     }
     
-    public static UsuarioCliente MapearDtoRegistroAdminAEntidad(UsuarioRegistroAdminDto dto)
+    public static UsuarioCliente MapearDtoRegistroAdminAEntidad(UsuarioRegistroAdminDto dto, string pass)
     {
         return new UsuarioCliente
         {
             NombreCompleto = dto.NombreCompleto,
             Email = dto.Email,
             Telefono = dto.Telefono,
-            PasswordHash = dto.Password,
+            PasswordHash = pass,
             Direcciones = dto.Direcciones?.Select(d => new Direccion
             {
                 Calle   = d.Calle!.Trim(),

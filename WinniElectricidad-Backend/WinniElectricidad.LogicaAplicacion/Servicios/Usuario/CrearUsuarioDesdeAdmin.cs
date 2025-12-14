@@ -11,10 +11,11 @@ namespace WinniElectricidad.LogicaAplicacion.Servicios.Usuario;
 public class CrearUsuarioDesdeAdmin : ICrearUsuarioDesdeAdmin
 {
     private readonly IRepositorioUsuario _repositorioUsuario;
-
-    public CrearUsuarioDesdeAdmin(IRepositorioUsuario repositorioUsuario)
+    private readonly IServicioHash _servicioHash;
+    public CrearUsuarioDesdeAdmin(IRepositorioUsuario repositorioUsuario, IServicioHash servicioHash)
     {
         _repositorioUsuario = repositorioUsuario;
+        _servicioHash = servicioHash;
     }
 
     public async Task<UsuarioCreadoDesdeAdminDto?> CrearUsuario(UsuarioRegistroAdminDto dto, CancellationToken ct = default)
@@ -26,9 +27,8 @@ public class CrearUsuarioDesdeAdmin : ICrearUsuarioDesdeAdmin
         }
 
         var passwordRandom = GenerarPasswordRandom();
-        dto.Password = passwordRandom; 
-
-        UsuarioCliente usuarioCliente = UsuarioMapper.MapearDtoRegistroAdminAEntidad(dto);
+        var passwordHash = _servicioHash.Hash(passwordRandom);
+        UsuarioCliente usuarioCliente = UsuarioMapper.MapearDtoRegistroAdminAEntidad(dto, passwordHash);
 
         var usuarioRegistrado = await _repositorioUsuario.Registro(usuarioCliente, ct);
         if (usuarioRegistrado is null) return null;

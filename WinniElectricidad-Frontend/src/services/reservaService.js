@@ -139,27 +139,7 @@ export async function getReservasPorClienteAdmin(clienteId) {
 
   return await resp.json();
 }
-export const crearPresupuestoParaReserva = async (idReserva, dto) => {
-  try {
-    const res = await fetch(`${urlAPIPresupuesto}reserva/${idReserva}`, {
-      method: "POST",
-      headers: getAuthHeaders(),
-      body: JSON.stringify(dto),
-    });
 
-    if (!res.ok) {
-      const data = await handleJsonOrText(res);
-      const message = data?.message || "Error al crear el presupuesto de la reserva.";
-      throw new ApiError(message, res.status);
-    }
-
-    return await res.json(); 
-  } catch (err) {
-    if (err instanceof ApiError) throw err;
-    console.error(err);
-    throw new ApiError("Error de red al crear el presupuesto.");
-  }
-};
 
 export async function crearReservaHistoricaAdmin(idUsuario, reservaDto) {
   const resp = await fetch(`${urlAPIReserva}admin/registrar-historico/${idUsuario}`, {
@@ -176,21 +156,3 @@ export async function crearReservaHistoricaAdmin(idUsuario, reservaDto) {
   return await resp.json(); 
 }
 
-export async function getPresupuestoPorReserva(idReserva) {
-  const resp = await fetch(`${urlAPIPresupuesto}reserva/${idReserva}`, {
-    method: "GET",
-    headers: getAuthHeaders(),
-  });
-
-  // 404 = la reserva no tiene presupuesto
-  if (resp.status === 404) return null;
-
-  if (!resp.ok) {
-    const data = await handleJsonOrText(resp);
-    throw new ApiError(
-      data?.message || "Error obteniendo presupuesto de la reserva",
-      resp.status
-    );
-  }
-  return await resp.json();
-}
