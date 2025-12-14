@@ -13,7 +13,7 @@ namespace WinniElectricidad.Tests.Large.Reseña;
 [NonParallelizable]
 public class ReseñaControllerTests : LargeTestBase
 {
-    private const string EndpointBase = "/WinniElectricidadApi/Reseña";
+    private const string EndpointBase = "/WinniElectricidadApi/Resena";
 
     [TestCase(false, TestName = "Reseñar_SinImagen_DeberiaCrearReseña")]
     [TestCase(true,  TestName = "Reseñar_ConImagen_DeberiaCrearReseñaYGuardarImagen")]
@@ -115,8 +115,11 @@ public class ReseñaControllerTests : LargeTestBase
             var env = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
 
             var relative = dto!.ImagenUrl!.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
-            var webRoot = env.WebRootPath ?? "wwwroot";
-            var path = Path.Combine(webRoot, relative);
+            var path = Path.Combine(
+                Directory.GetCurrentDirectory(),
+                "wwwroot",
+                relative
+            );
 
             Assert.That(File.Exists(path), Is.True,
                 $"Se esperaba que el archivo exista en: {path}");
