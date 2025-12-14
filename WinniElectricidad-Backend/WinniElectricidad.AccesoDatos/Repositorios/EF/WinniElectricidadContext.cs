@@ -15,6 +15,7 @@ public class WinniElectricidadContext : DbContext
     public DbSet<Notificacion>  Notificaciones { get; set; }
     public DbSet<Servicio>  Servicios { get; set; }
     public DbSet<OneTimeToken> OneTimeTokens { get; set; }
+    public DbSet<Settings> Settings { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -129,6 +130,17 @@ public class WinniElectricidadContext : DbContext
                 .IsUnique(); 
         });
 
+        modelBuilder.Entity<Settings>().HasData(
+            new Settings
+            {
+                Id = 1,
+                HoraInicio = new TimeOnly(9, 0),
+                HoraFin = new TimeOnly(17, 0),
+                MinutosEntreTurnos = 90,
+                DiasMinimos = 2,
+                DiasMaximos = 30
+            }
+        );
 
         modelBuilder.Entity<Servicio>().HasData(
                 new Servicio

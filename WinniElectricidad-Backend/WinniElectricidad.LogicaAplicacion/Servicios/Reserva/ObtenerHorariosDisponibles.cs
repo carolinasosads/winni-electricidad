@@ -7,16 +7,19 @@ namespace WinniElectricidad.LogicaAplicacion.Servicios.Reserva;
 public class ObtenerHorariosDisponibles : IObtenerHorariosDisponibles
 {
     private readonly IRepositorioReserva _repositorioReserva;
+    private readonly IRepositorioSettings _repositorioSettings;
 
-    public ObtenerHorariosDisponibles(IRepositorioReserva repositorioReserva)
+    public ObtenerHorariosDisponibles(IRepositorioReserva repositorioReserva, IRepositorioSettings repositorioSettings)
     {
         _repositorioReserva = repositorioReserva;
+        _repositorioSettings = repositorioSettings;
     }
     public async Task<IEnumerable<DiaDisponibilidadDto>> Ejecutar(CancellationToken ct = default)
     {
+        var config =  await _repositorioSettings.Obtener(ct);
         var hoy = DateTime.Today;
-        var minimo = hoy.AddDays(2);
-        var maximo = hoy.AddDays(30);
+        var minimo = hoy.AddDays(config.DiasMinimos);
+        var maximo = hoy.AddDays(config.DiasMaximos);
         var reservas = await _repositorioReserva.FindAllBetweenDates(minimo, maximo, ct);
         
         var horariosDisponibles = new List<DiaDisponibilidadDto>();
@@ -27,8 +30,8 @@ public class ObtenerHorariosDisponibles : IObtenerHorariosDisponibles
             
             if (fecha.DayOfWeek != DayOfWeek.Sunday)
             {
-                var horaActual = new TimeOnly(9, 0);
-                var fin = new TimeOnly(17, 0);
+                var horaActual = config.HoraInicio;
+                var fin = config.HoraFin;
                 
                 while (horaActual < fin)
                 {
@@ -38,7 +41,7 @@ public class ObtenerHorariosDisponibles : IObtenerHorariosDisponibles
 
                     horas.Add(new HoraDto { Hora = horaActual, Disponible = !ocupado });
                     
-                    horaActual = horaActual.AddMinutes(90); 
+                    horaActual = horaActual.AddMinutes(config.MinutosEntreTurnos); 
                 }
                 
                 horariosDisponibles.Add(new DiaDisponibilidadDto { Fecha = fecha, Horas = horas });

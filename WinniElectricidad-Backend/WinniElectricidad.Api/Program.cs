@@ -149,6 +149,7 @@ builder.Services.AddScoped<IRepositorioUsuario, RepositorioUsuarios>();
 builder.Services.AddScoped<IRepositorioOneTimeToken, RepositorioOneTimeTokens>();
 builder.Services.AddScoped<IRepositorioServicio, RepositorioServicios>();
 builder.Services.AddScoped<IRepositorioReserva, RepositorioReservas>();
+builder.Services.AddScoped<IRepositorioSettings, RepositorioSettings>();
 
 var app = builder.Build();
 
