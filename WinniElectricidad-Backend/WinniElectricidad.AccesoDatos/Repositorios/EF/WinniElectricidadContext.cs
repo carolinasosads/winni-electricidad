@@ -26,6 +26,12 @@ public class WinniElectricidadContext : DbContext
             .HasDiscriminator<string>("Discriminator")
             .HasValue<UsuarioAdministrador>("UsuarioAdministrador")
             .HasValue<UsuarioCliente>("UsuarioCliente");
+        
+        modelBuilder.Entity<UsuarioCliente>()
+            .HasMany(u => u.Reseñas)
+            .WithOne()
+            .HasForeignKey(r => r.IdUsuario)
+            .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Direccion>(e =>
         {
@@ -77,6 +83,11 @@ public class WinniElectricidadContext : DbContext
 
             entity.Property(s => s.Activo)
                 .HasDefaultValue(true);
+            
+            entity.HasMany(s => s.Reseñas)
+                .WithOne()
+                .HasForeignKey(r => r.IdServicio)
+                .OnDelete(DeleteBehavior.Restrict);
         });
         
         modelBuilder.Entity<Reserva>(entity =>
