@@ -164,7 +164,6 @@ export default function CrearResena() {
               {s.titulo}
             </MenuItem>
           ))}
-          <MenuItem value="otro">Otro</MenuItem>
         </TextField>
 
         {/* Carga de imagen */}

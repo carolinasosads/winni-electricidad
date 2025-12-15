@@ -175,6 +175,14 @@ public class WinniElectricidadContext : DbContext
                     Descripcion = "Descripción genérica para el servicio de Riego",
                     ImagenUrl = null,
                     Activo = true
+                },
+                new Servicio
+                {
+                    Id = 5,
+                    Titulo = "Otro",
+                    Descripcion = "Descripción genérica para Otro",
+                    ImagenUrl = null,
+                    Activo = true
                 }
             );
     }
