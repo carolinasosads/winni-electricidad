@@ -14,10 +14,8 @@ public class UsuarioRegistroAdminDto
     public string Email { get; set; } 
 
     [Required]
-    public ICollection<DireccionDto?> Direcciones { get; set; }
+    public ICollection<DireccionDto> Direcciones { get; set; }
 
     [Phone]
-    public string Telefono { get; set; }
-
-    public string? Password { get; set; }
+    public string? Telefono { get; set; }
 }

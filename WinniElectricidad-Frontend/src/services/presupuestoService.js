@@ -1,6 +1,12 @@
 import ApiError from "./ApiError";
 const urlAPIPresupuesto = "https://winnielectricidadbe-dev-adgqcbd7gvbgg7fy.eastus2-01.azurewebsites.net/WinniElectricidadApi/Presupuesto/";
 
+async function handleJsonOrText(res) {
+  const contentType = res.headers.get("content-type") || "";
+  if (contentType.includes("application/json")) return await res.json();
+  return await res.text();
+}
+
 function getAuthHeaders() {
   const token = localStorage.getItem("token");
   return {

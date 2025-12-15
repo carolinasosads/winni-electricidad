@@ -174,6 +174,11 @@ public class WinniElectricidadContext : DbContext
 
             entity.Property(p => p.IdUsuario)
                 .IsRequired();
+            
+            entity.HasOne(p => p.Reserva)
+                .WithOne(r => r.Presupuesto)
+                .HasForeignKey<Presupuesto>(p => p.IdReserva)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Servicio>().HasData(

@@ -9,8 +9,11 @@ public class Presupuesto
     public int IdUsuario { get; set; }
     public decimal Monto { get; set; }
     public string? Notas { get; set; }
-    public DateTime FechaPresupuesto { get; set; } = DateTime.UtcNow;
+    public DateTime FechaPresupuesto { get; set; }
     #endregion
-    
-    public Presupuesto(){}
+
+    public Presupuesto()
+    {
+        FechaPresupuesto = DateTime.UtcNow;
+    }
 }

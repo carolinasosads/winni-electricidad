@@ -47,7 +47,7 @@ public class Reserva
         var r = new Reserva
         {
             FechaReserva = fechaReserva,
-            EstadoReserva = EstadoReserva.Confirmada, //todo: cambiar a finalizada
+            EstadoReserva = EstadoReserva.Confirmada,
             TipoServicioReserva = tipo,
             IdUsuarioCliente = idUsuarioCliente,
             IdDireccion = idDireccion,

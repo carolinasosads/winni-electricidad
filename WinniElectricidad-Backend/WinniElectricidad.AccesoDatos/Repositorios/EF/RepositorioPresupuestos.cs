@@ -36,6 +36,7 @@ public class RepositorioPresupuestos : IRepositorioPresupuesto
     {
         var presupuesto = await _db.Presupuestos
             .FirstOrDefaultAsync(p => p.Id == id, ct);
+        if (presupuesto == null) return; 
         
         _db.Presupuestos.Remove(presupuesto);
         await _db.SaveChangesAsync(ct);

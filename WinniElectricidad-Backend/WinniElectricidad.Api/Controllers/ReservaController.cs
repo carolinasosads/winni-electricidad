@@ -559,21 +559,55 @@ public class ReservaController : ControllerBase
     }
 
     
-        /// <summary>
-        /// Obtiene todas las reservas de un cliente (solo admin).
-        /// </summary>
+    /// <summary>
+    /// Obtiene el listado completo de reservas asociadas a un cliente específico.
+    /// </summary>
+    /// <remarks>
+    /// Este endpoint está destinado al uso administrativo y permite:
+    /// <list type="bullet">
+    /// <item>
+    /// Consultar todas las reservas (pasadas y futuras) de un cliente.
+    /// </item>
+    /// <item>
+    /// Visualizar el historial de reservas desde el panel de administración.
+    /// </item>
+    /// </list>
+    ///
+    /// <b>Acceso restringido:</b>
+    /// <br/>
+    /// Requiere autenticación con rol <c>Administrador</c>.
+    /// </remarks>
+
         [HttpGet("Admin/Cliente/{clienteId:int}")]
-        [Authorize(Roles = "Administrador")] // ajusta el nombre del rol si usas otro
+        [Authorize(Roles = "Administrador")]
         public async Task<ActionResult<IEnumerable<ReservaListadoDto>>> GetReservasPorClienteAdmin(int clienteId, CancellationToken ct)
         {
             var reservas = await _obtenerReservasPorCliente.EjecutarAsync(clienteId, ct);
             return Ok(reservas);
         }
     
-        /// <summary>
-        /// Crea una reserva histórica (pasada) para un usuario específico (solo admin).
-        /// No aplica validaciones de agenda (48h, domingo, etc).
-        /// </summary>
+    /// <summary>
+    /// Registra una reserva histórica (ya realizada) para un usuario específico.
+    /// </summary>
+    /// <remarks>
+    /// Este endpoint permite a un administrador crear manualmente reservas pasadas,
+    /// generalmente con fines administrativos, históricos o de carga inicial de datos.
+    ///
+    /// <b>Comportamiento especial:</b>
+    /// <list type="bullet">
+    /// <item>
+    /// No aplica validaciones de agenda ni restricciones de fecha.
+    /// </item>
+    /// <item>
+    /// La reserva se registra directamente como histórica.
+    /// </item>
+    /// </list>
+    ///
+    /// <b>Acceso restringido:</b>
+    /// <br/>
+    /// Requiere autenticación con rol <c>Administrador</c>.
+    /// </remarks>
+
         [HttpPost("admin/registrar-historico/{idUsuario:int}")]
         [Authorize(Roles = "Administrador")]
         [ProducesResponseType(typeof(ReservaCreadaDto), StatusCodes.Status200OK)]

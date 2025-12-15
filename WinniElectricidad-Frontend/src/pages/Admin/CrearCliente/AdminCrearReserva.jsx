@@ -972,6 +972,7 @@ export default function AdminCrearReservaPage() {
                 type="number"
                 value={presupuesto.montoTotal}
                 onChange={handleChangePresupuesto("montoTotal")}
+                inputProps={{ min: 0 }}
                 disabled={reservaYaTienePresupuesto}
               />
             </Grid>
@@ -984,6 +985,7 @@ export default function AdminCrearReservaPage() {
                 type="number"
                 value={presupuesto.montoPagado}
                 onChange={handleChangePresupuesto("montoPagado")}
+                inputProps={{ min: 0 }}
                 disabled={reservaYaTienePresupuesto}
               />
             </Grid>
