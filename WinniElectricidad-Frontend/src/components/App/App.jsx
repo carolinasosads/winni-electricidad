@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Registro from "../../pages/Public/Registro/Registro.jsx";
 import Login from "../../pages/Public/Login/Login.jsx";
 import ResetPassword from "../../pages/Public/Login/ResetPassword";
+import ResenaPage from "../../pages/Public/HistoricoReseñas/ResenasPage.jsx";
 
 import { PrivateRoute } from "../routes/PrivateRoute.jsx";
 import { ProtectedRoute } from "../routes/ProtectedRoute.jsx";
@@ -28,6 +29,7 @@ export default function App() {
       <Route path="/registro" element={<Registro />} />
       <Route path="/login" element={<Login />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/resenas" element={<ResenaPage />} />
 
       {/* UsuarioCliente */}
       <Route
@@ -40,6 +42,7 @@ export default function App() {
       >
         <Route index element={<AgendaPage />} />
         <Route path="agenda" element={<AgendaPage />} />
+        <Route path="resenas" element={<ResenaPage />} />
         <Route path="resenas/crear" element={<CrearResena />} />
       </Route>
 
@@ -53,6 +56,7 @@ export default function App() {
         }
       >
         <Route index element={<DashboardAdmin />} />
+        <Route path="resenas" element={<ResenaPage />} />
         <Route path="historico" element={<HistoricoClientes />} />
         <Route path="panel-reservas" element={<PanelReservas />} />
         <Route path="crear-reserva" element={<AdminCrearReservaPage />} />

@@ -1,105 +1,125 @@
-import * as React from 'react';
-import PropTypes from 'prop-types';
-import { styled, useTheme } from '@mui/material/styles';
-import Box from '@mui/material/Box';
-import MuiAppBar from '@mui/material/AppBar';
-import IconButton from '@mui/material/IconButton';
-import Toolbar from '@mui/material/Toolbar';
-import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
-import MenuIcon from '@mui/icons-material/Menu';
-import MenuOpenIcon from '@mui/icons-material/MenuOpen';
-import Stack from '@mui/material/Stack';
-import { Link } from 'react-router-dom';
+import * as React from "react";
+import PropTypes from "prop-types";
+import { styled, useTheme } from "@mui/material/styles";
+import {
+  Box,
+  AppBar as MuiAppBar,
+  Toolbar,
+  IconButton,
+  Tooltip,
+  Typography,
+  Stack,
+  Button
+} from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
+import MenuOpenIcon from "@mui/icons-material/MenuOpen";
+import RateReviewIcon from "@mui/icons-material/RateReview";
+import { Link } from "react-router-dom";
 
 const AppBar = styled(MuiAppBar)(({ theme }) => ({
-  borderWidth: 0,
-  borderBottomWidth: 1,
-  borderStyle: 'solid',
-  borderColor: (theme.vars ?? theme).palette.divider,
-  boxShadow: 'none',
-  zIndex: theme.zIndex.drawer + 1,
+  borderBottom: `1px solid ${(theme.vars ?? theme).palette.divider}`,
+  boxShadow: "none",
+  zIndex: theme.zIndex.drawer + 1
 }));
 
-const LogoContainer = styled('div')({
-  position: 'relative',
+const LogoContainer = styled("div")({
   height: 40,
-  display: 'flex',
-  alignItems: 'center',
-  '& img': { maxHeight: 40 },
+  display: "flex",
+  alignItems: "center",
+  "& img": { maxHeight: 40 }
 });
-
 
 export default function AppHeader({
   logo,
-  title = '',
+  title = "",
   showMenuButton = false,
   menuOpen = false,
   onToggleMenu,
   rightSlot,
-  homeHref = '/',
+  homeHref = "/resenas"
 }) {
   const theme = useTheme();
 
-  const handleMenuClick = React.useCallback(() => {
+  const handleMenuClick = () => {
     onToggleMenu?.(!menuOpen);
-  }, [menuOpen, onToggleMenu]);
+  };
 
-  const MenuToggle = (
-    <Tooltip
-      title={`${menuOpen ? 'Collapse' : 'Expand'} menu`}
-      enterDelay={1000}
-    >
-      <span>
-        <IconButton
-          size="small"
-          aria-label={`${menuOpen ? 'Collapse' : 'Expand'} navigation menu`}
-          onClick={handleMenuClick}
-          disabled={!showMenuButton || !onToggleMenu}
-        >
-          {menuOpen ? <MenuOpenIcon /> : <MenuIcon />}
-        </IconButton>
-      </span>
-    </Tooltip>
-  );
+  const getResenasPathByRol = (rol) => {
+    switch (rol) {
+      case "Administrador":
+        return "/admin/resenas";
+      case "Cliente":
+        return "/cliente/resenas";
+      default:
+        return "/resenas";
+    }
+  };
 
-  return (
-    <AppBar color="inherit" position="absolute" sx={{ displayPrint: 'none' }}>
-      <Toolbar sx={{ backgroundColor: 'inherit', mx: { xs: -0.75, sm: -1 } }}>
-        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ flexWrap: 'wrap', width: '100%' }}>
-          <Stack direction="row" alignItems="center">
-            {showMenuButton ? <Box sx={{ mr: 1 }}>{MenuToggle}</Box> : null}
-            <Link to={homeHref} style={{ textDecoration: 'none' }}>
-              <Stack direction="row" alignItems="center">
-                {logo ? <LogoContainer>{logo}</LogoContainer> : null}
-                {title ? (
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      color: (theme.vars ?? theme).palette.primary.main,
-                      fontWeight: 700,
-                      ml: 1,
-                      whiteSpace: 'nowrap',
-                      lineHeight: 1,
-                    }}
-                  >
-                    {title}
-                  </Typography>
-                ) : null}
-              </Stack>
-            </Link>
-          </Stack>
+  const rol = localStorage.getItem("rol");
+  const resenasPath = getResenasPathByRol(rol);
 
-          {/* Botonera derecha inyectable */}
-          {rightSlot ? (
-            <Stack direction="row" alignItems="center" spacing={2} sx={{ marginLeft: 'auto' }}>
+    return (
+      <AppBar color="inherit" position="absolute">
+        <Toolbar sx={{ mx: { xs: -0.75, sm: -1 } }}>
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+            sx={{ width: "100%" }}
+          >
+            {/* IZQUIERDA */}
+            <Stack direction="row" alignItems="center">
+              {showMenuButton && (
+                <Tooltip title={menuOpen ? "Cerrar menú" : "Abrir menú"}>
+                  <IconButton size="small" onClick={handleMenuClick}>
+                    {menuOpen ? <MenuOpenIcon /> : <MenuIcon />}
+                  </IconButton>
+                </Tooltip>
+              )}
+
+              <Link to={homeHref} style={{ textDecoration: "none" }}>
+                <Stack direction="row" alignItems="center" ml={1}>
+                  {logo && <LogoContainer>{logo}</LogoContainer>}
+                  {title && (
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        color: theme.palette.primary.main,
+                        fontWeight: 700,
+                        ml: 1,
+                        whiteSpace: "nowrap"
+                      }}
+                    >
+                      {title}
+                    </Typography>
+                  )}
+                </Stack>
+              </Link>
+            </Stack>
+
+            {/* DERECHA */}
+            <Stack direction="row" spacing={2} alignItems="center">
+              {/* Link público a reseñas */}
+              <Link to={resenasPath} style={{ textDecoration: "none" }}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<RateReviewIcon />}
+                  sx={{
+                    textTransform: "none",
+                    borderRadius: 2
+                  }}
+                >
+                  Reseñas
+                </Button>
+              </Link>
+              {/* Botones externos (logout, login, etc.) */}
               {rightSlot}
             </Stack>
-          ) : null}
-        </Stack>
-      </Toolbar>
-    </AppBar>
-  );
+          </Stack>
+        </Toolbar>
+      </AppBar>
+    );
 }
 
 AppHeader.propTypes = {
@@ -109,5 +129,5 @@ AppHeader.propTypes = {
   menuOpen: PropTypes.bool,
   onToggleMenu: PropTypes.func,
   rightSlot: PropTypes.node,
-  homeHref: PropTypes.string,
+  homeHref: PropTypes.string
 };
