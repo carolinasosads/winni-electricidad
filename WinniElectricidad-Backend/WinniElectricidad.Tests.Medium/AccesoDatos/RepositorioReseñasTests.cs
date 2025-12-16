@@ -15,6 +15,22 @@ public class RepositorioReseñasTests
         await using (connection)
         await using (context)
         {
+            context.Usuarios.Add(new UsuarioCliente
+            {
+                IdUsuario = 10,
+                Email = "test@test.com",
+                NombreCompleto = "Usuario Test",
+                PasswordHash = "Test",
+                Telefono = "Test"
+            });
+
+            context.Servicios.Add(new Servicio
+            {
+                Id = 50,
+                Titulo = "Servicio Test",
+                Activo = true
+            });
+            
             var reseña = new Reseña(
                 descripcion: "Muy buen servicio",
                 calificacion: 5,
@@ -53,6 +69,17 @@ public class RepositorioReseñasTests
         await using (connection)
         await using (context)
         {
+            context.Usuarios.AddRange(
+                new UsuarioCliente { IdUsuario = 1, NombreCompleto = "U1", Email = "u1@test.com", PasswordHash = "Test", Telefono = "Test"},
+                new UsuarioCliente { IdUsuario = 2, NombreCompleto = "U2", Email = "u2@test.com", PasswordHash = "Test", Telefono = "Test"},
+                new UsuarioCliente { IdUsuario = 3, NombreCompleto = "U3", Email = "u3@test.com", PasswordHash = "Test", Telefono = "Test"}
+            );
+
+            context.Servicios.AddRange(
+                new Servicio { Id = 1, Titulo = "Servicio 1", Activo = true },
+                new Servicio { Id = 2, Titulo = "Servicio 2", Activo = true }
+            );
+            
             context.Resenias.AddRange(
                 new Reseña("Reseña aprobada 1", 5, 1, 1, null)
                 {
