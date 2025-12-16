@@ -10,7 +10,7 @@ public class UsuarioRegistroAdminDto
     public string NombreCompleto { get; set; }
 
     [Required]
-    [EmailAddress]
+    [EmailAddress(ErrorMessage = "El email no tiene un formato válido.")]
     public string Email { get; set; } 
 
     [Required]

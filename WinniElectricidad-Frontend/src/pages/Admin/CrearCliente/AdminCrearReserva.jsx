@@ -1,14 +1,12 @@
 import { useEffect, useState } from "react";
-import { crearUsuarioComoAdmin, buscarUsuariosAdmin, getServiciosActivos, getDireccionesUsuarioAdmin, } from "../../../services/authService";
+import { crearUsuarioComoAdmin, buscarUsuariosAdmin,getServiciosActivos, getDireccionesUsuarioAdmin,} from "../../../services/authService";
 
-import { crearReservaAdmin, crearReservaHistoricaAdmin, getReservasPorClienteAdmin } from "../../../services/reservaService";
+import {crearReservaAdmin,crearReservaHistoricaAdmin,getReservasPorClienteAdmin,} from "../../../services/reservaService";
 
-import { crearPresupuestoParaReserva, } from "../../../services/presupuestoService";
+import { crearPresupuestoParaReserva } from "../../../services/presupuestoService";
 
-import {
-  Box, Paper, Typography, Grid, RadioGroup, FormControlLabel, Radio, TextField, Button, Divider,
-  Alert, FormControl, InputLabel, Select, MenuItem, FormHelperText, Chip,
-} from "@mui/material";
+import {Box,Paper,Typography,Grid,RadioGroup,FormControlLabel,Radio,TextField,Button,Divider,Alert,FormControl,InputLabel,Select,
+  MenuItem,FormHelperText,Chip,} from "@mui/material";
 
 import ApiError from "../../../services/ApiError";
 
@@ -43,7 +41,7 @@ export default function AdminCrearReservaPage() {
     servicios: [],
     fechaHora: "",
     comentarios: "",
-    tipoTrabajo: "instalacion", // "instalacion" | "reparacion"
+    tipoTrabajo: "instalacion", // "instalacion" | "mantenimiento"
     idDireccion: "",
   });
   const [loadingReserva, setLoadingReserva] = useState(false);
@@ -196,7 +194,7 @@ export default function AdminCrearReservaPage() {
     const nextMode = event.target.value;
     setModoReserva(nextMode);
 
-    // reseteos 
+    // reseteos
     setReservaSeleccionada(null);
     setReservaParaPresupuesto(null);
     resetPresupuesto();
@@ -237,7 +235,9 @@ export default function AdminCrearReservaPage() {
       setReservasCliente(list);
     } catch (err) {
       console.error(err);
-      setError(parseApiErrorMessage(err, "Error al cargar las reservas del cliente."));
+      setError(
+        parseApiErrorMessage(err, "Error al cargar las reservas del cliente.")
+      );
     } finally {
       setLoadingReservasCliente(false);
     }
@@ -252,7 +252,9 @@ export default function AdminCrearReservaPage() {
       setDireccionesCliente(Array.isArray(dirs) ? dirs : []);
     } catch (err) {
       console.error(err);
-      setError(parseApiErrorMessage(err, "Error al cargar direcciones del cliente."));
+      setError(
+        parseApiErrorMessage(err, "Error al cargar direcciones del cliente.")
+      );
     } finally {
       setLoadingDirecciones(false);
     }
@@ -272,7 +274,9 @@ export default function AdminCrearReservaPage() {
     };
 
     setClienteSeleccionado(clienteNormalizado);
-    setSuccess(`Cliente seleccionado: ${cliente.nombreCompleto || cliente.email}`);
+    setSuccess(
+      `Cliente seleccionado: ${cliente.nombreCompleto || cliente.email}`
+    );
     setError("");
 
     setReservaSeleccionada(null);
@@ -377,7 +381,8 @@ export default function AdminCrearReservaPage() {
     const next = Array.isArray(value) ? value : String(value).split(",");
     setReserva((prev) => ({ ...prev, servicios: next }));
 
-    if (next.length === 0) setErrorServiciosSelect("Tenés que elegir al menos un servicio.");
+    if (next.length === 0)
+      setErrorServiciosSelect("Tenés que elegir al menos un servicio.");
     else setErrorServiciosSelect("");
   };
 
@@ -499,7 +504,9 @@ export default function AdminCrearReservaPage() {
 
       const dto = {
         montoTotal: Number(presupuesto.montoTotal),
-        montoPagado: presupuesto.montoPagado ? Number(presupuesto.montoPagado) : 0,
+        montoPagado: presupuesto.montoPagado
+          ? Number(presupuesto.montoPagado)
+          : 0,
         descripcionTrabajo: presupuesto.descripcionTrabajo,
         notasInternas: presupuesto.notasInternas,
       };
@@ -522,23 +529,53 @@ export default function AdminCrearReservaPage() {
 
   const reservaYaTienePresupuesto = getTienePresupuesto(reservaParaPresupuesto);
 
-  return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h5" gutterBottom>
-        Gestionar Presupuesto
-      </Typography>
+  const getStepFromMessage = (msg) => {
+    const m = String(msg || "").toLowerCase();
 
-      {error && (
+    if (m.includes("presupuesto") || m.includes("monto")) return 3;
+
+    if (
+      m.includes("reserva") ||
+      m.includes("servicio") ||
+      m.includes("dirección") ||
+      m.includes("direccion") ||
+      m.includes("fecha") ||
+      m.includes("hora")
+    )
+      return 2;
+
+    if (m.includes("cliente") || m.includes("buscar") || m.includes("búsq"))
+      return 1;
+
+    if (reservaParaPresupuesto) return 3;
+    if (clienteSeleccionado) return 2;
+    return 1;
+  };
+
+  const stepError = error ? getStepFromMessage(error) : null;
+  const stepSuccess = success ? getStepFromMessage(success) : null;
+
+  const RenderAlertsForStep = ({ step }) => (
+    <>
+      {error && stepError === step && (
         <Box sx={{ mb: 2 }}>
           <Alert severity="error">{error}</Alert>
         </Box>
       )}
 
-      {success && (
+      {success && stepSuccess === step && (
         <Box sx={{ mb: 2 }}>
           <Alert severity="success">{success}</Alert>
         </Box>
       )}
+    </>
+  );
+
+  return (
+    <Box sx={{ p: 3 }}>
+      <Typography variant="h5" gutterBottom>
+        Gestionar Presupuesto
+      </Typography>
 
       {/* Paso 1: Cliente */}
       <Paper sx={{ p: 2, mb: 3 }}>
@@ -546,9 +583,24 @@ export default function AdminCrearReservaPage() {
           1. Cliente
         </Typography>
 
-        <RadioGroup row value={modoCliente} onChange={handleChangeModoCliente} sx={{ mb: 2 }}>
-          <FormControlLabel value="existente" control={<Radio />} label="Cliente existente" />
-          <FormControlLabel value="nuevo" control={<Radio />} label="Nuevo cliente" />
+        <RenderAlertsForStep step={1} />
+
+        <RadioGroup
+          row
+          value={modoCliente}
+          onChange={handleChangeModoCliente}
+          sx={{ mb: 2 }}
+        >
+          <FormControlLabel
+            value="existente"
+            control={<Radio />}
+            label="Cliente existente"
+          />
+          <FormControlLabel
+            value="nuevo"
+            control={<Radio />}
+            label="Nuevo cliente"
+          />
         </RadioGroup>
 
         {modoCliente === "existente" && (
@@ -563,7 +615,11 @@ export default function AdminCrearReservaPage() {
                 />
               </Grid>
               <Grid item xs={12} md="auto">
-                <Button variant="contained" onClick={handleBuscarClientes} disabled={loadingBusqueda}>
+                <Button
+                  variant="contained"
+                  onClick={handleBuscarClientes}
+                  disabled={loadingBusqueda}
+                >
                   {loadingBusqueda ? "Buscando..." : "Buscar"}
                 </Button>
               </Grid>
@@ -588,15 +644,23 @@ export default function AdminCrearReservaPage() {
                       justifyContent: "space-between",
                       alignItems: "center",
                     }}
-                    variant={clienteSeleccionado?.id === id ? "outlined" : "elevation"}
+                    variant={
+                      clienteSeleccionado?.id === id ? "outlined" : "elevation"
+                    }
                   >
                     <Box>
-                      <Typography variant="subtitle1">{cliente.nombreCompleto || "Sin nombre"}</Typography>
+                      <Typography variant="subtitle1">
+                        {cliente.nombreCompleto || "Sin nombre"}
+                      </Typography>
                       <Typography variant="body2" color="text.secondary">
                         {cliente.email} {cliente.telefono && `• ${cliente.telefono}`}
                       </Typography>
                     </Box>
-                    <Button size="small" variant="text" onClick={() => handleSeleccionarCliente(cliente)}>
+                    <Button
+                      size="small"
+                      variant="text"
+                      onClick={() => handleSeleccionarCliente(cliente)}
+                    >
                       SELECCIONAR CLIENTE
                     </Button>
                   </Paper>
@@ -673,7 +737,11 @@ export default function AdminCrearReservaPage() {
             </Grid>
 
             <Box sx={{ mt: 2 }}>
-              <Button variant="contained" onClick={handleCrearNuevoCliente} disabled={loadingNuevoCliente}>
+              <Button
+                variant="contained"
+                onClick={handleCrearNuevoCliente}
+                disabled={loadingNuevoCliente}
+              >
                 {loadingNuevoCliente ? "Creando..." : "Crear cliente y usarlo"}
               </Button>
             </Box>
@@ -685,7 +753,9 @@ export default function AdminCrearReservaPage() {
             <Divider sx={{ my: 2 }} />
             <Typography variant="body2" color="text.secondary">
               Cliente actual:{" "}
-              <strong>{clienteSeleccionado.nombreCompleto || clienteSeleccionado.email}</strong>
+              <strong>
+                {clienteSeleccionado.nombreCompleto || clienteSeleccionado.email}
+              </strong>
             </Typography>
           </>
         )}
@@ -696,6 +766,8 @@ export default function AdminCrearReservaPage() {
         <Typography variant="h6" gutterBottom>
           2. Datos de la reserva
         </Typography>
+
+        <RenderAlertsForStep step={2} />
 
         {!clienteSeleccionado && (
           <Alert severity="info" sx={{ mb: 2 }}>
@@ -711,8 +783,16 @@ export default function AdminCrearReservaPage() {
               onChange={handleChangeModoReserva}
               sx={{ mb: 2 }}
             >
-              <FormControlLabel value="nueva" control={<Radio />} label="Crear nueva reserva" />
-              <FormControlLabel value="existente" control={<Radio />} label="Usar reserva existente" />
+              <FormControlLabel
+                value="nueva"
+                control={<Radio />}
+                label="Crear nueva reserva"
+              />
+              <FormControlLabel
+                value="existente"
+                control={<Radio />}
+                label="Usar reserva existente"
+              />
             </RadioGroup>
 
             {/* Nueva Reserva */}
@@ -747,10 +827,16 @@ export default function AdminCrearReservaPage() {
                         ))}
                       </Select>
 
-                      {!!errorServiciosSelect && <FormHelperText>{errorServiciosSelect}</FormHelperText>}
-                      {!errorServiciosSelect && !!errorServicios && <FormHelperText>{errorServicios}</FormHelperText>}
+                      {!!errorServiciosSelect && (
+                        <FormHelperText>{errorServiciosSelect}</FormHelperText>
+                      )}
+                      {!errorServiciosSelect && !!errorServicios && (
+                        <FormHelperText>{errorServicios}</FormHelperText>
+                      )}
                       {!errorServiciosSelect && !errorServicios && (
-                        <FormHelperText>Elegí uno o más servicios (mínimo 1).</FormHelperText>
+                        <FormHelperText>
+                          Elegí uno o más servicios (mínimo 1).
+                        </FormHelperText>
                       )}
                     </FormControl>
                   </Grid>
@@ -778,7 +864,7 @@ export default function AdminCrearReservaPage() {
                         onChange={handleChangeReserva("tipoTrabajo")}
                       >
                         <MenuItem value="instalacion">Instalación</MenuItem>
-                        <MenuItem value="reparacion">Reparación</MenuItem>
+                        <MenuItem value="mantenimiento">Mantenimiento</MenuItem>
                       </Select>
                     </FormControl>
                   </Grid>
@@ -794,7 +880,9 @@ export default function AdminCrearReservaPage() {
                         labelId="direccion-label"
                         label="Dirección"
                         value={reserva.idDireccion}
-                        onChange={(e) => setReserva((prev) => ({ ...prev, idDireccion: e.target.value }))}
+                        onChange={(e) =>
+                          setReserva((prev) => ({ ...prev, idDireccion: e.target.value }))
+                        }
                       >
                         {direccionesCliente.map((d) => (
                           <MenuItem key={d.id} value={String(d.id)}>
@@ -807,8 +895,8 @@ export default function AdminCrearReservaPage() {
                         {loadingDirecciones
                           ? "Cargando direcciones..."
                           : direccionesCliente.length === 0
-                            ? "El cliente no tiene direcciones cargadas."
-                            : "Seleccioná una dirección existente del cliente."}
+                          ? "El cliente no tiene direcciones cargadas."
+                          : "Seleccioná una dirección existente del cliente."}
                       </FormHelperText>
                     </FormControl>
                   </Grid>
@@ -893,7 +981,9 @@ export default function AdminCrearReservaPage() {
                           <Chip
                             size="small"
                             sx={{ mt: 1 }}
-                            label={tieneP ? `Presupuesto: $ ${montoP}` : "Sin presupuesto"}
+                            label={
+                              tieneP ? `Presupuesto: $ ${montoP}` : "Sin presupuesto"
+                            }
                             color={tieneP ? "success" : "default"}
                           />
                         </Box>
@@ -934,16 +1024,19 @@ export default function AdminCrearReservaPage() {
               </Box>
             )}
 
-
             <Box sx={{ mt: 2 }}>
-              <Button variant="contained" onClick={handleCrearReserva} disabled={loadingReserva}>
+              <Button
+                variant="contained"
+                onClick={handleCrearReserva}
+                disabled={loadingReserva}
+              >
                 {loadingReserva
                   ? modoReserva === "nueva"
                     ? "Creando reserva..."
                     : "Confirmando..."
                   : modoReserva === "nueva"
-                    ? "Crear reserva"
-                    : "Confirmar selección"}
+                  ? "Crear reserva"
+                  : "Confirmar selección"}
               </Button>
             </Box>
           </>
@@ -956,6 +1049,8 @@ export default function AdminCrearReservaPage() {
           <Typography variant="h6" gutterBottom>
             3. Presupuesto para la reserva
           </Typography>
+
+          <RenderAlertsForStep step={3} />
 
           {reservaYaTienePresupuesto && (
             <Alert severity="info" sx={{ mb: 2 }}>
