@@ -1,4 +1,4 @@
-﻿namespace WinniElectricidad.Api.Servicio;
+﻿namespace WinniElectricidad.Api.Servicios;
 
 public class HCaptchaOptions
 {

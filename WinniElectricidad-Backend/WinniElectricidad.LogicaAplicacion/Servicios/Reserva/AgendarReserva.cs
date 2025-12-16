@@ -1,4 +1,5 @@
 ﻿using WinniElectricidad.Compartido.DTOs.Mappers;
+using WinniElectricidad.Compartido.DTOs.Reservas;
 using WinniElectricidad.Compartido.Reservas;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Notificacion;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Reserva;

@@ -5,12 +5,14 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Resend;
 using WinniElectricidad.AccesoDatos.Repositorios.EF;
-using WinniElectricidad.Api.Servicio;
+using WinniElectricidad.Api.Servicios;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Notificacion;
+using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Reseña;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Reserva;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Servicio;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Usuario;
 using WinniElectricidad.LogicaAplicacion.Servicios.Notificacion;
+using WinniElectricidad.LogicaAplicacion.Servicios.Reseña;
 using WinniElectricidad.LogicaAplicacion.Servicios.Reserva;
 using WinniElectricidad.LogicaAplicacion.Servicios.Servicio;
 using WinniElectricidad.LogicaAplicacion.Servicios.Usuario;
@@ -31,7 +33,7 @@ builder.Services.AddCors(o =>
             .AllowAnyMethod());
 });
 
-// Resend
+// --- Resend ---
 builder.Configuration
     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
     .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
@@ -46,7 +48,7 @@ builder.Services.Configure<ResendClientOptions>(
 
 builder.Services.AddTransient<IResend, ResendClient>();
 
-// Autenticación
+// --- Autenticación ---
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = jwtSettings["Key"]
           ?? Environment.GetEnvironmentVariable("JWT_KEY");
@@ -122,17 +124,22 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddDbContext<WinniElectricidadContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("ConexionWinniElectricidad")));
 
-// Inyección de dependencias
+// --- Inyección de dependencias ---
 
-// Servicios
+// -- Servicios --
+
+// - Usuario -
 builder.Services.AddScoped<ILoginUsuario, LoginUsuario>();
 builder.Services.AddScoped<IServicioToken, ServicioToken>();
 builder.Services.AddScoped<IRegistroUsuario, RegistroUsuario>();
 builder.Services.AddHttpClient<IHCaptchaVerifier, HCaptchaServicio>();
 builder.Services.AddScoped<IRecuperarContrasena, RecuperarContrasena>();
 builder.Services.AddScoped<IServicioOneTimeToken, ServicioOneTimeToken>();
+// - Servicio -
 builder.Services.AddScoped<IObtenerServiciosActivos, ObtenerServiciosActivos>();
+// - Direccion -
 builder.Services.AddScoped<IObtenerDirecciones, ObtenerDirecciones>();
+// - Reserva -
 builder.Services.AddScoped<IObtenerHorariosDisponibles, ObtenerHorariosDisponibles>();
 builder.Services.AddScoped<IAgendarReserva, AgendarReserva>();
 builder.Services.AddScoped<IObtenerHistoricoMensualReservas, ObtenerHistoricoMensualReservas>();
@@ -141,15 +148,20 @@ builder.Services.AddScoped<IObtenerReservasPorEstado, ObtenerReservasPorEstado>(
 builder.Services.AddScoped<IAprobarReserva, AprobarReserva>();
 builder.Services.AddScoped<ICancelarReserva, CancelarReserva>();
 builder.Services.AddScoped<IModificarReserva, ModificarReserva>();
+// - Notificacion -
 builder.Services.AddScoped<IEnviarEmail, EnviarEmail>();
 builder.Services.AddScoped<IServicioHash, ServicioHash>();
+// - Reseña -
+builder.Services.AddScoped<IAgregarReseña, AgregarReseña>();
+builder.Services.AddScoped<IServicioImagenes, ServicioImagenes>();
 
-// Repositorios
+// -- Repositorios --
 builder.Services.AddScoped<IRepositorioUsuario, RepositorioUsuarios>();
 builder.Services.AddScoped<IRepositorioOneTimeToken, RepositorioOneTimeTokens>();
 builder.Services.AddScoped<IRepositorioServicio, RepositorioServicios>();
 builder.Services.AddScoped<IRepositorioReserva, RepositorioReservas>();
 builder.Services.AddScoped<IRepositorioSettings, RepositorioSettings>();
+builder.Services.AddScoped<IRepositorioReseña, RepositorioReseñas>();
 
 var app = builder.Build();
 
@@ -161,6 +173,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 
 //TODO: borrar antes de subir a prod
 app.UseCors("Dev");

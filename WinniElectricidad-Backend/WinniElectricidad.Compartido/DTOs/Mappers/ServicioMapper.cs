@@ -10,4 +10,9 @@ public static class ServicioMapper
     {
         return serviciosActivos.Select(servicio => new ServicioActivoDto() { Id = servicio.Id, Titulo = servicio.Titulo }).ToList();
     }
+    
+    public static ServicioActivoDto MapearServicioADto(Servicio servicio)
+    {
+        return new ServicioActivoDto() { Id = servicio.Id, Titulo = servicio.Titulo };
+    }
 }

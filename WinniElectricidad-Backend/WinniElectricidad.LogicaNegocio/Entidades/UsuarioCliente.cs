@@ -8,6 +8,7 @@ public class UsuarioCliente : UsuarioBase
     public ICollection<Reserva> Reservas { get; set; } = new List<Reserva>();
     public ICollection<Pago>  Pagos { get; set; } = new List<Pago>();
     public ICollection<Presupuesto>  Presupuestos { get; set; } = new List<Presupuesto>();
+    public ICollection<Reseña>  Reseñas { get; set; } = new List<Reseña>();
     public override string Rol => "Cliente";
 
     #endregion
@@ -19,6 +20,7 @@ public class UsuarioCliente : UsuarioBase
         Reservas = new List<Reserva>();
         Pagos = new List<Pago>();
         Presupuestos = new List<Presupuesto>();
+        Reseñas = new List<Reseña>();
         Validar();
     }
 
@@ -28,6 +30,6 @@ public class UsuarioCliente : UsuarioBase
         {
             throw new Exception("Ingrese una dirección valida");
         }
-    //No me valida las direcciones extra
+        //TODO validar las direcciones extra
     }
 }

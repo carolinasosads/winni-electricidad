@@ -14,6 +14,7 @@ public class WinniElectricidadContext : DbContext
     public DbSet<Pago>  Pagos { get; set; }
     public DbSet<Notificacion>  Notificaciones { get; set; }
     public DbSet<Servicio>  Servicios { get; set; }
+    public DbSet<Reseña>  Resenias { get; set; }
     public DbSet<OneTimeToken> OneTimeTokens { get; set; }
     public DbSet<Settings> Settings { get; set; }
 
@@ -25,6 +26,12 @@ public class WinniElectricidadContext : DbContext
             .HasDiscriminator<string>("Discriminator")
             .HasValue<UsuarioAdministrador>("UsuarioAdministrador")
             .HasValue<UsuarioCliente>("UsuarioCliente");
+        
+        modelBuilder.Entity<UsuarioCliente>()
+            .HasMany(u => u.Reseñas)
+            .WithOne()
+            .HasForeignKey(r => r.IdUsuario)
+            .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Direccion>(e =>
         {
@@ -76,6 +83,11 @@ public class WinniElectricidadContext : DbContext
 
             entity.Property(s => s.Activo)
                 .HasDefaultValue(true);
+            
+            entity.HasMany(s => s.Reseñas)
+                .WithOne()
+                .HasForeignKey(r => r.IdServicio)
+                .OnDelete(DeleteBehavior.Restrict);
         });
         
         modelBuilder.Entity<Reserva>(entity =>
@@ -172,6 +184,14 @@ public class WinniElectricidadContext : DbContext
                     Id = 4,
                     Titulo = "Riego",
                     Descripcion = "Descripción genérica para el servicio de Riego",
+                    ImagenUrl = null,
+                    Activo = true
+                },
+                new Servicio
+                {
+                    Id = 5,
+                    Titulo = "Otro",
+                    Descripcion = "Descripción genérica para Otro",
                     ImagenUrl = null,
                     Activo = true
                 }

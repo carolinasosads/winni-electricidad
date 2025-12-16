@@ -19,6 +19,7 @@ public static class DbSeeder
         using var scope = factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<WinniElectricidadContext>();
         
+        db.Resenias.RemoveRange(db.Resenias);
         db.Reservas.RemoveRange(db.Reservas);
         db.Servicios.RemoveRange(db.Servicios);
 
