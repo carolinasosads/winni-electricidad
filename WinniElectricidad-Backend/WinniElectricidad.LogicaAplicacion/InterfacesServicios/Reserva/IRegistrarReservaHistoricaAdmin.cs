@@ -1,3 +1,4 @@
+using WinniElectricidad.Compartido.DTOs.Reservas;
 using WinniElectricidad.Compartido.Reservas;
 
 namespace WinniElectricidad.LogicaAplicacion.InterfacesServicios.Reserva;
