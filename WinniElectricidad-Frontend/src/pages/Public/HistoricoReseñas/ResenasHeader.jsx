@@ -1,25 +1,41 @@
-import { Stack, Typography, Rating } from "@mui/material";
+import { Stack, Typography, Rating, Box } from "@mui/material";
 
 export default function ResenasHeader({ promedio, total }) {
   return (
-    <Stack spacing={1} mb={4}>
-      <Typography variant="h4" fontWeight={600}>
+    <Stack spacing={2} mb={5}>
+      <Typography variant="h4" fontWeight={700}>
         Opiniones de nuestros clientes
       </Typography>
 
       <Typography color="text.secondary">
-        Conocé la experiencia de quienes ya confiaron en Winni Electricidad
+        ¡Conocé la experiencia de quienes ya confiaron en Winni Electricidad!
       </Typography>
 
-      <Stack direction="row" spacing={1} alignItems="center">
-        <Typography variant="h5" fontWeight={600}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 2,
+          mt: 1
+        }}
+      >
+        <Typography variant="h3" fontWeight={700}>
           {promedio}
         </Typography>
-        <Rating value={Number(promedio)} precision={0.1} readOnly />
-        <Typography color="text.secondary">
-          ({total} reseñas)
-        </Typography>
-      </Stack>
+
+        <Stack>
+          <Rating
+            value={Number(promedio)}
+            precision={0.1}
+            readOnly
+            size="large"
+            sx={{ color: "#F5A623" }}
+          />
+          <Typography variant="body2" color="text.secondary">
+            {total} reseñas
+          </Typography>
+        </Stack>
+      </Box>
     </Stack>
   );
 }

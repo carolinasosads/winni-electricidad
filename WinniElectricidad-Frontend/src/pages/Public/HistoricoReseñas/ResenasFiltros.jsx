@@ -9,6 +9,7 @@ import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 export default function ResenasFiltros({
   servicio,
   calificacion,
+  servicios,
   onServicioChange,
   onCalificacionChange
 }) {
@@ -30,10 +31,12 @@ export default function ResenasFiltros({
         onChange={e => onServicioChange(e.target.value)}
       >
         <MenuItem value="Todos">Todos los servicios</MenuItem>
-        <MenuItem value="Electricidad">Electricidad</MenuItem>
-        <MenuItem value="Sanitaria">Sanitaria</MenuItem>
-        <MenuItem value="Climatización">Climatización</MenuItem>
-        <MenuItem value="Riego">Riego</MenuItem>
+
+        {servicios.map(s => (
+          <MenuItem key={s.id} value={s.titulo}>
+            {s.titulo}
+          </MenuItem>
+        ))}
       </Select>
 
       <Select

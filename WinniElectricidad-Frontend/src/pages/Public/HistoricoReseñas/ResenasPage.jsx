@@ -1,48 +1,58 @@
-import { Box, Grid, Typography, Divider } from "@mui/material";
+import { Box, Grid, Typography, Divider, Button } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import ResenasHeader from "./ResenasHeader";
 import ResenasFiltros from "./ResenasFiltros";
 import ResenaCard from "./ResenaCard";
+import ResenasCarrusel from "./ResenasCarrusel";
+import ResenaModal from "./ResenaModal";
 
-// reemplazá por tu auth real
-const useAuth = () => ({
-  role: "Administrador" // "Usuario" | "Administrador" | null
-});
+import { getResenasAprobadas } from "../../../services/resenaService";
+import { getServiciosActivos } from "../../../services/authService";
 
-// reemplazá por tu service real
-const fetchResenas = async () => [
-  {
-    id: 1,
-    usuario: "María González",
-    fecha: "2024-11-12",
-    descripcion: "Excelente servicio, muy prolijos y puntuales.",
-    calificacion: 5,
-    servicio: "Electricidad",
-    imagenUrl: "/resenas/ejemplo1.jpg"
-  },
-  {
-    id: 2,
-    usuario: "Juan Pérez",
-    fecha: "2024-10-03",
-    descripcion: "Buen trabajo, aunque demoró un poco más de lo esperado.",
-    calificacion: 4,
-    servicio: "Sanitaria",
-    imagenUrl: null
-  }
-];
+import RateReviewIcon from "@mui/icons-material/RateReview";
 
 export default function ResenasPage() {
-  const { role } = useAuth();
+  const rol = localStorage.getItem("rol");
+  const navigate = useNavigate();
 
   const [resenas, setResenas] = useState([]);
+  const [servicios, setServicios] = useState([]);
   const [servicioFiltro, setServicioFiltro] = useState("Todos");
   const [calificacionFiltro, setCalificacionFiltro] = useState("Todas");
+  const [resenaSeleccionada, setResenaSeleccionada] = useState(null);
 
-  useEffect(() => {
-    fetchResenas().then(setResenas);
+  const [mensajeError, setMensajeError] = useState(null);
+
+  const resenasConImagen = useMemo(
+    () => resenas.filter(r => r.imagenUrl),
+    [resenas]
+  );
+
+
+  async function loadResenasAprobadas() {
+    try {
+      const data = await getResenasAprobadas();
+      setResenas(data);
+    } catch (err) {
+      setMensajeError(err?.message || "Error al cargar las reseñas aprobadas.");
+    }
+  }
+
+  const loadServicios = async () => {
+    try {
+      const data = await getServiciosActivos();
+      setServicios(data.filter(s => s.titulo !== "Otro"));
+    } catch (err) {
+      setMensajeError(err?.message || "Error al cargar los servicios activos.");
+    }
+  };
+
+  useEffect(() => { 
+    loadServicios();
+    loadResenasAprobadas();
   }, []);
 
-  // ⭐ Promedio general (AC3)
   const promedio = useMemo(() => {
     if (resenas.length === 0) return 0;
     return (
@@ -50,11 +60,10 @@ export default function ResenasPage() {
     ).toFixed(1);
   }, [resenas]);
 
-  // 🔍 Filtros (AC2)
   const resenasFiltradas = useMemo(() => {
     return resenas.filter(r => {
       const servicioOk =
-        servicioFiltro === "Todos" || r.servicio === servicioFiltro;
+        servicioFiltro === "Todos" || r.servicio?.titulo === servicioFiltro;
 
       const calificacionOk =
         calificacionFiltro === "Todas" ||
@@ -64,7 +73,7 @@ export default function ResenasPage() {
     });
   }, [resenas, servicioFiltro, calificacionFiltro]);
 
-  // 🗑️ Eliminar (AC4 + AC5)
+  // TODO. AGREGAR EL ENDPOINT REAL DE ELIMINAR
   const eliminarResena = id => {
     if (!window.confirm("¿Eliminar esta reseña?")) return;
     setResenas(prev => prev.filter(r => r.id !== id));
@@ -74,9 +83,44 @@ export default function ResenasPage() {
     <Box sx={{ maxWidth: 1200, mx: "auto", px: 2, py: 4 }}>
       <ResenasHeader promedio={promedio} total={resenas.length} />
 
+      {rol === "Cliente" && (
+        <Box
+          sx={{
+            mt: 4,
+            mb: 3,
+            p: 3,
+            borderRadius: 2,
+            bgcolor: "grey.50",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: 2
+          }}
+        >
+          <Box>
+            <Typography fontWeight={600}>
+              ¿Ya usaste nuestros servicios?
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Dejá tu reseña y ayudá a otros clientes a elegir.
+            </Typography>
+          </Box>
+
+          <Button
+            variant="contained"
+            startIcon={<RateReviewIcon />}
+            onClick={() => navigate("/cliente/resenas/crear")}
+          >
+            Escribir reseña
+          </Button>
+        </Box>
+      )}
+
       <ResenasFiltros
         servicio={servicioFiltro}
         calificacion={calificacionFiltro}
+        servicios={servicios}
         onServicioChange={setServicioFiltro}
         onCalificacionChange={setCalificacionFiltro}
       />
@@ -88,18 +132,29 @@ export default function ResenasPage() {
           No hay reseñas para mostrar.
         </Typography>
       ) : (
-        <Grid container spacing={3}>
+        <Grid container spacing={4} justifyContent="center">
           {resenasFiltradas.map(resena => (
-            <Grid item xs={12} md={6} key={resena.id}>
+            <Grid item xs={12} sm={10} md={6} key={resena.id}>
               <ResenaCard
                 resena={resena}
-                esAdmin={role === "Administrador"}
+                esAdmin={rol === "Administrador"}
                 onEliminar={eliminarResena}
               />
             </Grid>
           ))}
         </Grid>
+
       )}
+
+      <ResenasCarrusel
+        resenas={resenasConImagen}
+        onSelect={setResenaSeleccionada}
+      />
+
+      <ResenaModal
+        resena={resenaSeleccionada}
+        onClose={() => setResenaSeleccionada(null)}
+      />
     </Box>
   );
 }

@@ -1,6 +1,6 @@
 import ApiError from "./ApiError";
 
-const urlAPIReserva  = "https://winnielectricidadbe-dev-adgqcbd7gvbgg7fy.eastus2-01.azurewebsites.net/WinniElectricidadApi/Reserva/";
+const urlAPIReserva  = `${import.meta.env.VITE_API_URL}/WinniElectricidadApi/Reserva/`;
 
 function getAuthHeaders() {
   const token = localStorage.getItem("token");

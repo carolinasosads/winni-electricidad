@@ -99,7 +99,6 @@ export default function AppHeader({
 
             {/* DERECHA */}
             <Stack direction="row" spacing={2} alignItems="center">
-              {/* Link público a reseñas */}
               <Link to={resenasPath} style={{ textDecoration: "none" }}>
                 <Button
                   variant="outlined"
@@ -113,7 +112,6 @@ export default function AppHeader({
                   Reseñas
                 </Button>
               </Link>
-              {/* Botones externos (logout, login, etc.) */}
               {rightSlot}
             </Stack>
           </Stack>

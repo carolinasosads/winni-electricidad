@@ -1,61 +1,93 @@
 import {
   Card,
   CardContent,
-  CardMedia,
   Typography,
   Rating,
   Stack,
   Chip,
-  Button
+  Box,
+  IconButton,
+  Tooltip
 } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 
 export default function ResenaCard({ resena, esAdmin, onEliminar }) {
   return (
-    <Card sx={{ height: "100%" }}>
-      {resena.imagenUrl && (
-        <CardMedia
-          component="img"
-          height="180"
-          image={resena.imagenUrl}
-          alt="Imagen reseña"
-        />
+    <Card
+      sx={{
+        position: "relative",
+        height: "100%",
+        borderRadius: 3,
+        boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
+        transition: "transform 0.2s ease, box-shadow 0.2s ease",
+        "&:hover": {
+          transform: "translateY(-4px)",
+          boxShadow: "0 12px 32px rgba(0,0,0,0.08)"
+        }
+      }}
+    >
+      {/* BOTÓN ADMIN */}
+      {esAdmin && (
+        <Tooltip title="Eliminar reseña">
+          <IconButton
+            onClick={() => onEliminar(resena.id)}
+            size="small"
+            sx={{
+              position: "absolute",
+              top: 14,
+              right: 14,
+              color: "grey.400",
+              zIndex: 2,
+              "&:hover": {
+                color: "error.main",
+                backgroundColor: "rgba(211,47,47,0.08)"
+              }
+            }}
+          >
+            <DeleteOutlineIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
       )}
 
-      <CardContent>
-        <Stack spacing={1}>
-          <Stack direction="row" justifyContent="space-between">
-            <Typography fontWeight={600}>
-              {resena.usuario}
-            </Typography>
-            <Chip
-              size="small"
-              label={resena.servicio}
-              variant="outlined"
-            />
-          </Stack>
+      <CardContent sx={{ px: 4, pt: 6, pb: 4 }}>
+        {/* ⬆️ pt: 6 deja espacio visual al botón */}
 
-          <Rating value={resena.calificacion} readOnly />
+        <Stack spacing={2} alignItems="center" textAlign="center">
+          {/* Rating */}
+          <Rating
+            value={resena.calificacion}
+            readOnly
+            size="large"
+            sx={{ color: "#F5A623" }}
+          />
 
-          <Typography variant="body2">
-            {resena.descripcion}
+          {/* Comentario */}
+          <Typography
+            variant="body1"
+            sx={{
+              fontStyle: "italic",
+              lineHeight: 1.7
+            }}
+          >
+            “{resena.descripcion}”
           </Typography>
 
+          {/* Cliente */}
+          <Typography fontWeight={600}>
+            {resena.cliente?.nombre ?? "Cliente"}
+          </Typography>
+
+          {/* Servicio */}
+          <Chip
+            size="small"
+            label={resena.servicio?.titulo ?? "Servicio"}
+            sx={{ bgcolor: "grey.100", fontSize: "0.75rem" }}
+          />
+
+          {/* Fecha */}
           <Typography variant="caption" color="text.secondary">
-            {new Date(resena.fecha).toLocaleDateString("es-UY")}
+            {new Date(resena.fechaReseña).toLocaleDateString("es-UY")}
           </Typography>
-
-          {esAdmin && (
-            <Button
-              size="small"
-              color="error"
-              startIcon={<DeleteOutlineIcon />}
-              sx={{ alignSelf: "flex-end", mt: 1 }}
-              onClick={() => onEliminar(resena.id)}
-            >
-              Eliminar reseña
-            </Button>
-          )}
         </Stack>
       </CardContent>
     </Card>
