@@ -17,6 +17,7 @@ public class ReseñaControllerTests
 {
     private Mock<IAgregarReseña> _mockAgregarReseña;
     private Mock<IServicioImagenes> _mockServicioImagenes;
+    private Mock<IObtenerReseñasAprobadas> _mockObtenerReseñas;
     private ReseñaController _controller;
 
     [SetUp]
@@ -24,8 +25,9 @@ public class ReseñaControllerTests
     {
         _mockAgregarReseña = new Mock<IAgregarReseña>();
         _mockServicioImagenes = new Mock<IServicioImagenes>();
+        _mockObtenerReseñas = new Mock<IObtenerReseñasAprobadas>();
 
-        _controller = new ReseñaController(_mockAgregarReseña.Object, _mockServicioImagenes.Object);
+        _controller = new ReseñaController(_mockAgregarReseña.Object, _mockServicioImagenes.Object, _mockObtenerReseñas.Object);
 
         var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, "10") };
         var identity = new ClaimsIdentity(claims, "TestAuth");

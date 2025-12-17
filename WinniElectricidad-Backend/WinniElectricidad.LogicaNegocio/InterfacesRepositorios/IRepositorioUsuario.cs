@@ -10,4 +10,5 @@ public interface IRepositorioUsuario : IRepositorio<UsuarioBase>
     Task<IReadOnlyList<Direccion>> FindAddressByUserId (int idUsuario, CancellationToken ct = default);
     Task<UsuarioAdministrador?> ObtenerAdministrador(CancellationToken ct = default);
     Task<ICollection<UsuarioCliente>> BuscarPorNombreEmailTelefono (string dato, CancellationToken ct = default);
+    Task<IReadOnlyList<UsuarioBase>> FindByIds(List<int> ids, CancellationToken ct = default);
 }

@@ -23,6 +23,13 @@ public class RepositorioUsuarios : IRepositorioUsuario
         var usuario = await _db.Usuarios.Where(x => x.IdUsuario == id).FirstOrDefaultAsync(ct);
         return usuario;
     }
+    
+    public async Task<IReadOnlyList<UsuarioBase>> FindByIds(List<int> ids, CancellationToken ct = default)
+    {
+        return await _db.Usuarios
+            .Where(u => ids.Contains(u.IdUsuario))
+            .ToListAsync(ct);
+    }
 
     public Task Update(UsuarioBase obj, CancellationToken ct = default)
     {

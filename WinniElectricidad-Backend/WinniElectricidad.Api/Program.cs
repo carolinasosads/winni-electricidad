@@ -156,6 +156,9 @@ builder.Services.AddScoped<IServicioHash, ServicioHash>();
 // - Reseña -
 builder.Services.AddScoped<IAgregarReseña, AgregarReseña>();
 builder.Services.AddScoped<IServicioImagenes, ServicioImagenes>();
+builder.Services.AddScoped<IServicioImagenes, ServicioImagenes>();
+// - Administrador -
+builder.Services.AddScoped<IObtenerReseñasAprobadas, ObtenerReseñasAprobadas>();
 builder.Services.AddScoped<ICrearUsuarioDesdeAdmin, CrearUsuarioDesdeAdmin>();
 builder.Services.AddScoped<IBuscarUsuarios, BuscarUsuarios>();
 builder.Services.AddScoped<IObtenerReservasPorCliente, ObtenerReservasPorCliente>();

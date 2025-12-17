@@ -17,13 +17,16 @@ public class ReseñaController : ControllerBase
 {
     private readonly  IAgregarReseña _agregarReseña;
     private readonly  IServicioImagenes _servicioImagenes;
+    private readonly IObtenerReseñasAprobadas _obtenerReseñasAprobadas;
+    
     /// <summary>
     /// Inicializa una nueva instancia del <see cref="ReseñaController"/> con las dependencias necesarias.
     /// </summary>
-    public ReseñaController(IAgregarReseña agregarReseña, IServicioImagenes servicioImagenes)
+    public ReseñaController(IAgregarReseña agregarReseña, IServicioImagenes servicioImagenes, IObtenerReseñasAprobadas obtenerReseñasAprobadas)
     {
         _agregarReseña = agregarReseña;
         _servicioImagenes = servicioImagenes;
+        _obtenerReseñasAprobadas = obtenerReseñasAprobadas;
     }
     
     /// <summary>
@@ -106,6 +109,49 @@ public class ReseñaController : ControllerBase
         catch (Exception)
         {
             return StatusCode(500, new { message = "Error inesperado." });
+        }
+    }
+    
+    /// <summary>
+    /// Obtiene el listado de reseñas aprobadas y visibles públicamente.
+    /// </summary>
+    /// <remarks>
+    /// Este endpoint devuelve todas las reseñas que han sido previamente aprobadas
+    /// y pueden ser mostradas en la sección pública de la aplicación.
+    ///
+    /// **Flujo:**
+    /// 1. Consulta las reseñas aprobadas mediante el servicio <see cref="_obtenerReseñasAprobadas"/>.  
+    /// 2. Devuelve una colección de objetos <see cref="ReseñaCreadaDto"/> con la información de cada reseña.
+    ///
+    /// **Códigos de respuesta:**
+    /// - `200 OK` → Lista de reseñas aprobadas obtenida correctamente.  
+    /// - `500 Internal Server Error` → Error inesperado durante la obtención de las reseñas.
+    /// </remarks>
+    /// <param name="ct">
+    /// Token de cancelación para interrumpir la operación si es necesario.
+    /// </param>
+    /// <returns>
+    /// Una respuesta HTTP que contiene la colección de reseñas aprobadas.
+    /// </returns>
+    /// <response code="200">Lista de reseñas aprobadas obtenida correctamente.</response>
+    /// <response code="500">Error inesperado del servidor.</response>
+    [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<ReseñaCreadaDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetReseñasAprobadas(CancellationToken ct)
+    {
+        try
+        {
+            IEnumerable<ReseñaCreadaDto> reseñasAprobadas = await _obtenerReseñasAprobadas.Ejecutar(ct);
+            return Ok(reseñasAprobadas);
+        }
+        catch (ReseñaException ex)
+        {
+            return StatusCode(500, new { message = ex.Message });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "Error inesperado."});
         }
     }
 }
