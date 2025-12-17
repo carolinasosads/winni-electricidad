@@ -12,4 +12,5 @@ public interface IRepositorioReserva : IRepositorio<Reserva>
     Task<IReadOnlyList<Reserva>> FindAllSegunEstado(EstadoReserva estado, CancellationToken ct = default);
     Task<Reserva?> ObtenerReservaPorId(int id, CancellationToken ct = default);
     Task<IReadOnlyList<Reserva>> FindHistoricoReservas(DateTime fechaMinima, DateTime fechaLimite, CancellationToken ct = default);
+    Task<IEnumerable<Reserva>> GetReservaSegunClienteId(int clienteId, CancellationToken ct = default);
 }

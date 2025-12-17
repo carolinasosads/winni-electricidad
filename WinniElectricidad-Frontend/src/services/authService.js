@@ -321,3 +321,82 @@ export async function crearReserva(reserva, signal) {
 
   return await resp.json(); 
 }
+
+export async function crearUsuarioComoAdmin(dto) {
+  const resp = await fetch(`${urlAPIUsuario}admin/usuarios`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(dto),
+  });
+
+  if (resp.status === 409) {
+    const data = await handleJsonOrText(resp);
+    throw new ApiError(
+      data?.message || "El email ya está en uso.",
+      409
+    );
+  }
+
+  if (!resp.ok) {
+    const data = await handleJsonOrText(resp);
+    throw new ApiError(
+      data?.message || "Error al crear el usuario desde admin.",
+      resp.status
+    );
+  }
+
+  return await resp.json(); 
+}
+
+function getAuthHeaders() {
+  const token = localStorage.getItem("token");
+
+  return {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
+
+export async function buscarUsuariosAdmin(query) {
+  const resp = await fetch(
+    `${urlAPIUsuario}busqueda/usuarios?query=${encodeURIComponent(query)}`,
+    {
+      method: "GET",
+      headers: getAuthHeaders(),
+    }
+  );
+
+  if (!resp.ok) {
+    const data = await handleJsonOrText(resp);
+    throw new ApiError(
+      data?.message || "Error al buscar usuarios.",
+      resp.status
+    );
+  }
+
+  return await resp.json();
+}
+
+export async function getDireccionesUsuarioAdmin(userId, signal) {
+  const token = localStorage.getItem("token");
+  if (!token) throw new ApiError("Usuario no autenticado.", 401);
+
+  const resp = await fetch(`${urlAPIUsuario}admin/usuarios/${userId}/direcciones`, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    signal,
+  });
+
+  if (!resp.ok) {
+    const data = await handleJsonOrText(resp);
+    throw new ApiError(
+      data?.message || "No se pudieron obtener las direcciones del usuario.",
+      resp.status
+    );
+  }
+  return await resp.json();
+}

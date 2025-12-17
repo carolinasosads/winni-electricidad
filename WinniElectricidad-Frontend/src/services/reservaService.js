@@ -61,7 +61,6 @@ export async function getReservasFinalizadas() {
   return await resp.json();
 }
 
-
 // --- PATCHs ---
 
 export async function aprobarReserva(idReserva) {
@@ -105,5 +104,55 @@ export async function modificarReserva(idReserva, nuevaFecha) {
   }
 
   return await resp.json();
+}
+
+
+export async function crearReservaAdmin(idUsuario, reservaDto) {
+  const resp = await fetch(`${urlAPIReserva}admin/agendar/${idUsuario}`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(reservaDto),
+  });
+
+  if (!resp.ok) {
+    const data = await handleJsonOrText(resp);
+    throw new ApiError(data?.message || "Error creando reserva desde admin", resp.status);
+  }
+
+  return await resp.json(); 
+}
+
+export async function getReservasPorClienteAdmin(clienteId) {
+  const resp = await fetch(
+    `${urlAPIReserva}Admin/Cliente/${clienteId}`,
+    {
+      method: "GET",
+      headers: getAuthHeaders(),
+    }
+  );
+
+  if (!resp.ok) {
+    const text = await resp.text();
+    console.error("getReservasPorClienteAdmin ERROR:", resp.status, text);
+    throw new ApiError(text || "Error al obtener reservas del cliente");
+  }
+
+  return await resp.json();
+}
+
+
+export async function crearReservaHistoricaAdmin(idUsuario, reservaDto) {
+  const resp = await fetch(`${urlAPIReserva}admin/registrar-historico/${idUsuario}`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(reservaDto),
+  });
+
+  if (!resp.ok) {
+    const data = await handleJsonOrText(resp);
+    throw new ApiError(data?.message || "Error creando reserva histórica desde admin", resp.status);
+  }
+
+  return await resp.json(); 
 }
 

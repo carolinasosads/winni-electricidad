@@ -60,4 +60,24 @@ public class ReservaMapper
         };
     }
 
+    
+    public static ReservaListadoDto MapearAReservaListadoDto(Reserva reserva)
+    {
+        var direccion = reserva.Direccion != null ? $"{reserva.Direccion.Calle} {reserva.Direccion.Numero ?? ""} - Esquina {reserva.Direccion.Esquina}"
+            : string.Empty;
+
+        var tienePresupuesto = reserva.Presupuesto != null;
+        var monto = tienePresupuesto ? reserva.Presupuesto!.Monto : 0m;
+
+        return new ReservaListadoDto
+        {
+            IdReserva = reserva.IdReserva,
+            FechaReserva = reserva.FechaReserva,
+            Estado = reserva.EstadoReserva.ToString(),
+            NombreServicio = reserva.Servicios.FirstOrDefault()?.Titulo ?? string.Empty,
+            DireccionDescripcion = direccion,
+            TienePresupuesto = tienePresupuesto,
+            MontoPresupuestado = monto
+        };
+    }
 }

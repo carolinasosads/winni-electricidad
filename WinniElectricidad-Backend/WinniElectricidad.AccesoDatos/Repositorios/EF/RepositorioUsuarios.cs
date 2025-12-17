@@ -78,4 +78,23 @@ public class RepositorioUsuarios : IRepositorioUsuario
             .OfType<UsuarioAdministrador>()
             .SingleOrDefaultAsync(ct);   
     }
+    
+    public async Task<ICollection<UsuarioCliente>> BuscarPorNombreEmailTelefono(string dato, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(dato))
+            return new List<UsuarioCliente>();
+
+        dato = dato.ToLower().Trim();
+
+        return await _db.Usuarios
+            .OfType<UsuarioCliente>()          
+            .AsNoTracking()
+            .Where(u =>
+                (u.NombreCompleto != null && u.NombreCompleto.ToLower().Contains(dato)) ||
+                (u.Email != null && u.Email.ToLower().Contains(dato)) ||
+                (u.Telefono != null && u.Telefono.ToLower().Contains(dato))
+            )
+            .OrderBy(u => u.NombreCompleto)
+            .ToListAsync(ct);
+    }
 }

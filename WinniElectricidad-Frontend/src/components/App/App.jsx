@@ -16,6 +16,8 @@ import DashboardAdmin from "../../pages/Admin/Dashboard/DashboardAdmin.jsx"
 import HistoricoClientes from "../../pages/Admin/HistoricoClientes/HistoricoClientes.jsx"
 import PanelReservas from "../../pages/Admin/PanelReservas/PanelReservas.jsx"
 
+import AdminCrearReservaPage from "../../pages/Admin/CrearCliente/AdminCrearReserva.jsx";
+
 
 export default function App() {
   return (
@@ -53,6 +55,7 @@ export default function App() {
         <Route index element={<DashboardAdmin />} />
         <Route path="historico" element={<HistoricoClientes />} />
         <Route path="panel-reservas" element={<PanelReservas />} />
+        <Route path="crear-reserva" element={<AdminCrearReservaPage />} />
       </Route>
 
       {/* catch-all */}

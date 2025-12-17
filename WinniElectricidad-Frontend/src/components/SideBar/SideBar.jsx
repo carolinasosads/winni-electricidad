@@ -19,7 +19,6 @@ import SidebarContext from './Context/SideBarContext';
 import { DRAWER_WIDTH, MINI_DRAWER_WIDTH } from './Context/Constants'
 import SidebarPageItem from './Context/SideBarPageItem';
 import SidebarHeaderItem from './Context/SideBarHeaderItem';
-import SideBarDividerItem from './Context/SideBarDividerItem';
 
 import {
   getDrawerSxTransitionMixin,
@@ -192,6 +191,14 @@ function Sidebar({
                     icon={<ViewAgendaIcon />}
                     href="/admin/panel-reservas"
                     selected={pathname.startsWith("/admin/panel-reservas")}
+                  />
+
+                  <SidebarPageItem
+                    id="admin-crear-cliente-reserva"
+                    title="Gestionar Presupuesto"
+                    icon={<DateRangeIcon />}
+                    href="/admin/crear-reserva"
+                    selected={pathname.startsWith("/admin/crear-reserva")}
                   />
                 </>
               )}

@@ -9,4 +9,5 @@ public interface IRepositorioUsuario : IRepositorio<UsuarioBase>
     Task ChangePassword(int idUsuario, string password, CancellationToken ct = default);
     Task<IReadOnlyList<Direccion>> FindAddressByUserId (int idUsuario, CancellationToken ct = default);
     Task<UsuarioAdministrador?> ObtenerAdministrador(CancellationToken ct = default);
+    Task<ICollection<UsuarioCliente>> BuscarPorNombreEmailTelefono (string dato, CancellationToken ct = default);
 }

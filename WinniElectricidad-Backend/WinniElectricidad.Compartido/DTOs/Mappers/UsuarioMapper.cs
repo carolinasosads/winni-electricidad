@@ -1,4 +1,5 @@
 ﻿using WinniElectricidad.Compartido.DTOs.Direcciones;
+using WinniElectricidad.Compartido.DTOs.Registro;
 using WinniElectricidad.Compartido.DTOs.Usuarios;
 using WinniElectricidad.Compartido.DTOs.Usuarios.Login;
 using WinniElectricidad.LogicaNegocio.Entidades;
@@ -38,5 +39,27 @@ public class UsuarioMapper
             usuarioRegistroDto.Telefono,
             direcciones
         );
+    }
+    
+    public static UsuarioCliente MapearDtoRegistroAdminAEntidad(UsuarioRegistroAdminDto dto, string pass)
+    {
+        return new UsuarioCliente
+        {
+            NombreCompleto = dto.NombreCompleto,
+            Email = dto.Email,
+            Telefono = dto.Telefono,
+            PasswordHash = pass,
+            Direcciones = dto.Direcciones?
+                .Where(d => !string.IsNullOrWhiteSpace(d.Calle)
+                            && !string.IsNullOrWhiteSpace(d.Esquina))
+                .Select(d => new Direccion
+                {
+                    Calle   = d.Calle!.Trim(),
+                    Esquina = d.Esquina!.Trim(),
+                    Numero  = string.IsNullOrWhiteSpace(d.Numero) ? null : d.Numero!.Trim(),
+                    Apto    = string.IsNullOrWhiteSpace(d.Apto)   ? null : d.Apto!.Trim()
+                })
+                .ToList()
+        };
     }
 }
