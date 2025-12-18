@@ -60,4 +60,11 @@ public class Reseña
             throw new ArgumentException("Debes seleccionar un cliente válido.");
         }
     }
+    
+    public void Desaprobar()
+    {
+        if (Estado == EstadoReseña.Desaprobada)
+            throw new InvalidOperationException("La reseña ya está desaprobada.");
+        Estado = EstadoReseña.Desaprobada;
+    }
 }

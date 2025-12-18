@@ -66,3 +66,17 @@ export async function getResenasAprobadas() {
 
   return await resp.json();
 }
+
+// --- PATCHs ---
+
+export async function desaprobarReseña(idReseña) {
+  const resp = await fetch(`${urlAPIResena}${idReseña}/desaprobar`, {
+    method: "PATCH",
+    headers: getAuthHeaders(),
+  });
+
+  if (!resp.ok) {
+    const data = await handleJsonOrText(resp);
+    throw new ApiError(data?.message || "Error desaprobando reseña", resp.status);
+  }
+}

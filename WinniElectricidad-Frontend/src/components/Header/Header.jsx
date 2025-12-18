@@ -2,7 +2,6 @@ import * as React from "react";
 import PropTypes from "prop-types";
 import { styled, useTheme } from "@mui/material/styles";
 import {
-  Box,
   AppBar as MuiAppBar,
   Toolbar,
   IconButton,
@@ -36,7 +35,7 @@ export default function AppHeader({
   menuOpen = false,
   onToggleMenu,
   rightSlot,
-  homeHref = "/resenas"
+  homeHref = "/"
 }) {
   const theme = useTheme();
 

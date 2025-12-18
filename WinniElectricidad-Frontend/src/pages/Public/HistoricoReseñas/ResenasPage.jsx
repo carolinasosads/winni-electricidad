@@ -1,13 +1,27 @@
-import { Box, Grid, Typography, Divider, Button } from "@mui/material";
+import {
+  Box,
+  Grid,
+  Typography,
+  Divider,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
+} from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import ResenasHeader from "./ResenasHeader";
 import ResenasFiltros from "./ResenasFiltros";
 import ResenaCard from "./ResenaCard";
 import ResenasCarrusel from "./ResenasCarrusel";
 import ResenaModal from "./ResenaModal";
 
-import { getResenasAprobadas } from "../../../services/resenaService";
+import {
+  getResenasAprobadas,
+  desaprobarReseña
+} from "../../../services/resenaService";
 import { getServiciosActivos } from "../../../services/authService";
 
 import RateReviewIcon from "@mui/icons-material/RateReview";
@@ -20,41 +34,38 @@ export default function ResenasPage() {
   const [servicios, setServicios] = useState([]);
   const [servicioFiltro, setServicioFiltro] = useState("Todos");
   const [calificacionFiltro, setCalificacionFiltro] = useState("Todas");
-  const [resenaSeleccionada, setResenaSeleccionada] = useState(null);
 
+  const [resenaSeleccionada, setResenaSeleccionada] = useState(null);
+  const [resenaAEliminar, setResenaAEliminar] = useState(null);
   const [mensajeError, setMensajeError] = useState(null);
 
-  const resenasConImagen = useMemo(
-    () => resenas.filter(r => r.imagenUrl),
-    [resenas]
-  );
+  /* ---------- LOADERS ---------- */
 
-
-  async function loadResenasAprobadas() {
+  const loadResenasAprobadas = async () => {
     try {
       const data = await getResenasAprobadas();
       setResenas(data);
     } catch (err) {
-      setMensajeError(err?.message || "Error al cargar las reseñas aprobadas.");
+      setMensajeError(err?.message || "Error al cargar reseñas.");
     }
-  }
+  };
 
   const loadServicios = async () => {
     try {
       const data = await getServiciosActivos();
       setServicios(data.filter(s => s.titulo !== "Otro"));
     } catch (err) {
-      setMensajeError(err?.message || "Error al cargar los servicios activos.");
+      setMensajeError(err?.message || "Error al cargar servicios.");
     }
   };
 
-  useEffect(() => { 
+  useEffect(() => {
     loadServicios();
     loadResenasAprobadas();
   }, []);
 
   const promedio = useMemo(() => {
-    if (resenas.length === 0) return 0;
+    if (!resenas.length) return 0;
     return (
       resenas.reduce((acc, r) => acc + r.calificacion, 0) / resenas.length
     ).toFixed(1);
@@ -63,7 +74,8 @@ export default function ResenasPage() {
   const resenasFiltradas = useMemo(() => {
     return resenas.filter(r => {
       const servicioOk =
-        servicioFiltro === "Todos" || r.servicio?.titulo === servicioFiltro;
+        servicioFiltro === "Todos" ||
+        r.servicio?.titulo === servicioFiltro;
 
       const calificacionOk =
         calificacionFiltro === "Todas" ||
@@ -73,10 +85,27 @@ export default function ResenasPage() {
     });
   }, [resenas, servicioFiltro, calificacionFiltro]);
 
-  // TODO. AGREGAR EL ENDPOINT REAL DE ELIMINAR
-  const eliminarResena = id => {
-    if (!window.confirm("¿Eliminar esta reseña?")) return;
-    setResenas(prev => prev.filter(r => r.id !== id));
+  const resenasConImagen = useMemo(
+    () => resenas.filter(r => r.imagenUrl),
+    [resenas]
+  );
+
+  /* ---------- ELIMINAR ---------- */
+
+  const solicitarEliminarResena = (resena) => {
+    setResenaAEliminar(resena);
+  };
+
+  const confirmarEliminarResena = async () => {
+    if (!resenaAEliminar) return;
+
+    try {
+      await desaprobarReseña(resenaAEliminar.idReseña);
+      await loadResenasAprobadas();
+      setResenaAEliminar(null);
+    } catch (err) {
+      setMensajeError(err?.message || "Error al eliminar la reseña.");
+    }
   };
 
   return (
@@ -92,7 +121,6 @@ export default function ResenasPage() {
             borderRadius: 2,
             bgcolor: "grey.50",
             display: "flex",
-            alignItems: "center",
             justifyContent: "space-between",
             flexWrap: "wrap",
             gap: 2
@@ -138,12 +166,11 @@ export default function ResenasPage() {
               <ResenaCard
                 resena={resena}
                 esAdmin={rol === "Administrador"}
-                onEliminar={eliminarResena}
+                onEliminar={solicitarEliminarResena}
               />
             </Grid>
           ))}
         </Grid>
-
       )}
 
       <ResenasCarrusel
@@ -155,6 +182,33 @@ export default function ResenasPage() {
         resena={resenaSeleccionada}
         onClose={() => setResenaSeleccionada(null)}
       />
+
+      <Dialog
+        open={Boolean(resenaAEliminar)}
+        onClose={() => setResenaAEliminar(null)}
+      >
+        <DialogTitle>Eliminar reseña</DialogTitle>
+
+        <DialogContent>
+          <Typography>
+            ¿Estás seguro de que querés eliminar esta reseña?
+            Esta acción no la mostrará más en el panel público.
+          </Typography>
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={() => setResenaAEliminar(null)}>
+            Cancelar
+          </Button>
+          <Button
+            color="error"
+            variant="contained"
+            onClick={confirmarEliminarResena}
+          >
+            Eliminar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

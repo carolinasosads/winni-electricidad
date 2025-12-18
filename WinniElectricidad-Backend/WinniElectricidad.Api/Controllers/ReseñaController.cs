@@ -18,15 +18,17 @@ public class ReseñaController : ControllerBase
     private readonly  IAgregarReseña _agregarReseña;
     private readonly  IServicioImagenes _servicioImagenes;
     private readonly IObtenerReseñasAprobadas _obtenerReseñasAprobadas;
+    private readonly IDesaprobarReseña _desaprobarReseña;
     
     /// <summary>
     /// Inicializa una nueva instancia del <see cref="ReseñaController"/> con las dependencias necesarias.
     /// </summary>
-    public ReseñaController(IAgregarReseña agregarReseña, IServicioImagenes servicioImagenes, IObtenerReseñasAprobadas obtenerReseñasAprobadas)
+    public ReseñaController(IAgregarReseña agregarReseña, IServicioImagenes servicioImagenes, IObtenerReseñasAprobadas obtenerReseñasAprobadas, IDesaprobarReseña desaprobarReseña)
     {
         _agregarReseña = agregarReseña;
         _servicioImagenes = servicioImagenes;
         _obtenerReseñasAprobadas = obtenerReseñasAprobadas;
+        _desaprobarReseña = desaprobarReseña;
     }
     
     /// <summary>
@@ -152,6 +154,29 @@ public class ReseñaController : ControllerBase
         catch (Exception)
         {
             return StatusCode(500, new { message = "Error inesperado."});
+        }
+    }
+    
+    [Authorize(Roles = "Administrador")]
+    [HttpPatch("{idReseña}/desaprobar")]
+    public async Task<IActionResult> DesaprobarResena([FromRoute] int idReseña, CancellationToken ct)
+    {
+        try
+        {
+            await _desaprobarReseña.Ejecutar(idReseña, ct);
+            return Ok(new { message = "Reseña desaprobada con éxito." });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "Error inesperado." });
         }
     }
 }

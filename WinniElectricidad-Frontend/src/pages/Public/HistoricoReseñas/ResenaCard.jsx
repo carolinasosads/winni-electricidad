@@ -5,7 +5,6 @@ import {
   Rating,
   Stack,
   Chip,
-  Box,
   IconButton,
   Tooltip
 } from "@mui/material";
@@ -30,7 +29,7 @@ export default function ResenaCard({ resena, esAdmin, onEliminar }) {
       {esAdmin && (
         <Tooltip title="Eliminar reseña">
           <IconButton
-            onClick={() => onEliminar(resena.id)}
+            onClick={() => onEliminar(resena)}
             size="small"
             sx={{
               position: "absolute",
@@ -50,10 +49,7 @@ export default function ResenaCard({ resena, esAdmin, onEliminar }) {
       )}
 
       <CardContent sx={{ px: 4, pt: 6, pb: 4 }}>
-        {/* ⬆️ pt: 6 deja espacio visual al botón */}
-
         <Stack spacing={2} alignItems="center" textAlign="center">
-          {/* Rating */}
           <Rating
             value={resena.calificacion}
             readOnly
@@ -61,30 +57,23 @@ export default function ResenaCard({ resena, esAdmin, onEliminar }) {
             sx={{ color: "#F5A623" }}
           />
 
-          {/* Comentario */}
           <Typography
             variant="body1"
-            sx={{
-              fontStyle: "italic",
-              lineHeight: 1.7
-            }}
+            sx={{ fontStyle: "italic", lineHeight: 1.7 }}
           >
             “{resena.descripcion}”
           </Typography>
 
-          {/* Cliente */}
           <Typography fontWeight={600}>
             {resena.cliente?.nombre ?? "Cliente"}
           </Typography>
 
-          {/* Servicio */}
           <Chip
             size="small"
             label={resena.servicio?.titulo ?? "Servicio"}
             sx={{ bgcolor: "grey.100", fontSize: "0.75rem" }}
           />
 
-          {/* Fecha */}
           <Typography variant="caption" color="text.secondary">
             {new Date(resena.fechaReseña).toLocaleDateString("es-UY")}
           </Typography>

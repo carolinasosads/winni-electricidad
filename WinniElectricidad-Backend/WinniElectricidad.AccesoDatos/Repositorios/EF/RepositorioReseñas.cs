@@ -20,14 +20,16 @@ public class RepositorioReseñas : IRepositorioReseña
         return reseña;
     }
 
-    public Task<Reseña?> FindById(int id, CancellationToken ct = default)
+    public async Task<Reseña?> FindById(int id, CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        var reseña = await _db.Resenias.Where(x => x.Id == id).FirstOrDefaultAsync(ct);
+        return reseña;
     }
 
-    public Task Update(Reseña obj, CancellationToken ct = default)
+    public async Task Update(Reseña reseña, CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        _db.Resenias.Update(reseña);
+        await _db.SaveChangesAsync(ct);
     }
 
     public Task Delete(int id, CancellationToken ct = default)
