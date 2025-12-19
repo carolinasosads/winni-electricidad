@@ -55,8 +55,7 @@ export async function crearResena(formData, signal) {
 // --- GETs ---
 export async function getResenasAprobadas() {
   const resp = await fetch(`${urlAPIResena}`, {
-    method: "GET",
-    headers: getAuthHeaders(),
+    method: "GET"
   });
 
   if (!resp.ok) {
@@ -79,4 +78,6 @@ export async function desaprobarReseña(idReseña) {
     const data = await handleJsonOrText(resp);
     throw new ApiError(data?.message || "Error desaprobando reseña", resp.status);
   }
+
+  return await resp.json();
 }
