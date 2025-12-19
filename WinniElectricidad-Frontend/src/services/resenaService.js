@@ -1,6 +1,6 @@
 import ApiError from "./ApiError";
 
-const urlAPIResena  = "https://winnielectricidadbe-dev-adgqcbd7gvbgg7fy.eastus2-01.azurewebsites.net/WinniElectricidadApi/Resena";
+const urlAPIResena  = `${import.meta.env.VITE_API_URL}/WinniElectricidadApi/Resena/`;
 
 function getAuthHeaders() {
   const token = localStorage.getItem("token");
@@ -47,6 +47,36 @@ export async function crearResena(formData, signal) {
       data?.message || "Error al crear la reseña.",
       resp.status
     );
+  }
+
+  return await resp.json();
+}
+
+// --- GETs ---
+export async function getResenasAprobadas() {
+  const resp = await fetch(`${urlAPIResena}`, {
+    method: "GET"
+  });
+
+  if (!resp.ok) {
+    const data = await handleJsonOrText(resp);
+    throw new ApiError(data?.message || "Error obteniendo reseñas", resp.status);
+  }
+
+  return await resp.json();
+}
+
+// --- PATCHs ---
+
+export async function desaprobarReseña(idReseña) {
+  const resp = await fetch(`${urlAPIResena}${idReseña}/desaprobar`, {
+    method: "PATCH",
+    headers: getAuthHeaders(),
+  });
+
+  if (!resp.ok) {
+    const data = await handleJsonOrText(resp);
+    throw new ApiError(data?.message || "Error desaprobando reseña", resp.status);
   }
 
   return await resp.json();

@@ -85,9 +85,9 @@ public class RepositorioReseñasTests
                 {
                     Estado = EstadoReseña.Aprobada
                 },
-                new Reseña("Reseña eliminada", 3, 2, 1, null)
+                new Reseña("Reseña desaprobada", 3, 2, 1, null)
                 {
-                    Estado = EstadoReseña.Eliminada
+                    Estado = EstadoReseña.Desaprobada
                 },
                 new Reseña("Reseña aprobada 2", 4, 3, 2, null)
                 {

@@ -4,5 +4,5 @@ public enum EstadoReseña
 {
     Pendiente,
     Aprobada,
-    Eliminada
+    Desaprobada
 }
