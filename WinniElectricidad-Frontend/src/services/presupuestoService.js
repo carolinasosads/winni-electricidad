@@ -1,5 +1,7 @@
 import ApiError from "./ApiError";
-const urlAPIPresupuesto = "https://winnielectricidadbe-dev-adgqcbd7gvbgg7fy.eastus2-01.azurewebsites.net/WinniElectricidadApi/Presupuesto/";
+
+const urlAPIPresupuesto = `${import.meta.env.VITE_API_URL}/WinniElectricidadApi/Presupuesto/`;
+
 
 async function handleJsonOrText(res) {
   const contentType = res.headers.get("content-type") || "";
