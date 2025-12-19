@@ -12,7 +12,11 @@ export function ProtectedRoute({ children, allowedRoles }) {
   if (Array.isArray(allowedRoles) && allowedRoles.length > 0) {
     const ok = allowedRoles.includes(rol);
     if (!ok) {
-      return <Navigate to="/login" replace />;
+      if(rol === "Administrador"){
+        return <Navigate to="/admin" replace />;
+      } else {
+        return <Navigate to="/cliente" replace />;
+      }      
     }
   }
 
