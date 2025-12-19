@@ -121,7 +121,7 @@ export default function PaginaPrincipal() {
     const controller = new AbortController();
     setErrorResenas(null);
 
-    getResenasAprobadas(controller.signal)
+    getResenasAprobadas()
       .then((data) => {
         const lista =
           (Array.isArray(data) && data) ||
@@ -262,7 +262,7 @@ export default function PaginaPrincipal() {
             textAlign="center"
             sx={{ fontWeight: 800, mb: 4 }}
           >
-            Qué servicio ofrecemos
+            Qué servicios ofrecemos
           </Typography>
 
           {error && (
@@ -472,8 +472,8 @@ export default function PaginaPrincipal() {
           </Typography>
 
           <Typography textAlign="center">
-            📧 Email: washivillanueva@gmail.com <br />
-            🕒 Atención: Lunes a Viernes de 9 a 18 hs
+            <span aria-hidden="true">📧</span> Email: washivillanueva@gmail.com <br />
+            <span aria-hidden="true">🕒</span> Atención: Lunes a Viernes de 9 a 18 hs
           </Typography>
         </Container>
       </Box>
