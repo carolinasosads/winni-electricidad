@@ -67,7 +67,7 @@ namespace WinniElectricidad.AccesoDatos.Migrations
 
                     b.HasIndex("IdUsuarioCliente");
 
-                    b.ToTable("Direcciones", (string)null);
+                    b.ToTable("Direcciones");
                 });
 
             modelBuilder.Entity("WinniElectricidad.LogicaNegocio.Entidades.Notificacion", b =>
@@ -90,7 +90,7 @@ namespace WinniElectricidad.AccesoDatos.Migrations
 
                     b.HasIndex("UsuarioBaseIdUsuario");
 
-                    b.ToTable("Notificaciones", (string)null);
+                    b.ToTable("Notificaciones");
                 });
 
             modelBuilder.Entity("WinniElectricidad.LogicaNegocio.Entidades.OneTimeToken", b =>
@@ -155,7 +155,7 @@ namespace WinniElectricidad.AccesoDatos.Migrations
 
                     b.HasIndex("UsuarioIdUsuario");
 
-                    b.ToTable("Pagos", (string)null);
+                    b.ToTable("Pagos");
                 });
 
             modelBuilder.Entity("WinniElectricidad.LogicaNegocio.Entidades.Presupuesto", b =>
@@ -166,11 +166,22 @@ namespace WinniElectricidad.AccesoDatos.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime>("FechaPresupuesto")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("IdReserva")
                         .HasColumnType("int");
 
                     b.Property<int>("IdUsuario")
                         .HasColumnType("int");
+
+                    b.Property<decimal>("Monto")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Notas")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<int?>("UsuarioClienteIdUsuario")
                         .HasColumnType("int");
@@ -182,7 +193,7 @@ namespace WinniElectricidad.AccesoDatos.Migrations
 
                     b.HasIndex("UsuarioClienteIdUsuario");
 
-                    b.ToTable("Presupuestos", (string)null);
+                    b.ToTable("Presupuestos");
                 });
 
             modelBuilder.Entity("WinniElectricidad.LogicaNegocio.Entidades.Reserva", b =>
@@ -220,7 +231,7 @@ namespace WinniElectricidad.AccesoDatos.Migrations
 
                     b.HasIndex("IdUsuarioCliente");
 
-                    b.ToTable("Reservas", (string)null);
+                    b.ToTable("Reservas");
                 });
 
             modelBuilder.Entity("WinniElectricidad.LogicaNegocio.Entidades.Reseña", b =>
@@ -259,7 +270,7 @@ namespace WinniElectricidad.AccesoDatos.Migrations
 
                     b.HasIndex("IdUsuario");
 
-                    b.ToTable("Resenias", (string)null);
+                    b.ToTable("Resenias");
                 });
 
             modelBuilder.Entity("WinniElectricidad.LogicaNegocio.Entidades.Servicio", b =>
@@ -293,42 +304,47 @@ namespace WinniElectricidad.AccesoDatos.Migrations
                     b.HasIndex("Titulo")
                         .IsUnique();
 
-                    b.ToTable("Servicios", (string)null);
+                    b.ToTable("Servicios");
 
                     b.HasData(
                         new
                         {
                             Id = 1,
                             Activo = true,
-                            Descripcion = "Descripción genérica para el servicio de Electricidad",
+                            Descripcion = "Instalaciones, reparaciones y mantenimiento eléctrico en hogares y comercios. Solucionamos fallas, mejoras de seguridad y nuevas conexiones.",
+                            ImagenUrl = "/servicios/electricidad.jpeg",
                             Titulo = "Electricidad"
                         },
                         new
                         {
                             Id = 2,
                             Activo = true,
-                            Descripcion = "Descripción genérica para el servicio de Sanitaria",
+                            Descripcion = "Reparación e instalación de cañerías, griferías y artefactos sanitarios. Atendemos pérdidas, obstrucciones y trabajos de mantenimiento general.",
+                            ImagenUrl = "/servicios/sanitaria.jpeg",
                             Titulo = "Sanitaria"
                         },
                         new
                         {
                             Id = 3,
                             Activo = true,
-                            Descripcion = "Descripción genérica para el servicio de Climatización",
+                            Descripcion = "Instalación, mantenimiento y reparación de sistemas de aire acondicionado y calefacción para asegurar confort todo el año.",
+                            ImagenUrl = "/servicios/climatizacion.jpeg",
                             Titulo = "Climatización"
                         },
                         new
                         {
                             Id = 4,
                             Activo = true,
-                            Descripcion = "Descripción genérica para el servicio de Riego",
+                            Descripcion = "Diseño, instalación y mantenimiento de sistemas de riego para jardines y espacios verdes, optimizando el uso del agua.",
+                            ImagenUrl = "/servicios/riego.jpg",
                             Titulo = "Riego"
                         },
                         new
                         {
                             Id = 5,
                             Activo = true,
-                            Descripcion = "Descripción genérica para Otro",
+                            Descripcion = "Trabajos técnicos generales y servicios específicos no contemplados en las categorías principales, sujetos a evaluación previa.",
+                            ImagenUrl = "/servicios/otros.jpeg",
                             Titulo = "Otro"
                         });
                 });
@@ -358,7 +374,7 @@ namespace WinniElectricidad.AccesoDatos.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Settings", (string)null);
+                    b.ToTable("Settings");
 
                     b.HasData(
                         new
@@ -403,7 +419,7 @@ namespace WinniElectricidad.AccesoDatos.Migrations
 
                     b.HasKey("IdUsuario");
 
-                    b.ToTable("Usuarios", (string)null);
+                    b.ToTable("Usuarios");
 
                     b.HasDiscriminator<string>("Discriminator").HasValue("UsuarioBase");
 
