@@ -1,63 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  Box,
-  Typography,
-  Button,
-  Card,
-  CardContent,
-  CardMedia,
-  Container,
-} from "@mui/material";
+import { Box, Typography, Button, Card, CardContent, CardMedia, Container, Rating, } from "@mui/material";
 
 import { getServiciosActivos } from "../../../services/authService";
 import { SitemarkIcon } from "../../../components/CustomIcons/CustomIcons.jsx";
-
-/* -----------------------------
-   RESEÑAS (por ahora mock)
---------------------------------*/
-const reseñasMock = [
-  {
-    nombre: "María G.",
-    texto: "Excelente servicio, muy puntuales y prolijos. Recomiendo.",
-    estrellas: 5,
-  },
-  {
-    nombre: "Carlos R.",
-    texto: "Me resolvieron una urgencia el mismo día. Muy buena atención.",
-    estrellas: 5,
-  },
-  {
-    nombre: "Lucía P.",
-    texto: "Muy claros con el presupuesto y el trabajo. Todo impecable.",
-    estrellas: 5,
-  },
-];
-
-function Stars({ value = 5 }) {
-  const n = Math.max(0, Math.min(5, Number(value) || 0));
-  return (
-    <Box sx={{ display: "flex", justifyContent: "center", gap: 0.25 }}>
-      {Array.from({ length: 5 }).map((_, i) => (
-        <Box
-          key={i}
-          component="span"
-          sx={{
-            fontSize: 14,
-            lineHeight: 1,
-            color: i < n ? "#F6B100" : "#D0D5DD",
-          }}
-        >
-          ★
-        </Box>
-      ))}
-    </Box>
-  );
-}
+import { getResenasAprobadas } from "../../../services/resenaService";
 
 export default function PaginaPrincipal() {
   const [serviciosRaw, setServiciosRaw] = useState([]);
   const [error, setError] = useState(null);
+
+  const [resenasRaw, setResenasRaw] = useState([]);
+  const [errorResenas, setErrorResenas] = useState(null);
 
   const servicios = useMemo(() => {
     const arr = Array.isArray(serviciosRaw) ? serviciosRaw : [];
@@ -87,6 +41,68 @@ export default function PaginaPrincipal() {
       .filter((s) => s.idServicio != null);
   }, [serviciosRaw]);
 
+  const reseñas = useMemo(() => {
+    const arr = Array.isArray(resenasRaw) ? resenasRaw : [];
+
+    return arr
+      .map((r) => {
+        const nombre =
+          r?.cliente?.nombre ??
+          r?.cliente?.Nombre ??
+          r?.nombreCliente ??
+          r?.NombreCliente ??
+          r?.nombre ??
+          r?.Nombre ??
+          r?.autor ??
+          r?.Autor ??
+          "Cliente";
+
+        const texto =
+          r?.descripcion ??
+          r?.Descripcion ??
+          r?.texto ??
+          r?.Texto ??
+          r?.detalle ??
+          r?.Detalle ??
+          "";
+
+        const estrellas =
+          r?.calificacion ??
+          r?.Calificacion ??
+          r?.estrellas ??
+          r?.Estrellas ??
+          r?.puntuacion ??
+          r?.Puntuacion ??
+          0;
+
+        let imagenUrl =
+          r?.imagenUrl ??
+          r?.ImagenUrl ??
+          r?.urlImagen ??
+          r?.UrlImagen ??
+          r?.imagen ??
+          r?.Imagen ??
+          null;
+
+        if (typeof imagenUrl === "string") {
+          imagenUrl = imagenUrl.trim();
+          if (
+            imagenUrl &&
+            !imagenUrl.startsWith("http") &&
+            !imagenUrl.startsWith("/")
+          ) {
+            imagenUrl = `/${imagenUrl}`;
+          }
+        } else {
+          imagenUrl = null;
+        }
+
+        return { nombre, texto, estrellas, imagenUrl };
+      })
+      .filter((x) => (x.texto || "").trim().length > 0)
+      .slice(0, 3);
+  }, [resenasRaw]);
+
   useEffect(() => {
     const controller = new AbortController();
     setError(null);
@@ -101,7 +117,32 @@ export default function PaginaPrincipal() {
     return () => controller.abort();
   }, []);
 
-  const reseñas = reseñasMock.slice(0, 3);
+  useEffect(() => {
+    const controller = new AbortController();
+    setErrorResenas(null);
+
+    getResenasAprobadas(controller.signal)
+      .then((data) => {
+        const lista =
+          (Array.isArray(data) && data) ||
+          data?.resenas ||
+          data?.Resenas ||
+          data?.items ||
+          data?.Items ||
+          data?.data ||
+          data?.Data ||
+          data?.$values ||
+          [];
+
+        setResenasRaw(Array.isArray(lista) ? lista : []);
+      })
+      .catch((e) => {
+        if (e?.name === "AbortError") return;
+        setErrorResenas(e?.message || "Error al cargar reseñas.");
+      });
+
+    return () => controller.abort();
+  }, []);
 
   return (
     <Box>
@@ -127,50 +168,84 @@ export default function PaginaPrincipal() {
         </Container>
       </Box>
 
-      {/* HERO (compacto) */}
+      {/* Sección de arriba */}
       <Box
         sx={{
-          backgroundImage:
-            "linear-gradient(rgba(0,0,0,.55), rgba(0,0,0,.55)), url('/hero-electricidad.jpg')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
+          backgroundImage: "linear-gradient(135deg, #0f2027, #203a43, #2c5364)",
           color: "white",
-          py: { xs: 5, md: 6 },
+          py: { xs: 10, md: 14 },
           textAlign: "center",
+          boxShadow: "inset 0 -60px 100px rgba(0,0,0,0.35)",
         }}
       >
-        <Container>
-          <Typography variant="h4" sx={{ fontWeight: 800 }} gutterBottom>
+        <Container maxWidth="md">
+          <Typography
+            variant="h2"
+            sx={{
+              fontWeight: 900,
+              mb: 2,
+              fontSize: {
+                xs: "2.6rem",
+                sm: "3.2rem",
+                md: "3.8rem",
+              },
+            }}
+          >
             Winni Electricidad
           </Typography>
 
-          <Typography variant="body1" sx={{ opacity: 0.95, mb: 2.5 }}>
+          <Typography
+            variant="h6"
+            sx={{
+              opacity: 0.95,
+              mb: 4,
+              fontSize: {
+                xs: "1.1rem",
+                sm: "1.25rem",
+                md: "1.35rem",
+              },
+            }}
+          >
             Creá tu cuenta y agendá tu servicio en minutos.
           </Typography>
 
-          <Button
-            component={Link}
-            to="/registro"
-            variant="contained"
-            size="small"
-            sx={{ mr: 1 }}
-          >
-            Registrarme
-          </Button>
+          <Box sx={{ display: "flex", justifyContent: "center", gap: 2 }}>
+            <Button
+              component={Link}
+              to="/registro"
+              variant="contained"
+              size="large"
+              sx={{
+                px: 4,
+                py: 1.4,
+                fontSize: "0.95rem",
+                fontWeight: 700,
+              }}
+            >
+              Registrarme
+            </Button>
 
-          <Button
-            component={Link}
-            to="/login"
-            variant="outlined"
-            size="small"
-            color="inherit"
-          >
-            Iniciar sesión
-          </Button>
+            <Button
+              component={Link}
+              to="/login"
+              variant="outlined"
+              size="large"
+              color="inherit"
+              sx={{
+                px: 4,
+                py: 1.4,
+                fontSize: "0.95rem",
+                fontWeight: 700,
+                borderColor: "rgba(255,255,255,0.85)",
+              }}
+            >
+              Iniciar sesión
+            </Button>
+          </Box>
         </Container>
       </Box>
 
-      {/* SERVICIOS: 3 arriba centrados + 2 abajo centrados */}
+      {/* servicios y reseñas */}
       <Box sx={{ backgroundColor: "#f7f8fb", py: { xs: 5, md: 7 } }}>
         <Container>
           <Typography
@@ -230,8 +305,8 @@ export default function PaginaPrincipal() {
                 <Box
                   sx={{
                     mt: 2.5,
-                    width: 68,
-                    height: 68,
+                    width: 150,
+                    height: 130,
                     borderRadius: 3,
                     overflow: "hidden",
                     boxShadow: "0 10px 24px rgba(0,0,0,0.08)",
@@ -242,11 +317,7 @@ export default function PaginaPrincipal() {
                     component="img"
                     image={s.imagenUrl || "/servicio-default.jpg"}
                     alt={s.nombre || "Servicio"}
-                    sx={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                    }}
+                    sx={{ width: "100%", height: "100%", objectFit: "cover" }}
                   />
                 </Box>
 
@@ -284,7 +355,7 @@ export default function PaginaPrincipal() {
             ))}
           </Box>
 
-          {/* RESEÑAS: fila con 3 cuadrados centrados */}
+          {/* RESEÑAS */}
           <Box sx={{ mt: 6 }}>
             <Typography
               variant="overline"
@@ -303,6 +374,12 @@ export default function PaginaPrincipal() {
               Lo que dicen nuestros clientes
             </Typography>
 
+            {errorResenas && (
+              <Typography color="error" textAlign="center" sx={{ mb: 2 }}>
+                {errorResenas}
+              </Typography>
+            )}
+
             <Box
               sx={{
                 maxWidth: { xs: "100%", md: 920 },
@@ -310,7 +387,7 @@ export default function PaginaPrincipal() {
                 display: "flex",
                 justifyContent: "center",
                 gap: 3,
-                flexWrap: { xs: "wrap", md: "nowrap" }, // en desktop quedan 3 en fila
+                flexWrap: { xs: "wrap", md: "nowrap" },
               }}
             >
               {reseñas.map((r, idx) => (
@@ -334,33 +411,55 @@ export default function PaginaPrincipal() {
                       p: 3,
                       display: "flex",
                       flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center", 
                       gap: 1.25,
                       flex: 1,
                     }}
                   >
-                    <Stars value={r.estrellas} />
+                    <Box sx={{ display: "flex", justifyContent: "center" }}>
+                      <Rating value={Number(r.estrellas) || 0} readOnly />
+                    </Box>
 
                     <Typography
                       variant="body2"
                       color="text.secondary"
                       sx={{
+                        width: "100%", 
+                        textAlign: "center", 
                         lineHeight: 1.6,
                         whiteSpace: "normal",
                         overflowWrap: "anywhere",
                         wordBreak: "break-word",
-                        flex: 1,
                       }}
                     >
                       “{r.texto}”
                     </Typography>
 
-                    <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{
+                        width: "100%",
+                        textAlign: "center",
+                        fontWeight: 800,
+                      }}
+                    >
                       {r.nombre}
                     </Typography>
                   </CardContent>
                 </Card>
               ))}
             </Box>
+
+            {!errorResenas && reseñas.length === 0 && (
+              <Typography
+                color="text.secondary"
+                textAlign="center"
+                sx={{ mt: 2 }}
+              >
+                Aún no hay reseñas para mostrar.
+              </Typography>
+            )}
           </Box>
         </Container>
       </Box>
@@ -373,8 +472,8 @@ export default function PaginaPrincipal() {
           </Typography>
 
           <Typography textAlign="center">
-            📧 Email: contacto@winnieelectricidad.com <br />
-            🕒 Atención: Lunes a Viernes de 9 a 18 hs (o le agrego otro horario/ninguno?)
+            📧 Email: washivillanueva@gmail.com <br />
+            🕒 Atención: Lunes a Viernes de 9 a 18 hs
           </Typography>
         </Container>
       </Box>
