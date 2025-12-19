@@ -5,7 +5,6 @@ import Login from "../../pages/Public/Login/Login.jsx";
 import ResetPassword from "../../pages/Public/Login/ResetPassword";
 import ResenaPage from "../../pages/Public/HistoricoReseñas/ResenasPage.jsx";
 
-import { PrivateRoute } from "../routes/PrivateRoute.jsx";
 import { ProtectedRoute } from "../routes/ProtectedRoute.jsx";
 
 import MainLayout from "../../layout/MainLayout.jsx";
@@ -19,19 +18,21 @@ import PanelReservas from "../../pages/Admin/PanelReservas/PanelReservas.jsx"
 
 import AdminCrearReservaPage from "../../pages/Admin/CrearCliente/AdminCrearReserva.jsx";
 
+import PaginaPrincipal from "../../pages/Public/Principal/Principal.jsx"
 
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      {/* Página principal pública */}
+      <Route path="/" element={<PaginaPrincipal />} />
 
-      {/* públicas */}
+      {/* Públicas */}
       <Route path="/registro" element={<Registro />} />
       <Route path="/login" element={<Login />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/resenas" element={<ResenaPage />} />
 
-      {/* UsuarioCliente */}
+      {/* Usuario Cliente */}
       <Route
         path="/cliente"
         element={
@@ -46,7 +47,7 @@ export default function App() {
         <Route path="resenas/crear" element={<CrearResena />} />
       </Route>
 
-      {/* UsuarioAdministrador*/}
+      {/* Usuario Administrador */}
       <Route
         path="/admin"
         element={
@@ -62,8 +63,8 @@ export default function App() {
         <Route path="crear-reserva" element={<AdminCrearReservaPage />} />
       </Route>
 
-      {/* catch-all */}
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      {/* Catch-all */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
