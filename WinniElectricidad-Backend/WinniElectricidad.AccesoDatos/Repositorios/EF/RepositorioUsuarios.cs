@@ -83,7 +83,8 @@ public class RepositorioUsuarios : IRepositorioUsuario
     {
         return await _db.Usuarios
             .OfType<UsuarioAdministrador>()
-            .SingleOrDefaultAsync(ct);   
+            .Where(u => u.NombreCompleto == "Administrador del Sistema")
+            .FirstOrDefaultAsync(ct);   
     }
     
     public async Task<ICollection<UsuarioCliente>> BuscarPorNombreEmailTelefono(string dato, CancellationToken ct = default)
