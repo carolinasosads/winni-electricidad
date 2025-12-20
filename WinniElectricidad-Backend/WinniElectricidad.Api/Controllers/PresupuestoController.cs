@@ -70,8 +70,6 @@ public class PresupuestoController : ControllerBase
         }
     }
     
-    
-    
     /// <summary>
     /// Obtiene el presupuesto asociado a una reserva.
     /// </summary>
@@ -140,6 +138,3 @@ public class PresupuestoController : ControllerBase
         }
     }
 }
-    
-    
-    

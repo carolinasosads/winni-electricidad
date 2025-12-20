@@ -31,7 +31,8 @@ public static class PresupuestoMapper
             MontoTotal = presupuesto.Monto,
             MontoPagado = presupuesto.MontoPagado,
             DescripcionTrabajo = presupuesto.DescripcionTrabajo,
-            FechaCreacion = presupuesto.FechaPresupuesto
+            FechaCreacion = presupuesto.FechaPresupuesto,
+            Notas = presupuesto.Notas,
         };
     }
 }

@@ -34,19 +34,7 @@ namespace WinniElectricidad.AccesoDatos.Migrations
                 table: "Presupuestos");
 
             migrationBuilder.DropColumn(
-                name: "FechaPresupuesto",
-                table: "Presupuestos");
-
-            migrationBuilder.DropColumn(
-                name: "Monto",
-                table: "Presupuestos");
-
-            migrationBuilder.DropColumn(
                 name: "MontoPagado",
-                table: "Presupuestos");
-
-            migrationBuilder.DropColumn(
-                name: "Notas",
                 table: "Presupuestos");
         }
     }

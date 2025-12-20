@@ -51,7 +51,8 @@ export const obtenerPresupuestoSegunReserva = async (idReserva, token, signal) =
       headers: {
         "Content-Type": "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      }, signal,
+      }, 
+      signal,
     });
 
     const data = await handleJsonOrText(response);
