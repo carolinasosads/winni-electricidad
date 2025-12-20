@@ -161,6 +161,12 @@ public class WinniElectricidadContext : DbContext
         // -------------------- PRESUPUESTOS --------------------
         modelBuilder.Entity<Presupuesto>(entity =>
         {
+            entity.Property(p => p.MontoPagado)
+                .HasPrecision(18, 2);
+
+            entity.Property(p => p.Monto)
+                .HasPrecision(18, 2);
+            
             entity.HasKey(p => p.Id);
 
             entity.Property(p => p.Monto)

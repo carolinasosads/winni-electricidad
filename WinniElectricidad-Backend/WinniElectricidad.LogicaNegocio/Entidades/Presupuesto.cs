@@ -8,6 +8,8 @@ public class Presupuesto
     public Reserva Reserva { get; set; } = null!;
     public int IdUsuario { get; set; }
     public decimal Monto { get; set; }
+    public decimal? MontoPagado { get; set; } 
+    public string? DescripcionTrabajo { get; set; } 
     public string? Notas { get; set; }
     public DateTime FechaPresupuesto { get; set; }
     #endregion
