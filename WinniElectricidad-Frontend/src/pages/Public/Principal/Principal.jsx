@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Box, Typography, Button, Card, CardContent, CardMedia, Container, Rating, } from "@mui/material";
+import {  Box,  Typography,  Button,  Card,  CardContent,  CardMedia,  Container,  Rating,} from "@mui/material";
 
 import { getServiciosActivos } from "../../../services/authService";
 import { SitemarkIcon } from "../../../components/CustomIcons/CustomIcons.jsx";
 import { getResenasAprobadas } from "../../../services/resenaService";
+import AppHeader from "/src/components/Header/Header.jsx";
 
 export default function PaginaPrincipal() {
   const [serviciosRaw, setServiciosRaw] = useState([]);
@@ -12,6 +13,10 @@ export default function PaginaPrincipal() {
 
   const [resenasRaw, setResenasRaw] = useState([]);
   const [errorResenas, setErrorResenas] = useState(null);
+
+  const [estaLogueado, setEstaLogueado] = useState(
+    Boolean(localStorage.getItem("token"))
+  );
 
   const servicios = useMemo(() => {
     const arr = Array.isArray(serviciosRaw) ? serviciosRaw : [];
@@ -104,6 +109,18 @@ export default function PaginaPrincipal() {
   }, [resenasRaw]);
 
   useEffect(() => {
+    const onAuthChange = () => {
+      setEstaLogueado(Boolean(localStorage.getItem("token")));
+    };
+
+    window.addEventListener("auth-change", onAuthChange);
+
+    onAuthChange();
+
+    return () => window.removeEventListener("auth-change", onAuthChange);
+  }, []);
+
+  useEffect(() => {
     const controller = new AbortController();
     setError(null);
 
@@ -152,20 +169,14 @@ export default function PaginaPrincipal() {
           position: "sticky",
           top: 0,
           zIndex: 10,
-          backgroundColor: "white",
-          borderBottom: "1px solid #eee",
         }}
       >
-        <Container
-          sx={{
-            py: 1.25,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <SitemarkIcon />
-        </Container>
+        <AppHeader
+          logo={<SitemarkIcon />}
+          title=""
+          showMenuButton={false}
+          homeHref="/"
+        />
       </Box>
 
       {/* Sección de arriba */}
@@ -209,39 +220,41 @@ export default function PaginaPrincipal() {
             Creá tu cuenta y agendá tu servicio en minutos.
           </Typography>
 
-          <Box sx={{ display: "flex", justifyContent: "center", gap: 2 }}>
-            <Button
-              component={Link}
-              to="/registro"
-              variant="contained"
-              size="large"
-              sx={{
-                px: 4,
-                py: 1.4,
-                fontSize: "0.95rem",
-                fontWeight: 700,
-              }}
-            >
-              Registrarme
-            </Button>
+          {!estaLogueado && (
+            <Box sx={{ display: "flex", justifyContent: "center", gap: 2 }}>
+              <Button
+                component={Link}
+                to="/registro"
+                variant="contained"
+                size="large"
+                sx={{
+                  px: 4,
+                  py: 1.4,
+                  fontSize: "0.95rem",
+                  fontWeight: 700,
+                }}
+              >
+                Registrarme
+              </Button>
 
-            <Button
-              component={Link}
-              to="/login"
-              variant="outlined"
-              size="large"
-              color="inherit"
-              sx={{
-                px: 4,
-                py: 1.4,
-                fontSize: "0.95rem",
-                fontWeight: 700,
-                borderColor: "rgba(255,255,255,0.85)",
-              }}
-            >
-              Iniciar sesión
-            </Button>
-          </Box>
+              <Button
+                component={Link}
+                to="/login"
+                variant="outlined"
+                size="large"
+                color="inherit"
+                sx={{
+                  px: 4,
+                  py: 1.4,
+                  fontSize: "0.95rem",
+                  fontWeight: 700,
+                  borderColor: "rgba(255,255,255,0.85)",
+                }}
+              >
+                Iniciar sesión
+              </Button>
+            </Box>
+          )}
         </Container>
       </Box>
 
@@ -305,8 +318,8 @@ export default function PaginaPrincipal() {
                 <Box
                   sx={{
                     mt: 2.5,
-                    width: 150,
-                    height: 130,
+                    width: 200,
+                    height: 170,
                     borderRadius: 3,
                     overflow: "hidden",
                     boxShadow: "0 10px 24px rgba(0,0,0,0.08)",
@@ -412,7 +425,7 @@ export default function PaginaPrincipal() {
                       display: "flex",
                       flexDirection: "column",
                       alignItems: "center",
-                      justifyContent: "center", 
+                      justifyContent: "center",
                       gap: 1.25,
                       flex: 1,
                     }}
@@ -425,8 +438,8 @@ export default function PaginaPrincipal() {
                       variant="body2"
                       color="text.secondary"
                       sx={{
-                        width: "100%", 
-                        textAlign: "center", 
+                        width: "100%",
+                        textAlign: "center",
                         lineHeight: 1.6,
                         whiteSpace: "normal",
                         overflowWrap: "anywhere",
@@ -472,8 +485,10 @@ export default function PaginaPrincipal() {
           </Typography>
 
           <Typography textAlign="center">
-            <span aria-hidden="true">📧</span> Email: washivillanueva@gmail.com <br />
-            <span aria-hidden="true">🕒</span> Atención: Lunes a Viernes de 9 a 18 hs
+            <span aria-hidden="true">📧</span> Email: washivillanueva@gmail.com{" "}
+            <br />
+            <span aria-hidden="true">🕒</span> Atención: Lunes a Viernes de 9 a
+            18 hs
           </Typography>
         </Container>
       </Box>

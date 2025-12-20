@@ -182,46 +182,46 @@ public class WinniElectricidadContext : DbContext
         });
 
         modelBuilder.Entity<Servicio>().HasData(
-            new Servicio
-            {
-                Id = 1,
-                Titulo = "Electricidad",
-                Descripcion = "Instalaciones, reparaciones y mantenimiento eléctrico en hogares y comercios. Solucionamos fallas, mejoras de seguridad y nuevas conexiones.",
-                ImagenUrl = "/servicios/electricidad.jpeg",
-                Activo = true
-            },
-            new Servicio
-            {
-                Id = 2,
-                Titulo = "Sanitaria",
-                Descripcion = "Reparación e instalación de cañerías, griferías y artefactos sanitarios. Atendemos pérdidas, obstrucciones y trabajos de mantenimiento general.",
-                ImagenUrl = "/servicios/sanitaria.jpeg",
-                Activo = true
-            },
-            new Servicio
-            {
-                Id = 3,
-                Titulo = "Climatización",
-                Descripcion = "Instalación, mantenimiento y reparación de sistemas de aire acondicionado y calefacción para asegurar confort todo el año.",
-                ImagenUrl = "/servicios/climatizacion.jpeg",
-                Activo = true
-            },
-            new Servicio
-            {
-                Id = 4,
-                Titulo = "Riego",
-                Descripcion = "Diseño, instalación y mantenimiento de sistemas de riego para jardines y espacios verdes, optimizando el uso del agua.",
-                ImagenUrl = "/servicios/riego.jpg",
-                Activo = true
-            },
-            new Servicio
-            {
-                Id = 5,
-                Titulo = "Otro",
-                Descripcion = "Trabajos técnicos generales y servicios específicos no contemplados en las categorías principales, sujetos a evaluación previa.",
-                ImagenUrl = "/servicios/otros.jpeg",
-                Activo = true
-            }
+                new Servicio
+                {
+                    Id = 1,
+                    Titulo = "Electricidad",
+                    Descripcion = "Instalaciones, reparaciones y mantenimiento eléctrico en hogares y comercios.",
+                    ImagenUrl = "/servicios/electricidad.jpeg",
+                    Activo = true
+                },
+                new Servicio
+                {
+                    Id = 2,
+                    Titulo = "Sanitaria",
+                    Descripcion = "Instalación y reparación de cañerías, griferías y artefactos sanitarios.",
+                    ImagenUrl = "/servicios/sanitaria.jpeg",
+                    Activo = true
+                },
+                new Servicio
+                {
+                    Id = 3,
+                    Titulo = "Climatización",
+                    Descripcion = "Instalación y mantenimiento de sistemas de aire acondicionado y calefacción.",
+                    ImagenUrl = "/servicios/climatizacion.jpeg",
+                    Activo = true
+                },
+                new Servicio
+                {
+                    Id = 4,
+                    Titulo = "Riego",
+                    Descripcion = "Instalación y mantenimiento de sistemas de riego para jardines.",
+                    ImagenUrl = "/servicios/riego.jpg",
+                    Activo = true
+                },
+                new Servicio
+                {
+                    Id = 5,
+                    Titulo = "Otro",
+                    Descripcion = "Servicios técnicos generales sujetos a evaluación previa.",
+                    ImagenUrl = "/servicios/otros.jpeg",
+                    Activo = true
+                }
         );
 
     }
