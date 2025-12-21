@@ -19,6 +19,7 @@ import PanelReservas from "../../pages/Admin/PanelReservas/PanelReservas.jsx"
 import AdminCrearReservaPage from "../../pages/Admin/CrearCliente/AdminCrearReserva.jsx";
 
 import PaginaPrincipal from "../../pages/Public/Principal/Principal.jsx"
+import ServiciosPage from "../../pages/Public/Servicio/ServiciosPage.jsx";
 
 export default function App() {
   return (
@@ -31,6 +32,7 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/resenas" element={<ResenaPage />} />
+      <Route path="/servicios" element={<ServiciosPage />} />
 
       {/* Usuario Cliente */}
       <Route
@@ -45,6 +47,7 @@ export default function App() {
         <Route path="agenda" element={<AgendaPage />} />
         <Route path="resenas" element={<ResenaPage />} />
         <Route path="resenas/crear" element={<CrearResena />} />
+        <Route path="servicios" element={<ServiciosPage />} /> 
       </Route>
 
       {/* Usuario Administrador */}
@@ -61,6 +64,7 @@ export default function App() {
         <Route path="historico" element={<HistoricoClientes />} />
         <Route path="panel-reservas" element={<PanelReservas />} />
         <Route path="crear-reserva" element={<AdminCrearReservaPage />} />
+        <Route path="servicios" element={<ServiciosPage />} />       
       </Route>
 
       {/* Catch-all */}
