@@ -21,29 +21,48 @@ export default function PaginaPrincipal() {
  const servicios = useMemo(() => {
   const arr = Array.isArray(serviciosRaw) ? serviciosRaw : [];
 
-return arr
-  .map((s) => {
-    const idServicio = s?.id ?? s?.Id;
-    const nombre = s?.titulo ?? s?.Titulo;
-    const descripcion = s?.descripcion ?? s?.Descripcion;
+  const imagenesPorServicio = {
+    electricidad: "/servicios/electricidad.jpeg",
+    sanitaria: "/servicios/sanitaria.jpeg",
+    climatizacion: "/servicios/climatizacion.jpeg",
+    "climatización": "/servicios/climatizacion.jpeg",
+    riego: "/servicios/riego.jpg",
+    otro: "/servicios/otros.jpeg",
+    otros: "/servicios/otros.jpeg",
+  };
 
-    let imagenUrl = s?.imagenUrl ?? s?.ImagenUrl ?? "/servicio-default.jpg";
+  return arr
+    .map((s) => {
+      const idServicio = s?.id ?? s?.Id;
+      const nombre = s?.titulo ?? s?.Titulo;
+      const descripcion = s?.descripcion ?? s?.Descripcion;
 
-    if (typeof imagenUrl === "string") {
-      imagenUrl = imagenUrl.trim();
+      let imagenUrl = s?.imagenUrl ?? s?.ImagenUrl ?? null;
 
-      if (
-        imagenUrl &&
-        !imagenUrl.startsWith("http") &&
-        !imagenUrl.startsWith("/")
-      ) {
-        imagenUrl = `/${imagenUrl}`;
+      if (!imagenUrl && typeof nombre === "string") {
+        const key = nombre.trim().toLowerCase();
+        imagenUrl = imagenesPorServicio[key] ?? null;
       }
-    }
 
-    return { idServicio, nombre, descripcion, imagenUrl };
-  })
-  .filter((s) => s.idServicio != null);
+      if (typeof imagenUrl === "string") {
+        imagenUrl = imagenUrl.trim();
+
+        if (
+          imagenUrl &&
+          !imagenUrl.startsWith("http") &&
+          !imagenUrl.startsWith("/")
+        ) {
+          imagenUrl = `/${imagenUrl}`;
+        }
+      }
+
+      if (!imagenUrl) {
+        imagenUrl = "/servicio-default.jpg";
+      }
+
+      return { idServicio, nombre, descripcion, imagenUrl };
+    })
+    .filter((s) => s.idServicio != null);
 }, [serviciosRaw]);
 
   const reseñas = useMemo(() => {
