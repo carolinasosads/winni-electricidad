@@ -400,3 +400,41 @@ export async function getDireccionesUsuarioAdmin(userId, signal) {
   }
   return await resp.json();
 }
+
+export const mockServiciosAdmin = [
+  {
+    id: 1,
+    titulo: "Electricidad",
+    descripcion: "Instalaciones, reparaciones y mantenimiento eléctrico.",
+    imagenUrl: "/images/servicios/electricidad.jpg",
+    activo: true,
+    trabajos: [
+      { id: 101, imagenUrl: "/images/trabajos/electricidad1.jpg" },
+      { id: 102, imagenUrl: "/images/trabajos/electricidad2.jpg" }
+    ]
+  },
+  {
+    id: 2,
+    titulo: "Sanitaria",
+    descripcion: "Instalación y reparación de cañerías y griferías.",
+    imagenUrl: "/images/servicios/sanitaria.jpg",
+    activo: false,
+    trabajos: [
+      { id: 201, imagenUrl: "/images/trabajos/sanitaria1.jpg" }
+    ]
+  },
+  {
+    id: 3,
+    titulo: "Climatización",
+    descripcion: "Instalación y mantenimiento de aire acondicionado.",
+    imagenUrl: "/images/servicios/climatizacion.jpg",
+    activo: true,
+    trabajos: []
+  }
+];
+
+export const getServicios = async () => {
+  // Simula latencia
+  await new Promise(res => setTimeout(res, 300));
+  return mockServiciosAdmin;
+};
