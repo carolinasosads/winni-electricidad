@@ -27,9 +27,15 @@ export default function PaginaPrincipal() {
         const nombre = s?.titulo ?? s?.Titulo;
         const descripcion = s?.descripcion ?? s?.Descripcion;
 
-        let imagenUrl = s?.imagenUrl ?? s?.ImagenUrl;
+        let imagenUrl = s?.imagenUrl ?? s?.ImagenUrl ?? null;
+
         if (typeof imagenUrl === "string") {
           imagenUrl = imagenUrl.trim();
+
+          imagenUrl = imagenUrl.replace(/^public\//i, "");
+
+          imagenUrl = imagenUrl.replace(/\\/g, "/");
+
           if (
             imagenUrl &&
             !imagenUrl.startsWith("http") &&
@@ -40,6 +46,19 @@ export default function PaginaPrincipal() {
         } else {
           imagenUrl = null;
         }
+
+        if (!imagenUrl) {
+          imagenUrl = "/servicio-default.jpg";
+        }
+
+        console.log(
+          "Servicio:",
+          nombre,
+          "imagenUrl raw:",
+          s?.imagenUrl ?? s?.ImagenUrl,
+          "imagenUrl final:",
+          imagenUrl
+        );
 
         return { idServicio, nombre, descripcion, imagenUrl };
       })
@@ -91,6 +110,9 @@ export default function PaginaPrincipal() {
 
         if (typeof imagenUrl === "string") {
           imagenUrl = imagenUrl.trim();
+          imagenUrl = imagenUrl.replace(/^public\//i, "");
+          imagenUrl = imagenUrl.replace(/\\/g, "/");
+
           if (
             imagenUrl &&
             !imagenUrl.startsWith("http") &&
@@ -114,7 +136,6 @@ export default function PaginaPrincipal() {
     };
 
     window.addEventListener("auth-change", onAuthChange);
-
     onAuthChange();
 
     return () => window.removeEventListener("auth-change", onAuthChange);
@@ -331,6 +352,9 @@ export default function PaginaPrincipal() {
                     image={s.imagenUrl || "/servicio-default.jpg"}
                     alt={s.nombre || "Servicio"}
                     sx={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    onError={(e) => {
+                      e.currentTarget.src = "/servicio-default.jpg";
+                    }}
                   />
                 </Box>
 
@@ -487,8 +511,7 @@ export default function PaginaPrincipal() {
           <Typography textAlign="center">
             <span aria-hidden="true">📧</span> Email: washivillanueva@gmail.com{" "}
             <br />
-            <span aria-hidden="true">🕒</span> Atención: Lunes a Viernes de 9 a
-            18 hs
+            <span aria-hidden="true">🕒</span> Atención: Lunes a Viernes de 9 a 18 hs
           </Typography>
         </Container>
       </Box>

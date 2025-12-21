@@ -3,10 +3,10 @@
     "rewrite": "/index.html",
     "exclude": [
       "/assets/*",
+      "/servicios/*",
+      "/*.{png,jpg,jpeg,webp,svg,gif,ico}",
       "/*.css",
-      "/*.js",
-      "/*.png",
-      "/*.ico"
+      "/*.js"
     ]
   }
 }
