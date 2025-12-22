@@ -9,14 +9,20 @@ namespace WinniElectricidad.Tests.Small.Controllers;
 [TestFixture]
 public class ServicioControllerTests
 {
-    private Mock<IObtenerServiciosActivos> _mockServicio;
+    private Mock<IObtenerServiciosSegunEstado> _mockServicio;
+    private Mock<IActivarServicio> _mockServicioActivar;
+    private Mock<IDesactivarServicio> _mockServicioDesactivar;
+
+
     private ServicioController _controller;
 
     [SetUp]
     public void Setup()
     {
-        _mockServicio = new Mock<IObtenerServiciosActivos>();
-        _controller = new ServicioController(_mockServicio.Object);
+        _mockServicio = new Mock<IObtenerServiciosSegunEstado>();
+        _mockServicioDesactivar = new Mock<IDesactivarServicio>();
+        _mockServicioActivar = new Mock<IActivarServicio>();
+        _controller = new ServicioController(_mockServicio.Object,  _mockServicioDesactivar.Object, _mockServicioActivar.Object);
     }
 
     [Test]
@@ -27,7 +33,7 @@ public class ServicioControllerTests
             new() { Id = 1, Titulo = "Electricidad" },
             new() { Id = 2, Titulo = "Sanitaria" }
         };
-        _mockServicio.Setup(s => s.Ejecutar(It.IsAny<CancellationToken>()))
+        _mockServicio.Setup(s => s.Ejecutar(true,It.IsAny<CancellationToken>()))
             .ReturnsAsync(lista);
 
         // Act
@@ -44,7 +50,7 @@ public class ServicioControllerTests
     public async Task GetServiciosDisponibles_EnCasoDeError_Devuelve500()
     {
         // Arrange
-        _mockServicio.Setup(s => s.Ejecutar(It.IsAny<CancellationToken>()))
+        _mockServicio.Setup(s => s.Ejecutar(true, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("Error"));
         
         // Act

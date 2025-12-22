@@ -9,7 +9,7 @@ namespace WinniElectricidad.Tests.Medium.AccesoDatos;
 public class RepositorioServiciosTests
 {
     [Test]
-    public async Task FindAllActive_FiltraSoloActivos()
+    public async Task FindAllSegunEstado_SiActivoEsTrue_FiltraSoloActivos()
     {
         // Arrange
         var (context, connection) = await DbContextHelper.CrearContextoSqliteEnMemoria();
@@ -26,11 +26,36 @@ public class RepositorioServiciosTests
             var repo = new RepositorioServicios(context);
 
             // Act
-            var result = await repo.FindAllActive();
+            var result = await repo.FindAllSegunEstado(true);
 
             // Assert
             Assert.That(result, Has.Count.EqualTo(2));
             Assert.That(result.All(s => s.Activo), Is.True);
+        }
+    }
+    
+    [Test]
+    public async Task FindAllSegunEstado_SiActivoEsFalse_TraeTodos()
+    {
+        // Arrange
+        var (context, connection) = await DbContextHelper.CrearContextoSqliteEnMemoria();
+        await using (connection)
+        await using (context)
+        {
+            context.Servicios.AddRange(
+                new Servicio("Electricidad", "Instalaciones completas", null) { Activo = true },
+                new Servicio("Sanitaria", "Servicio sanitario completo", null) { Activo = false },
+                new Servicio("Riego", "Sistema de riego automatizado", null) { Activo = true }
+            );
+            await context.SaveChangesAsync();
+
+            var repo = new RepositorioServicios(context);
+
+            // Act
+            var result = await repo.FindAllSegunEstado(false);
+
+            // Assert
+            Assert.That(result, Has.Count.EqualTo(3));
         }
     }
 
