@@ -8,8 +8,10 @@ import ServiciosHeader from "./ServiciosHeader";
 
 import {
   getServiciosActivos,
-  getServicios
-} from "../../../services/authService";
+  getServicios,
+  desactivarServicio,
+  activarServicio
+} from "../../../services/servicioService";
 
 export default function ServiciosPage() {
   const rol = localStorage.getItem("rol");
@@ -18,22 +20,28 @@ export default function ServiciosPage() {
   const [servicios, setServicios] = useState([]);
   const [servicioAccion, setServicioAccion] = useState(null);
 
-  const loadServicios = async () => {
+  const loadServicios = async (signal) => {
     const data =
       rol === "Administrador"
-        ? await getServicios()
-        : await getServiciosActivos();
+        ? await getServicios(signal)
+        : await getServiciosActivos(signal);
 
     setServicios(data);
-    console.log(data)
   };
 
   useEffect(() => {
-    loadServicios();
+    const ac = new AbortController();
+    loadServicios(ac.signal);
+    return () => ac.abort();
   }, []);
 
   const confirmarToggle = async () => {
-    // await desactivarServicio(servicioAccion.id);
+    if (servicioAccion.activo) {
+      await desactivarServicio(servicioAccion.id);
+    } else {
+      await activarServicio(servicioAccion.id);
+    }
+
     await loadServicios();
     setServicioAccion(null);
   };
