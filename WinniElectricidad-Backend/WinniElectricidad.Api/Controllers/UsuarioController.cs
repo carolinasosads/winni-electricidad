@@ -5,6 +5,7 @@ using WinniElectricidad.Compartido.DTOs.Direcciones;
 using WinniElectricidad.Compartido.DTOs.Registro;
 using WinniElectricidad.Compartido.DTOs.Usuarios;
 using WinniElectricidad.Compartido.DTOs.Usuarios.Busqueda;
+using WinniElectricidad.Compartido.DTOs.Usuarios.ListadoUsuarios;
 using WinniElectricidad.Compartido.DTOs.Usuarios.Login;
 using WinniElectricidad.Compartido.DTOs.Usuarios.RecuperacionContrasena;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Usuario;
@@ -30,6 +31,8 @@ public class UsuarioController : ControllerBase
     private readonly IObtenerDirecciones _obtenerDirecciones;
     private readonly ICrearUsuarioDesdeAdmin _crearUsuarioDesdeAdmin;
     private readonly IBuscarUsuarios _buscarUsuarios;
+    private readonly IListarTodosLosUsuarios _listarTodosLosUsuarios;
+    private readonly IObtenerDetalleUsuario _obtenerDetalleUsuario;
 
     /// <summary>
     /// Inicializa una nueva instancia del <see cref="UsuarioController"/> con las dependencias necesarias.
@@ -41,7 +44,7 @@ public class UsuarioController : ControllerBase
     /// <param name="registroUsuario">Servicio para registrar usuarios.</param>
     /// <param name="obtenerDirecciones">Servicio para obtener las direcciones de un usuario.</param>
     public UsuarioController(ILoginUsuario loginUsuario, IServicioToken token, IRegistroUsuario registroUsuario, IHCaptchaVerifier captcha, IRecuperarContrasena recuperarContrasena, IObtenerDirecciones obtenerDirecciones,
-        ICrearUsuarioDesdeAdmin crearUsuarioDesdeAdmin, IBuscarUsuarios buscarUsuarios)
+        ICrearUsuarioDesdeAdmin crearUsuarioDesdeAdmin, IBuscarUsuarios buscarUsuarios, IListarTodosLosUsuarios listarTodosLosUsuarios, IObtenerDetalleUsuario obtenerDetalleUsuario)
     {
         _loginUsuario = loginUsuario;
         _token = token;
@@ -51,6 +54,8 @@ public class UsuarioController : ControllerBase
         _obtenerDirecciones = obtenerDirecciones;
         _crearUsuarioDesdeAdmin = crearUsuarioDesdeAdmin;
         _buscarUsuarios = buscarUsuarios;
+        _listarTodosLosUsuarios = listarTodosLosUsuarios;
+        _obtenerDetalleUsuario = obtenerDetalleUsuario;
     }
 
     /// <summary>
@@ -379,8 +384,24 @@ public class UsuarioController : ControllerBase
     }
 
     /// <summary>
-    /// Obtiene las direcciones de un usuario por id (solo administrador).
+    /// Obtiene todas las direcciones asociadas a un usuario específico.
+    /// Solo accesible para administradores.
     /// </summary>
+    /// <param name="id">
+    /// Identificador del usuario.
+    /// </param>
+    /// <param name="ct">
+    /// Token de cancelación para abortar la operación.
+    /// </param>
+    /// <returns>
+    /// La lista de direcciones asociadas al usuario.
+    /// </returns>
+    /// <response code="200">
+    /// Las direcciones del usuario fueron obtenidas correctamente.
+    /// </response>
+    /// <response code="500">
+    /// Ocurrió un error inesperado al obtener las direcciones.
+    /// </response>
     [HttpGet("admin/usuarios/{id:int}/direcciones")]
     [Authorize(Roles = "Administrador")]
     public async Task<IActionResult> GetDireccionesDeUsuarioAdmin([FromRoute] int id, CancellationToken ct)
@@ -395,4 +416,62 @@ public class UsuarioController : ControllerBase
             return StatusCode(500, new { message = "Error inesperado." });
         }
     }
+    
+    /// <summary>
+    /// Devuelve un listado liviano de clientes para ser utilizado en selecciones
+    /// y búsquedas rápidas desde el front-end.
+    /// Solo accesible para administradores.
+    /// </summary>
+    /// <param name="ct">
+    /// Token de cancelación para abortar la operación.
+    /// </param>
+    /// <returns>
+    /// Un listado simplificado de clientes.
+    /// </returns>
+    /// <response code="200">
+    /// El listado de clientes fue obtenido correctamente.
+    /// </response>
+    [HttpGet("admin/clientes")]
+    [Authorize(Roles = "Administrador")]
+    [ProducesResponseType(typeof(IEnumerable<ListadoUsuariosDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetClientes(CancellationToken ct)
+    {
+        var lista = await _listarTodosLosUsuarios.Listar(ct);
+        return Ok(lista);
     }
+
+
+    /// <summary>
+    /// Obtiene el detalle completo de un cliente específico, incluyendo
+    /// direcciones, reservas y presupuestos asociados.
+    /// Solo accesible para administradores.
+    /// </summary>
+    /// <param name="idUsuario">
+    /// Identificador del usuario cliente.
+    /// </param>
+    /// <param name="ct">
+    /// Token de cancelación para abortar la operación.
+    /// </param>
+    /// <returns>
+    /// El detalle completo del cliente solicitado.
+    /// </returns>
+    /// <response code="200">
+    /// El detalle del cliente fue obtenido correctamente.
+    /// </response>
+    /// <response code="404">
+    /// No se encontró un usuario con el identificador proporcionado.
+    /// </response>
+    [HttpGet("admin/clientes/{idUsuario:int}")]
+    [Authorize(Roles = "Administrador")]
+    [ProducesResponseType(typeof(DetalleUsuariosDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetClienteDetalle([FromRoute] int idUsuario, CancellationToken ct)
+    {
+        var detalle = await _obtenerDetalleUsuario.Execute(idUsuario, ct);
+
+        if (detalle is null)
+            return NotFound(new { message = "Usuario no encontrado." });
+
+        return Ok(detalle);
+    }
+}

@@ -41,10 +41,13 @@ public class RepositorioUsuarios : IRepositorioUsuario
         throw new NotImplementedException();
     }
 
-    public Task<IReadOnlyList<UsuarioBase>> FindAll(CancellationToken ct = default)
+    public async Task<IReadOnlyList<UsuarioBase>> FindAll(CancellationToken ct = default)
     {
-        throw new NotImplementedException();
-    }
+        return await _db.Usuarios
+            .OfType<UsuarioCliente>()
+            .AsNoTracking()
+            .OrderBy(u => u.IdUsuario)
+            .ToListAsync(ct); }
 
     public async Task<UsuarioBase?> FindbyEmail(string email, CancellationToken ct = default)
     {
@@ -104,5 +107,16 @@ public class RepositorioUsuarios : IRepositorioUsuario
             )
             .OrderBy(u => u.NombreCompleto)
             .ToListAsync(ct);
+    }
+    
+    public async Task<UsuarioCliente?> FindClienteDetalleById(int idUsuario, CancellationToken ct = default)
+    {
+        return await _db.Usuarios
+            .OfType<UsuarioCliente>()
+            .AsNoTracking()
+            .Include(u => u.Direcciones)
+            .Include(u => u.Reservas)
+            .Include(u => u.Presupuestos)
+            .FirstOrDefaultAsync(u => u.IdUsuario == idUsuario, ct);
     }
 }

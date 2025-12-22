@@ -86,8 +86,8 @@ function Sidebar({
         setExpandedItemIds((previousValue) =>
           previousValue.includes(itemId)
             ? previousValue.filter(
-                (previousValueItemId) => previousValueItemId !== itemId,
-              )
+              (previousValueItemId) => previousValueItemId !== itemId,
+            )
             : [...previousValue, itemId],
         );
       } else if (!isOverSmViewport && !hasNestedNavigation) {
@@ -199,6 +199,13 @@ function Sidebar({
                     icon={<DateRangeIcon />}
                     href="/admin/crear-reserva"
                     selected={pathname.startsWith("/admin/crear-reserva")}
+                  />
+                  <SidebarPageItem
+                    id="admin-ficha-clientes"
+                    title="Ficha clientes"
+                    icon={<AccountBoxIcon />}
+                    href="/admin/ficha-clientes"
+                    selected={pathname.startsWith("/admin/ficha-clientes")}
                   />
                 </>
               )}

@@ -24,4 +24,8 @@ public class PresupuestoDto
 
 [Required]
     public DateTime FechaCreacion { get; set; }
+    
+    [StringLength(500, ErrorMessage = "Las notas internas no pueden superar los 500 caracteres.")]
+
+    public string? NotasInternas { get; set; } 
 }

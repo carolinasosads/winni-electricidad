@@ -40,40 +40,26 @@ export const crearPresupuestoParaReserva = async (idReserva, dto) => {
   }
 };
 
-export const obtenerPresupuestoSegunReserva = async (idReserva, token, signal) => {
+export const obtenerPresupuestoSegunReserva = async (idReserva) => {
   try {
-    if (!idReserva || Number.isNaN(Number(idReserva))) {
-      throw new ApiError("Id de reserva inválido.", 400);
-    }
-
-    const response = await fetch(`${urlAPIPresupuesto}reserva/${idReserva}`, {
+    const res = await fetch(`${urlAPIPresupuesto}reserva/${idReserva}`, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      }, 
-      signal,
+      headers: getAuthHeaders(),
     });
 
-    const data = await handleJsonOrText(response);
-
-    if (response.status === 401) {
-      throw new ApiError(data?.message || "No autenticado.", 401);
+    if (res.status === 404) {
+      return null; 
     }
 
-    if (response.status === 404) {
-      throw new ApiError(data?.message || "No existe presupuesto para esa reserva.", 404);
+    if (!res.ok) {
+      const data = await handleJsonOrText(res);
+      const message = data?.message || "Error al obtener el presupuesto de la reserva.";
+      throw new ApiError(message, res.status);
     }
 
-    if (!response.ok) {
-      throw new ApiError(data?.message || "Error al obtener el presupuesto.", response.status);
-    }
-
-    return data; 
+    return await res.json();
   } catch (err) {
-    if (err?.name === "AbortError") throw err;
     if (err instanceof ApiError) throw err;
-
     console.error(err);
     throw new ApiError("Error al obtener el presupuesto.");
   }
