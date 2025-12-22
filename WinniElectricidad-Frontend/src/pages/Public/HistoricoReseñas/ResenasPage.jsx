@@ -7,7 +7,8 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions
+  DialogActions,
+  Alert
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -36,8 +37,9 @@ export default function ResenasPage() {
   const [calificacionFiltro, setCalificacionFiltro] = useState("Todas");
 
   const [resenaSeleccionada, setResenaSeleccionada] = useState(null);
-  const [resenaAEliminar, setResenaAEliminar] = useState(null);
-  const [mensajeError, setMensajeError] = useState(null);
+  const [resenaADesaprobar, setResenaADesaprobar] = useState(null);
+  const [successMsg, setSuccessMsg] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
 
   /* ---------- LOADERS ---------- */
 
@@ -46,7 +48,7 @@ export default function ResenasPage() {
       const data = await getResenasAprobadas();
       setResenas(data);
     } catch (err) {
-      setMensajeError(err?.message || "Error al cargar reseñas.");
+      setErrorMsg(err?.message || "Error al cargar reseñas.");
     }
   };
 
@@ -55,7 +57,7 @@ export default function ResenasPage() {
       const data = await getServiciosActivos();
       setServicios(data.filter(s => s.titulo !== "Otro"));
     } catch (err) {
-      setMensajeError(err?.message || "Error al cargar servicios.");
+      setErrorMsg(err?.message || "Error al cargar servicios.");
     }
   };
 
@@ -90,27 +92,45 @@ export default function ResenasPage() {
     [resenas]
   );
 
-  /* ---------- ELIMINAR ---------- */
+  /* ---------- Desaprobar ---------- */
 
-  const solicitarEliminarResena = (resena) => {
-    setResenaAEliminar(resena);
+  const solicitarDesaprobarResena = (resena) => {
+    setResenaADesaprobar(resena);
   };
 
-  const confirmarEliminarResena = async () => {
-    if (!resenaAEliminar) return;
+  const confirmarDesaprobarResena = async () => {
+    if (!resenaADesaprobar) return;
 
     try {
-      await desaprobarReseña(resenaAEliminar.idReseña);
+      setErrorMsg("");
+      setSuccessMsg("");
+
+      await desaprobarReseña(resenaADesaprobar.idReseña);
+
+      setSuccessMsg("¡Reseña desaprobada con éxito!");
       await loadResenasAprobadas();
-      setResenaAEliminar(null);
+
+      setResenaADesaprobar(null);
     } catch (err) {
-      setMensajeError(err?.message || "Error al eliminar la reseña.");
+      setErrorMsg(err?.message || "Error al desaprobar la reseña.");
     }
   };
 
   return (
     <Box sx={{ maxWidth: 1200, mx: "auto", px: 2, py: 4 }}>
       <ResenasHeader promedio={promedio} total={resenas.length} />
+
+      {errorMsg && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {errorMsg}
+        </Alert>
+      )}
+
+      {successMsg && (
+        <Alert severity="success" sx={{ mb: 3 }}>
+          {successMsg}
+        </Alert>
+      )}
 
       {rol === "Cliente" && (
         <Box
@@ -166,7 +186,7 @@ export default function ResenasPage() {
               <ResenaCard
                 resena={resena}
                 esAdmin={rol === "Administrador"}
-                onEliminar={solicitarEliminarResena}
+                onDesaprobar={solicitarDesaprobarResena}
               />
             </Grid>
           ))}
@@ -184,28 +204,31 @@ export default function ResenasPage() {
       />
 
       <Dialog
-        open={Boolean(resenaAEliminar)}
-        onClose={() => setResenaAEliminar(null)}
+        open={Boolean(resenaADesaprobar)}
+        onClose={() => setResenaADesaprobar(null)}
       >
-        <DialogTitle>Eliminar reseña</DialogTitle>
+        <DialogTitle>
+          Desaprobar reseña
+        </DialogTitle>
 
         <DialogContent>
           <Typography>
-            ¿Estás seguro de que querés eliminar esta reseña?
-            Esta acción no la mostrará más en el panel público.
+            ¿Seguro que querés desaprobar esta reseña?
+            <br />
+            Esta acción hará que deje de mostrarse en el panel público.
           </Typography>
         </DialogContent>
 
         <DialogActions>
-          <Button onClick={() => setResenaAEliminar(null)}>
+          <Button onClick={() => setResenaADesaprobar(null)}>
             Cancelar
           </Button>
           <Button
             color="error"
             variant="contained"
-            onClick={confirmarEliminarResena}
+            onClick={confirmarDesaprobarResena}
           >
-            Eliminar
+            Confirmar
           </Button>
         </DialogActions>
       </Dialog>

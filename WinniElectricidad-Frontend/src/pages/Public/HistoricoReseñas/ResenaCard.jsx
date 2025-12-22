@@ -8,9 +8,9 @@ import {
   IconButton,
   Tooltip
 } from "@mui/material";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import DoNotDisturbOnIcon from '@mui/icons-material/DoNotDisturbOn';
 
-export default function ResenaCard({ resena, esAdmin, onEliminar }) {
+export default function ResenaCard({ resena, esAdmin, onDesaprobar }) {
   return (
     <Card
       sx={{
@@ -27,23 +27,27 @@ export default function ResenaCard({ resena, esAdmin, onEliminar }) {
     >
       {/* BOTÓN ADMIN */}
       {esAdmin && (
-        <Tooltip title="Eliminar reseña">
+        <Tooltip title="Desaprobar reseña">
           <IconButton
-            onClick={() => onEliminar(resena)}
+            onClick={() => onDesaprobar(resena)}
             size="small"
             sx={{
               position: "absolute",
               top: 14,
               right: 14,
-              color: "grey.400",
-              zIndex: 2,
+              zIndex: 3,
+              color: "grey.500",
+              bgcolor: "rgba(255,255,255,0.5)",
+              backdropFilter: "blur(6px)",
+              boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+              transition: "all 0.2s ease",
               "&:hover": {
                 color: "error.main",
-                backgroundColor: "rgba(211,47,47,0.08)"
+                bgcolor: "rgba(255,255,255,0.85)"
               }
             }}
           >
-            <DeleteOutlineIcon fontSize="small" />
+            <DoNotDisturbOnIcon fontSize="small" />
           </IconButton>
         </Tooltip>
       )}
