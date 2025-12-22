@@ -83,7 +83,6 @@ export default function ServiciosPage() {
         </Box>
         )}
 
-      {/* GRID RESPONSIVE REAL */}
       <Box
         sx={{
           display: "grid",
@@ -106,7 +105,6 @@ export default function ServiciosPage() {
         ))}
       </Box>
 
-      {/* DIALOG CONFIRMACIÓN */}
       <Dialog
         open={Boolean(servicioAccion)}
         onClose={() => setServicioAccion(null)}
