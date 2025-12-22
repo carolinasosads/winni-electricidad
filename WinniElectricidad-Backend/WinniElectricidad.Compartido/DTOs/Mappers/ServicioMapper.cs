@@ -5,15 +5,29 @@ namespace WinniElectricidad.Compartido.DTOs.Mappers;
 
 public static class ServicioMapper
 {
-    public static ICollection<ServicioActivoDto> MapearServiciosADtos(IEnumerable<Servicio> serviciosActivos)
+    public static IEnumerable<ServicioActivoDto> MapearServiciosADtos(bool activo, IEnumerable<Servicio> servicios)
     {
-        return serviciosActivos
-            .Select(servicio => new ServicioActivoDto
+        if (activo)
+        {
+            return servicios
+                .Select(servicio => new ServicioActivoDto
+                {
+                    Id = servicio.Id,
+                    Titulo = servicio.Titulo,
+                    Descripcion = servicio.Descripcion,
+                    ImagenUrl = servicio.ImagenUrl
+                })
+                .ToList();
+        }
+        
+        return servicios
+            .Select(servicio => new ServicioDto()
             {
                 Id = servicio.Id,
                 Titulo = servicio.Titulo,
                 Descripcion = servicio.Descripcion,
-                ImagenUrl = servicio.ImagenUrl
+                ImagenUrl = servicio.ImagenUrl,
+                Activo = servicio.Activo
             })
             .ToList();
     }

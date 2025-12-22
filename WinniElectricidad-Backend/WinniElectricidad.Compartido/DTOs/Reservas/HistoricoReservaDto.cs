@@ -16,6 +16,6 @@ public class HistoricoReservaDto
     
     public DireccionDto Direccion { get; set; } = null!;
     
-    public ICollection<ServicioActivoDto> Servicios { get; set; } = new List<ServicioActivoDto>();
+    public IEnumerable<ServicioActivoDto> Servicios { get; set; } = new List<ServicioActivoDto>();
 
 }

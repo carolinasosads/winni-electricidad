@@ -24,9 +24,10 @@ public class RepositorioServicios : IRepositorioServicio
         return servicio;
     }
 
-    public Task Update(Servicio obj, CancellationToken ct = default)
+    public async Task Update(Servicio servicio, CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        _db.Servicios.Update(servicio);
+        await _db.SaveChangesAsync(ct);
     }
 
     public Task Delete(int id, CancellationToken ct = default)
@@ -39,9 +40,16 @@ public class RepositorioServicios : IRepositorioServicio
         return await _db.Servicios.ToListAsync(ct);
     }
     
-    public async Task<IReadOnlyList<Servicio>> FindAllActive(CancellationToken ct = default)
+    public async Task<IReadOnlyList<Servicio>> FindAllSegunEstado(bool activo, CancellationToken ct = default)
     {
-        return await _db.Servicios.Where(s => s.Activo).ToListAsync(ct);
+        var servicios = await _db.Servicios.ToListAsync(ct);
+
+        if (activo)
+        {
+            servicios = servicios.Where(s => s.Activo).ToList();
+        }
+
+        return servicios;
     }
 
     public async Task<IReadOnlyList<Servicio>> FindByIds(List<int> ids, CancellationToken ct = default)
