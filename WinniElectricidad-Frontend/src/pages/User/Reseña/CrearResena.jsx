@@ -13,7 +13,7 @@ import {
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 
 import { crearResena } from "../../../services/resenaService";
-import { getServiciosActivos } from "../../../services/authService";
+import { getServiciosActivos } from "../../../services/servicioService";
 
 export default function CrearResena() {
   const [descripcion, setDescripcion] = useState("");

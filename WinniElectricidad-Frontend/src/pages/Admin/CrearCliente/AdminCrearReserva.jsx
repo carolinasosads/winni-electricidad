@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import {  crearUsuarioComoAdmin,  buscarUsuariosAdmin,  getServiciosActivos,  getDireccionesUsuarioAdmin,} from "../../../services/authService";
+import { crearUsuarioComoAdmin, buscarUsuariosAdmin, getDireccionesUsuarioAdmin } from "../../../services/authService";
+import { getServiciosActivos } from "../../../services/servicioService";
 
 import {
   crearReservaAdmin,  crearReservaHistoricaAdmin,  getReservasPorClienteAdmin,} from "../../../services/reservaService";
