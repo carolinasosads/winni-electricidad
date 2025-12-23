@@ -131,6 +131,17 @@ public class PresupuestoController : ControllerBase
             var actualizado = await _actualizarMontoPagadoPresupuesto.Actualizar(idReserva, dto, ct);
             return Ok(actualizado);
         }
+        catch (ArgumentNullException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        } catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
         catch (Exception)
         {
             return StatusCode(StatusCodes.Status500InternalServerError,

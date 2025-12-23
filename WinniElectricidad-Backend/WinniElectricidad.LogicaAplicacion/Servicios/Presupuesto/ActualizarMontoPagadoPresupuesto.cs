@@ -16,25 +16,27 @@ public class ActualizarMontoPagadoPresupuesto: IActualizarMontoPagadoPresupuesto
 
     public async Task<PresupuestoDto> Actualizar(int idReserva, PresupuestoMontoPagadoActualizarDto dto, CancellationToken ct = default)
     {
-        {
-            if (idReserva <= 0)
-                throw new ArgumentException("El id de la reserva es inválido.");
+        if (idReserva <= 0)
+            throw new ArgumentException("El id de la reserva es inválido.");
 
-            var presupuesto = await _repositorioPresupuesto.FindByReservaId(idReserva, ct);
-            if (presupuesto is null)
-                throw new Exception("No existe presupuesto para esa reserva.");
-            
-            var montoTotal = presupuesto.Monto;
+        if (dto is null)
+            throw new ArgumentNullException(nameof(dto), "El body es requerido.");
 
-            if (dto.MontoPagado < 0) throw new ArgumentException("El monto pagado no puede ser negativo.");
+        if (dto.MontoPagado < 0)
+            throw new ArgumentException("El monto pagado no puede ser negativo.");
 
-            if (dto.MontoPagado > montoTotal) throw new ArgumentException("El monto pagado no puede ser mayor al monto total del presupuesto.");
+        var presupuesto = await _repositorioPresupuesto.FindByReservaId(idReserva, ct);
+        if (presupuesto is null)
+            throw new KeyNotFoundException("No existe presupuesto para esa reserva.");
 
-            presupuesto.MontoPagado = dto.MontoPagado;
+        var montoTotal = presupuesto.Monto;
 
-            await _repositorioPresupuesto.Update(presupuesto, ct);
+        if (dto.MontoPagado > montoTotal)
+            throw new ArgumentException("El monto pagado no puede ser mayor al monto total del presupuesto.");
 
-            return PresupuestoMapper.MapearAPresupuestoDto(presupuesto);
-        }
+        presupuesto.MontoPagado = dto.MontoPagado;
+        await _repositorioPresupuesto.Update(presupuesto, ct);
+
+        return PresupuestoMapper.MapearAPresupuestoDto(presupuesto);
     }
 }
