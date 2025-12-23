@@ -186,42 +186,43 @@ public class WinniElectricidadContext : DbContext
                 {
                     Id = 1,
                     Titulo = "Electricidad",
-                    Descripcion = "Descripción genérica para el servicio de Electricidad",
-                    ImagenUrl = null,
+                    Descripcion = "Instalaciones, reparaciones y mantenimiento eléctrico en hogares y comercios.",
+                    ImagenUrl = "/servicios/electricidad.jpeg",
                     Activo = true
                 },
                 new Servicio
                 {
                     Id = 2,
                     Titulo = "Sanitaria",
-                    Descripcion = "Descripción genérica para el servicio de Sanitaria",
-                    ImagenUrl = null,
+                    Descripcion = "Instalación y reparación de cañerías, griferías y artefactos sanitarios.",
+                    ImagenUrl = "/servicios/sanitaria.jpeg",
                     Activo = true
                 },
                 new Servicio
                 {
                     Id = 3,
                     Titulo = "Climatización",
-                    Descripcion = "Descripción genérica para el servicio de Climatización",
-                    ImagenUrl = null,
+                    Descripcion = "Instalación y mantenimiento de sistemas de aire acondicionado y calefacción.",
+                    ImagenUrl = "/servicios/climatizacion.jpeg",
                     Activo = true
                 },
                 new Servicio
                 {
                     Id = 4,
                     Titulo = "Riego",
-                    Descripcion = "Descripción genérica para el servicio de Riego",
-                    ImagenUrl = null,
+                    Descripcion = "Instalación y mantenimiento de sistemas de riego para jardines.",
+                    ImagenUrl = "/servicios/riego.jpg",
                     Activo = true
                 },
                 new Servicio
                 {
                     Id = 5,
                     Titulo = "Otro",
-                    Descripcion = "Descripción genérica para Otro",
-                    ImagenUrl = null,
+                    Descripcion = "Servicios técnicos generales sujetos a evaluación previa.",
+                    ImagenUrl = "/servicios/otros.jpeg",
                     Activo = true
                 }
-            );
+        );
+
     }
 }
