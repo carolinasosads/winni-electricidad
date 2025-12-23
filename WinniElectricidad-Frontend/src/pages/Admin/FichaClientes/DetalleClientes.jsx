@@ -120,9 +120,6 @@ export default function DetalleClientes({
                 <Typography>
                   <b>Teléfono:</b> {getClienteTelefono(clienteSel)}
                 </Typography>
-                <Typography>
-                  <b>ID:</b> {getClienteId(clienteSel)}
-                </Typography>
               </Paper>
 
               {loadingDetalle && (

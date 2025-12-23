@@ -29,7 +29,6 @@ export default function ListadoClientes({ clientes, onSelect }) {
                   primary={getClienteNombre(c)}
                   secondary={getClienteEmail(c)}
                 />
-                <Chip label={`ID ${getClienteId(c) ?? "-"}`} size="small" />
               </ListItemButton>
               <Divider />
             </Box>
