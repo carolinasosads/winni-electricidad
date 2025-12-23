@@ -20,8 +20,4 @@
       <ProjectReference Include="..\WinniElectricidad.LogicaAplicacion\WinniElectricidad.LogicaAplicacion.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-        <Content Include="wwwroot\**\*" CopyToPublishDirectory="Always" />
-    </ItemGroup>
-
 </Project>

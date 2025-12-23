@@ -19,7 +19,6 @@ import {
   Drawer,
   IconButton,
   useMediaQuery,
-  Snackbar,
   Alert
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -66,10 +65,13 @@ export default function PanelReservas() {
       setConfirmadas(ordenarPorHorario(c));
       setCanceladas(ordenarPorHorario(ca));
       setFinalizadas(ordenarPorHorario(f));
+
       const data = await getReservasPorMesYAnio(mesActual, anioActual);
       setReservasMes(data);
     } catch (error) {
-      setMensajeError("Error al cargar las reservas. Por favor, intente nuevamente.");
+      setMensajeError(
+        "Error al cargar las reservas. Por favor, intente nuevamente."
+      );
     }
   }
 
@@ -77,7 +79,7 @@ export default function PanelReservas() {
     recargarTodo();
   }, []);
 
-  // ---- Cargar reservas del un nuevo mes al calendario ----
+  // ---- Cargar reservas de un nuevo mes al calendario ----
   useEffect(() => {
     async function loadMes() {
       try {
@@ -91,7 +93,6 @@ export default function PanelReservas() {
     loadMes();
   }, [mesActual, anioActual]);
 
-
   // ----- Handlers de acciones -----
   const handleAprobar = async (reserva) => {
     try {
@@ -100,8 +101,10 @@ export default function PanelReservas() {
       setSelectedReserva(null);
       recargarTodo();
       setMensajeOk(resp.message);
+      setMensajeError(null);
     } catch (err) {
       setMensajeError(err?.message || "Error al aprobar la reserva.");
+      setMensajeOk(null);
     }
   };
 
@@ -112,27 +115,34 @@ export default function PanelReservas() {
       setSelectedReserva(null);
       recargarTodo();
       setMensajeOk(resp.message);
+      setMensajeError(null);
     } catch (err) {
       setMensajeError(err?.message || "Error al cancelar la reserva.");
+      setMensajeOk(null);
     }
   };
 
   const handleSugerirCambio = async (reserva) => {
     setSelectedReserva(reserva);
-    setOpenModificar(true); // abre modal de modificación
+    setOpenModificar(true);
   };
 
   const handleModificarReserva = async (nuevaFecha) => {
     try {
-      const resp = await modificarReserva(selectedReserva.idReserva, nuevaFecha);
+      const resp = await modificarReserva(
+        selectedReserva.idReserva,
+        nuevaFecha
+      );
 
       setOpenModificar(false);
       setSelectedReserva(null);
 
       recargarTodo();
       setMensajeOk(resp.message);
+      setMensajeError(null);
     } catch (err) {
       setMensajeError(err?.message || "Error al modificar la reserva.");
+      setMensajeOk(null);
     }
   };
 
@@ -148,33 +158,42 @@ export default function PanelReservas() {
 
   return (
     <Box sx={{ p: 2, width: "100%" }}>
-      <Typography variant="h4" fontWeight={700} sx={{ mb: 3 }}>
+      <Typography variant="h4" fontWeight={700} sx={{ mb: 2 }}>
         Panel de Reservas
       </Typography>
 
-      {/* ---------- DESKTOP: listas fijas + calendario ---------- */}
-      {!isMobile && (
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 3,
-            width: "100%",
-          }}
+      {/* MENSAJES */}
+      {mensajeError && (
+        <Alert
+          severity="error"
+          sx={{ mb: 2 }}
+          onClose={() => setMensajeError(null)}
         >
-          {/* Calendario arriba */}
-          <Box sx={{ width: "100%" }}>
-            <CalendarioSemanal
-              reservas={reservasMes}
-              onSelectReserva={setSelectedReserva}
-              onCambioSemana={handleCambioSemana}
-            />
-          </Box>
+          {mensajeError}
+        </Alert>
+      )}
 
-          {/* Listas abajo */}
+      {mensajeOk && (
+        <Alert
+          severity="success"
+          sx={{ mb: 2 }}
+          onClose={() => setMensajeOk(null)}
+        >
+          {mensajeOk}
+        </Alert>
+      )}
+
+      {/* ---------- DESKTOP ---------- */}
+      {!isMobile && (
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          <CalendarioSemanal
+            reservas={reservasMes}
+            onSelectReserva={setSelectedReserva}
+            onCambioSemana={handleCambioSemana}
+          />
+
           <Box
             sx={{
-              width: "100%",
               display: "grid",
               gridTemplateColumns: "repeat(4, 1fr)",
               gap: 2,
@@ -208,7 +227,7 @@ export default function PanelReservas() {
         </Box>
       )}
 
-      {/* ---------- MOBILE: calendario + drawer lateral ---------- */}
+      {/* ---------- MOBILE ---------- */}
       {isMobile && (
         <>
           <Box sx={{ mb: 2 }}>
@@ -223,7 +242,9 @@ export default function PanelReservas() {
               }}
             >
               <MenuIcon fontSize="small" />
-              <Typography variant="button">Abrir panel lateral</Typography>
+              <Typography variant="button">
+                Abrir panel lateral
+              </Typography>
             </IconButton>
           </Box>
 
@@ -239,12 +260,7 @@ export default function PanelReservas() {
             onClose={() => setOpenDrawer(false)}
             variant="temporary"
             PaperProps={{
-              sx: {
-                width: 300,
-                p: 2,
-                boxSizing: "border-box",
-                pt: 3,
-              },
+              sx: { width: 300, p: 2, pt: 3 },
             }}
           >
             <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
@@ -312,36 +328,6 @@ export default function PanelReservas() {
         reservasMes={reservasMes}
         onSubmit={handleModificarReserva}
       />
-
-      <Snackbar
-        open={!!mensajeOk}
-        autoHideDuration={4000}
-        onClose={() => setMensajeOk(null)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert
-          onClose={() => setMensajeOk(null)}
-          severity="success"
-          variant="filled"
-        >
-          {mensajeOk}
-        </Alert>
-      </Snackbar>
-      <Snackbar
-        open={!!mensajeError}
-        autoHideDuration={5000}
-        onClose={() => setMensajeError(null)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert
-          onClose={() => setMensajeError(null)}
-          severity="error"
-          variant="filled"
-        >
-          {mensajeError}
-        </Alert>
-      </Snackbar>
     </Box>
-    
   );
 }
