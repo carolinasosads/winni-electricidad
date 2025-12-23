@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WinniElectricidad.Compartido.DTOs.Presupuesto;
@@ -13,14 +14,10 @@ namespace WinniElectricidad.Api.Controllers;
 public class PresupuestoController : ControllerBase
 {
     private readonly ICrearPresupuesto _crearPresupuesto;
-    private readonly IObtenerPresupuesto _obtenerPresupuesto;
-    private readonly IActualizarMontoPagadoPresupuesto _actualizarMontoPagadoPresupuesto;
 
-    public PresupuestoController(ICrearPresupuesto crearPresupuesto, IObtenerPresupuesto obtenerPresupuesto, IActualizarMontoPagadoPresupuesto actualizarMontoPagadoPresupuesto)
+    public PresupuestoController(ICrearPresupuesto crearPresupuesto)
     {
         _crearPresupuesto = crearPresupuesto;
-        _obtenerPresupuesto = obtenerPresupuesto;
-        _actualizarMontoPagadoPresupuesto = actualizarMontoPagadoPresupuesto;
     }
 
     /// <summary>
@@ -67,85 +64,6 @@ public class PresupuestoController : ControllerBase
         catch (Exception)
         {
             return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Ocurrió un error inesperado al crear el presupuesto." });
-        }
-    }
-    
-    /// <summary>
-    /// Obtiene el presupuesto asociado a una reserva.
-    /// </summary>
-    /// <remarks>
-    /// **Códigos de respuesta:**
-    /// - `200 OK` → Presupuesto encontrado.
-    /// - `400 Bad Request` → Id de reserva inválido.
-    /// - `404 Not Found` → No existe presupuesto para esa reserva.
-    /// - `500 Internal Server Error` → Error inesperado.
-    /// </remarks>
-    [ProducesResponseType(typeof(PresupuestoDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpGet("reserva/{idReserva:int}")]
-    [Authorize(Roles = "Administrador")]
-    public async Task<IActionResult> ObtenerPresupuestoPorReserva(
-        [FromRoute] int idReserva,
-        CancellationToken ct)
-    {
-        try
-        {
-            var presupuesto = await _obtenerPresupuesto.Ejecutar(idReserva, ct);
-            return Ok(presupuesto);
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { message = ex.Message });
-        }
-        catch (Exception)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError,
-                new { message = "Ocurrió un error inesperado al obtener el presupuesto." });
-        }
-    }
-    
-    /// <summary>
-    /// Actualiza el monto pagado del presupuesto asociado a una reserva.
-    /// </summary>
-    /// <remarks>
-    /// **Códigos de respuesta:**
-    /// - `200 OK` → Monto pagado actualizado.
-    /// - `500 Internal Server Error` → Error inesperado.
-    /// </remarks>
-    [ProducesResponseType(typeof(PresupuestoDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpPatch("reserva/{idReserva:int}/monto-pagado")]
-    [Authorize(Roles = "Administrador")]
-    public async Task<IActionResult> ActualizarMontoPagado([FromRoute] int idReserva, [FromBody] PresupuestoMontoPagadoActualizarDto dto, CancellationToken ct)
-    {
-        try
-        {
-            var actualizado = await _actualizarMontoPagadoPresupuesto.Actualizar(idReserva, dto, ct);
-            return Ok(actualizado);
-        }
-        catch (ArgumentNullException ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        } catch (ArgumentException ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { message = ex.Message });
-        }
-        catch (Exception)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError,
-                new { message = "Ocurrió un error inesperado al actualizar el monto pagado del presupuesto." });
         }
     }
 }
