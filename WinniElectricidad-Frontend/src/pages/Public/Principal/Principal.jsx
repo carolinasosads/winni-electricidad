@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import {  Box,  Typography,  Button,  Card,  CardContent,  CardMedia,  Container,  Rating,} from "@mui/material";
+import {  Box,  Typography,  Button,  Card,  CardContent,  CardMedia,  Container,  Rating,  Toolbar,  CssBaseline,} from "@mui/material";
 
-import { getServiciosActivos } from "../../../services/servicioService.js";
-import { SitemarkIcon } from "../../../components/CustomIcons/CustomIcons.jsx";
+import { getServiciosActivos } from "../../../services/authService";
 import { getResenasAprobadas } from "../../../services/resenaService";
+
+import { SitemarkIcon } from "../../../components/CustomIcons/CustomIcons.jsx";
 import AppHeader from "/src/components/Header/Header.jsx";
+import Sidebar from "/src/components/SideBar/SideBar.jsx"; 
 
 export default function PaginaPrincipal() {
   const [serviciosRaw, setServiciosRaw] = useState([]);
@@ -18,35 +20,106 @@ export default function PaginaPrincipal() {
     Boolean(localStorage.getItem("token"))
   );
 
- const servicios = useMemo(() => {
-  const arr = Array.isArray(serviciosRaw) ? serviciosRaw : [];
+  const [sidebarExpanded, setSidebarExpanded] = useState(true);
 
-  const imagenesPorServicio = {
-    electricidad: "/servicios/electricidad.jpeg",
-    sanitaria: "/servicios/sanitaria.jpeg",
-    climatizacion: "/servicios/climatizacion.jpeg",
-    "climatización": "/servicios/climatizacion.jpeg",
-    riego: "/servicios/riego.jpg",
-    otro: "/servicios/otros.jpeg",
-    otros: "/servicios/otros.jpeg",
-  };
+  useEffect(() => {
+    const handler = () => {
+      const token = localStorage.getItem("token");
+      setEstaLogueado(Boolean(token));
+    };
+    window.addEventListener("auth-change", handler);
+    return () => window.removeEventListener("auth-change", handler);
+  }, []);
 
-  return arr
-    .map((s) => {
-      const idServicio = s?.id ?? s?.Id;
-      const nombre = s?.titulo ?? s?.Titulo;
-      const descripcion = s?.descripcion ?? s?.Descripcion;
+  const servicios = useMemo(() => {
+    const arr = Array.isArray(serviciosRaw) ? serviciosRaw : [];
 
-      let imagenUrl = s?.imagenUrl ?? s?.ImagenUrl ?? null;
+    const imagenesPorServicio = {
+      electricidad: "/servicios/electricidad.jpeg",
+      sanitaria: "/servicios/sanitaria.jpeg",
+      climatizacion: "/servicios/climatizacion.jpeg",
+      "climatización": "/servicios/climatizacion.jpeg",
+      riego: "/servicios/riego.jpg",
+      otro: "/servicios/otros.jpeg",
+      otros: "/servicios/otros.jpeg",
+    };
 
-      if (!imagenUrl && typeof nombre === "string") {
-        const key = nombre.trim().toLowerCase();
-        imagenUrl = imagenesPorServicio[key] ?? null;
-      }
+    return arr
+      .map((s) => {
+        const idServicio = s?.id ?? s?.Id;
+        const nombre = s?.titulo ?? s?.Titulo;
+        const descripcion = s?.descripcion ?? s?.Descripcion;
+
+        let imagenUrl = s?.imagenUrl ?? s?.ImagenUrl ?? null;
+
+        if (!imagenUrl && typeof nombre === "string") {
+          const key = nombre.trim().toLowerCase();
+          imagenUrl = imagenesPorServicio[key] ?? null;
+        }
+
+        if (typeof imagenUrl === "string") {
+          imagenUrl = imagenUrl.trim();
+
+          if (
+            imagenUrl &&
+            !imagenUrl.startsWith("http") &&
+            !imagenUrl.startsWith("/")
+          ) {
+            imagenUrl = `/${imagenUrl}`;
+          }
+        }
+
+        if (!imagenUrl) imagenUrl = "/servicio-default.jpg";
+
+        return { idServicio, nombre, descripcion, imagenUrl };
+      })
+      .filter((s) => s.idServicio != null);
+  }, [serviciosRaw]);
+
+  const reseñas = useMemo(() => {
+    const arr = Array.isArray(resenasRaw) ? resenasRaw : [];
+
+    return arr.map((r, idx) => {
+      const nombre =
+        r?.cliente?.nombre ??
+        r?.cliente?.Nombre ??
+        r?.nombreCliente ??
+        r?.NombreCliente ??
+        r?.nombre ??
+        r?.Nombre ??
+        r?.autor ??
+        r?.Autor ??
+        "Cliente";
+
+      const texto =
+        r?.descripcion ??
+        r?.Descripcion ??
+        r?.texto ??
+        r?.Texto ??
+        r?.detalle ??
+        r?.Detalle ??
+        "";
+
+      const estrellas =
+        r?.calificacion ??
+        r?.Calificacion ??
+        r?.estrellas ??
+        r?.Estrellas ??
+        r?.puntuacion ??
+        r?.Puntuacion ??
+        0;
+
+      let imagenUrl =
+        r?.imagenUrl ??
+        r?.ImagenUrl ??
+        r?.fotoUrl ??
+        r?.FotoUrl ??
+        r?.imagen ??
+        r?.Imagen ??
+        null;
 
       if (typeof imagenUrl === "string") {
         imagenUrl = imagenUrl.trim();
-
         if (
           imagenUrl &&
           !imagenUrl.startsWith("http") &&
@@ -56,95 +129,34 @@ export default function PaginaPrincipal() {
         }
       }
 
-      if (!imagenUrl) {
-        imagenUrl = "/servicio-default.jpg";
-      }
-
-      return { idServicio, nombre, descripcion, imagenUrl };
-    })
-    .filter((s) => s.idServicio != null);
-}, [serviciosRaw]);
-
-  const reseñas = useMemo(() => {
-    const arr = Array.isArray(resenasRaw) ? resenasRaw : [];
-
-    return arr
-      .map((r) => {
-        const nombre =
-          r?.cliente?.nombre ??
-          r?.cliente?.Nombre ??
-          r?.nombreCliente ??
-          r?.NombreCliente ??
-          r?.nombre ??
-          r?.Nombre ??
-          r?.autor ??
-          r?.Autor ??
-          "Cliente";
-
-        const texto =
-          r?.descripcion ??
-          r?.Descripcion ??
-          r?.texto ??
-          r?.Texto ??
-          r?.detalle ??
-          r?.Detalle ??
-          "";
-
-        const estrellas =
-          r?.calificacion ??
-          r?.Calificacion ??
-          r?.estrellas ??
-          r?.Estrellas ??
-          r?.puntuacion ??
-          r?.Puntuacion ??
-          0;
-
-        let imagenUrl =
-          r?.imagenUrl ??
-          r?.ImagenUrl ??
-          r?.urlImagen ??
-          r?.UrlImagen ??
-          r?.imagen ??
-          r?.Imagen ??
-          null;
-
-        if (typeof imagenUrl === "string") {
-          imagenUrl = imagenUrl.trim();
-          if (
-            imagenUrl &&
-            !imagenUrl.startsWith("http") &&
-            !imagenUrl.startsWith("/")
-          ) {
-            imagenUrl = `/${imagenUrl}`;
-          }
-        } else {
-          imagenUrl = null;
-        }
-
-        return { nombre, texto, estrellas, imagenUrl };
-      })
-      .filter((x) => (x.texto || "").trim().length > 0)
-      .slice(0, 3);
+      return {
+        id: r?.id ?? r?.Id ?? `${nombre}-${idx}`,
+        nombre,
+        texto,
+        estrellas: Number(estrellas) || 0,
+        imagenUrl: imagenUrl || null,
+      };
+    });
   }, [resenasRaw]);
-
-  useEffect(() => {
-    const onAuthChange = () => {
-      setEstaLogueado(Boolean(localStorage.getItem("token")));
-    };
-
-    window.addEventListener("auth-change", onAuthChange);
-
-    onAuthChange();
-
-    return () => window.removeEventListener("auth-change", onAuthChange);
-  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
     setError(null);
 
-    getServiciosActivos(controller.signal)
-      .then((data) => setServiciosRaw(data))
+    getServiciosActivos()
+      .then((data) => {
+        const lista =
+          (Array.isArray(data) && data) ||
+          data?.servicios ||
+          data?.Servicios ||
+          data?.items ||
+          data?.Items ||
+          data?.data ||
+          data?.Data ||
+          data?.$values ||
+          [];
+        setServiciosRaw(Array.isArray(lista) ? lista : []);
+      })
       .catch((e) => {
         if (e?.name === "AbortError") return;
         setError(e?.message || "Error al cargar servicios.");
@@ -181,48 +193,52 @@ export default function PaginaPrincipal() {
   }, []);
 
   return (
-    <Box>
-      {/* HEADER */}
+    <Box sx={{ display: "flex", width: "100%" }}>
+      <CssBaseline />
+
+      {estaLogueado && (
+        <Sidebar expanded={sidebarExpanded} setExpanded={setSidebarExpanded} />
+      )}
+
       <Box
+        component="main"
         sx={{
-          position: "sticky",
-          top: 0,
-          zIndex: 10,
+          flexGrow: 1,
+          minWidth: 0,
+          width: "100%",
         }}
       >
         <AppHeader
           logo={<SitemarkIcon />}
           title=""
-          showMenuButton={false}
+          showMenuButton={estaLogueado}
+          menuOpen={sidebarExpanded}
+          onToggleMenu={setSidebarExpanded}
           homeHref="/"
         />
-      </Box>
+        <Toolbar />
 
-      {/* Sección de arriba */}
-      <Box
-        sx={{
-          backgroundImage: "linear-gradient(135deg, #0f2027, #203a43, #2c5364)",
-          color: "white",
-          py: { xs: 10, md: 14 },
-          textAlign: "center",
-          boxShadow: "inset 0 -60px 100px rgba(0,0,0,0.35)",
-        }}
-      >
-        <Container maxWidth="md">
-          <Typography
-            variant="h2"
-            sx={{
-              fontWeight: 900,
-              mb: 2,
-              fontSize: {
-                xs: "2.6rem",
-                sm: "3.2rem",
-                md: "3.8rem",
-              },
-            }}
-          >
-            Winni Electricidad
-          </Typography>
+        <Box
+          sx={{
+            backgroundImage:
+              "linear-gradient(135deg, #0f2027, #203a43, #2c5364)",
+            color: "white",
+            py: { xs: 10, md: 14 },
+            textAlign: "center",
+            boxShadow: "inset 0 -60px 100px rgba(0,0,0,0.35)",
+          }}
+        >
+          <Container maxWidth="md">
+            <Typography
+              variant="h2"
+              sx={{
+                fontWeight: 900,
+                mb: 2,
+                fontSize: { xs: "2.6rem", sm: "3.2rem", md: "3.8rem" },
+              }}
+            >
+              Winni Electricidad
+            </Typography>
 
           <Typography
             variant="h6"
