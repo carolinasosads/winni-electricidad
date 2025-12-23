@@ -124,7 +124,7 @@ export default function ReservaDetailModal({
               </Typography>
 
               <Typography>
-                <strong>Comentario:</strong> {reserva.comentario}
+                <strong>Comentario:</strong> {reserva.comentario || "Sin comentarios"}
               </Typography>
             </Box>
 
