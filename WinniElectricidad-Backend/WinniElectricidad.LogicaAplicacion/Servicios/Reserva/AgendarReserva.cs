@@ -104,6 +104,8 @@ public class AgendarReserva : IAgendarReserva
                    <p><strong>Servicios seleccionados:</strong></p>
                    <p>{serviciosTexto}</p>
 
+                   <p><strong>Comentario:</strong> {comentario}</p>
+
                    <p>Un miembro del equipo de Winni Electricidad se va a contactar contigo en breve y 
                    <strong>coordinarán la confirmación de la reserva</strong>.</p>
 

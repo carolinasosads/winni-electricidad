@@ -122,6 +122,10 @@ export default function ReservaDetailModal({
               <Typography>
                 <strong>Estado:</strong> {reserva.estado}
               </Typography>
+
+              <Typography>
+                <strong>Comentario:</strong> {reserva.comentario}
+              </Typography>
             </Box>
 
           </Box>

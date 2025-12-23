@@ -180,17 +180,27 @@ export default function ResenasPage() {
           No hay reseñas para mostrar.
         </Typography>
       ) : (
-        <Grid container spacing={4} justifyContent="center">
+        <Box
+          sx={{
+            display: "grid",
+            gap: 4,
+            gridTemplateColumns: {
+              xs: "1fr",
+              sm: "repeat(2, 1fr)",
+              md: "repeat(3, 1fr)"
+            }
+          }}
+        >
           {resenasFiltradas.map(resena => (
-            <Grid item xs={12} sm={10} md={6} key={resena.id}>
-              <ResenaCard
-                resena={resena}
-                esAdmin={rol === "Administrador"}
-                onDesaprobar={solicitarDesaprobarResena}
-              />
-            </Grid>
+            <ResenaCard
+              key={resena.id}
+              resena={resena}
+              esAdmin={rol === "Administrador"}
+              onDesaprobar={solicitarDesaprobarResena}
+              onVerMas={setResenaSeleccionada}
+            />
           ))}
-        </Grid>
+        </Box>
       )}
 
       <ResenasCarrusel
@@ -207,9 +217,7 @@ export default function ResenasPage() {
         open={Boolean(resenaADesaprobar)}
         onClose={() => setResenaADesaprobar(null)}
       >
-        <DialogTitle>
-          Desaprobar reseña
-        </DialogTitle>
+        <DialogTitle>Desaprobar reseña</DialogTitle>
 
         <DialogContent>
           <Typography>
