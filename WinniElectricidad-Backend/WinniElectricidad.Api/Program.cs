@@ -164,6 +164,8 @@ builder.Services.AddScoped<IBuscarUsuarios, BuscarUsuarios>();
 builder.Services.AddScoped<IObtenerReservasPorCliente, ObtenerReservasPorCliente>();
 builder.Services.AddScoped<ICrearPresupuesto, CrearPresupuesto>();
 builder.Services.AddScoped<IRegistrarReservaHistoricaAdmin, RegistrarReservaHistoricaAdmin>();
+builder.Services.AddScoped<IObtenerPresupuesto, ObtenerPresupuesto>();
+builder.Services.AddScoped<IActualizarMontoPagadoPresupuesto, ActualizarMontoPagadoPresupuesto>();
 
 // -- Repositorios --
 builder.Services.AddScoped<IRepositorioUsuario, RepositorioUsuarios>();

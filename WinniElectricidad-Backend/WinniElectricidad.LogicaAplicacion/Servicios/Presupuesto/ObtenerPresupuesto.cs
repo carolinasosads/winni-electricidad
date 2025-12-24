@@ -1,3 +1,4 @@
+using WinniElectricidad.Compartido.DTOs.Mappers;
 using WinniElectricidad.Compartido.DTOs.Presupuesto;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Presupuesto;
 using WinniElectricidad.LogicaNegocio.InterfacesRepositorios;
@@ -23,14 +24,6 @@ public class ObtenerPresupuesto: IObtenerPresupuesto
         if (presupuesto is null)
             throw new KeyNotFoundException("No existe presupuesto para la reserva indicada.");
 
-        return new PresupuestoDto
-        {
-            Id = presupuesto.Id,
-            IdReserva = presupuesto.IdReserva,
-            MontoTotal = presupuesto.Monto,
-            MontoPagado = presupuesto.MontoPagado,
-            DescripcionTrabajo = presupuesto.DescripcionTrabajo,
-            Notas = presupuesto.Notas,
-        };
+        return PresupuestoMapper.MapearAPresupuestoDto(presupuesto);
     }
 }

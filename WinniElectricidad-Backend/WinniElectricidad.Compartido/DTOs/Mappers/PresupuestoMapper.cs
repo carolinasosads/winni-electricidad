@@ -5,10 +5,7 @@ namespace WinniElectricidad.Compartido.DTOs.Mappers;
 
 public static class PresupuestoMapper
 {
-    public static LogicaNegocio.Entidades.Presupuesto MapearDtoAPresupuesto(
-        PresupuestoCrearDto dto,
-        int idReserva,
-        int idUsuarioCliente)
+    public static LogicaNegocio.Entidades.Presupuesto MapearDtoAPresupuesto(PresupuestoCrearDto dto, int idReserva, int idUsuarioCliente)
     {
         var notas = string.IsNullOrWhiteSpace(dto.NotasInternas)
             ? null
@@ -19,8 +16,10 @@ public static class PresupuestoMapper
             IdReserva = idReserva,
             IdUsuario = idUsuarioCliente,
             Monto = dto.MontoTotal,
-            Notas = notas,
-            FechaPresupuesto = DateTime.UtcNow
+            MontoPagado = dto.MontoPagado,
+            Notas = dto.NotasInternas,
+            FechaPresupuesto = DateTime.UtcNow,
+            DescripcionTrabajo = dto.DescripcionTrabajo
         };
     }
 
@@ -31,7 +30,11 @@ public static class PresupuestoMapper
             Id = presupuesto.Id,
             IdReserva = presupuesto.IdReserva,
             MontoTotal = presupuesto.Monto,
-            FechaCreacion = presupuesto.FechaPresupuesto
+            MontoPagado = presupuesto.MontoPagado,
+            Notas = presupuesto.Notas,
+            FechaCreacion = presupuesto.FechaPresupuesto,
+            DescripcionTrabajo = presupuesto.DescripcionTrabajo,
+            
         };
     }
 }
