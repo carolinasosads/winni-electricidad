@@ -15,7 +15,6 @@ import PlumbingOutlinedIcon from "@mui/icons-material/PlumbingOutlined";
 import AcUnitOutlinedIcon from "@mui/icons-material/AcUnitOutlined";
 import WaterOutlinedIcon from "@mui/icons-material/WaterOutlined";
 import BuildOutlinedIcon from "@mui/icons-material/BuildOutlined";
-import { useState } from "react";
 
 export default function ServicioCard({
   servicio,
@@ -33,6 +32,15 @@ export default function ServicioCard({
     Riego: <WaterOutlinedIcon />,
     Otro: <BuildOutlinedIcon />
   };
+
+  // 👉 URL de imagen + debug
+  const imageUrl = `${import.meta.env.VITE_FRONT_URL}${servicio.imagenUrl}`;
+
+  console.log("[ServicioCard imagen]", {
+    front: import.meta.env.VITE_FRONT_URL,
+    imagenUrl: servicio.imagenUrl,
+    finalUrl: imageUrl
+  });
 
   return (
     <Card
@@ -86,7 +94,7 @@ export default function ServicioCard({
 
       <Box
         component="img"
-        src={`${import.meta.env.VITE_FRONT_URL}${servicio.imagenUrl}`}
+        src={imageUrl}
         alt={servicio.titulo}
         sx={{
           width: "100%",
@@ -95,7 +103,10 @@ export default function ServicioCard({
           borderTopLeftRadius: 12,
           borderTopRightRadius: 12
         }}
-        onError={(e) => (e.currentTarget.style.display = "none")}
+        onError={(e) => {
+          console.error("❌ Error cargando imagen de servicio:", imageUrl);
+          e.currentTarget.style.display = "none";
+        }}
       />
 
       <Box
@@ -164,5 +175,5 @@ export default function ServicioCard({
         </Stack>
       </CardContent>
     </Card>
-  )
+  );
 }
