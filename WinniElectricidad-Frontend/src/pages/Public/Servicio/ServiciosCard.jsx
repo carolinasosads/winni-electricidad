@@ -33,14 +33,10 @@ export default function ServicioCard({
     Otro: <BuildOutlinedIcon />
   };
 
-  // 👉 URL de imagen + debug
-  const imageUrl = `${import.meta.env.VITE_FRONT_URL}${servicio.imagenUrl}`;
+  // ✅ Imagen servida desde /public (funciona igual en local y prod)
+  const imageUrl = servicio.imagenUrl;
 
-  console.log("[ServicioCard imagen]", {
-    front: import.meta.env.VITE_FRONT_URL,
-    imagenUrl: servicio.imagenUrl,
-    finalUrl: imageUrl
-  });
+  console.log("[ServicioCard imagen]", imageUrl);
 
   return (
     <Card
@@ -104,8 +100,8 @@ export default function ServicioCard({
           borderTopRightRadius: 12
         }}
         onError={(e) => {
-          console.error("❌ Error cargando imagen de servicio:", imageUrl);
-          e.currentTarget.style.display = "none";
+          console.error("❌ Error cargando imagen:", imageUrl);
+          e.currentTarget.src = "/servicios/servicio-default.jpg";
         }}
       />
 
@@ -164,10 +160,7 @@ export default function ServicioCard({
               variant="text"
               size="small"
               onClick={() => onSolicitar(servicio)}
-              sx={{
-                alignSelf: "center",
-                fontWeight: 600
-              }}
+              sx={{ alignSelf: "center", fontWeight: 600 }}
             >
               Solicitar presupuesto
             </Button>
