@@ -31,26 +31,34 @@ export default function PaginaPrincipal() {
     return () => window.removeEventListener("auth-change", handler);
   }, []);
 
-  useEffect(() => {
-    const body = document.body;
-    const html = document.documentElement;
+ useEffect(() => {
+  const body = document.body;
+  const html = document.documentElement;
 
-    const prevBodyOverflow = body.style.overflow;
-    const prevHtmlOverflow = html.style.overflow;
-    const prevBodyPaddingRight = body.style.paddingRight;
+  let prevBodyOverflow;
+  let prevHtmlOverflow;
+  let prevBodyPaddingRight;
+  let hasModified = false;
 
-    if (estaLogueado) {
-      body.style.overflow = "auto";
-      html.style.overflow = "auto";
-      body.style.paddingRight = prevBodyPaddingRight;
-    }
+  if (estaLogueado) {
+    prevBodyOverflow = body.style.overflow;
+    prevHtmlOverflow = html.style.overflow;
+    prevBodyPaddingRight = body.style.paddingRight;
 
-    return () => {
+    body.style.overflow = "auto";
+    html.style.overflow = "auto";
+
+    hasModified = true;
+  }
+
+  return () => {
+    if (hasModified) {
       body.style.overflow = prevBodyOverflow;
       html.style.overflow = prevHtmlOverflow;
       body.style.paddingRight = prevBodyPaddingRight;
-    };
-  }, [estaLogueado, sidebarExpanded]);
+    }
+  };
+}, [estaLogueado, sidebarExpanded]);
 
   const servicios = useMemo(() => {
     const arr = Array.isArray(serviciosRaw) ? serviciosRaw : [];
@@ -161,8 +169,6 @@ export default function PaginaPrincipal() {
         if (e?.name === "AbortError") return;
         setError(e?.message || "Error al cargar servicios.");
       });
-
-    return () => controller.abort();
   }, []);
 
   useEffect(() => {
