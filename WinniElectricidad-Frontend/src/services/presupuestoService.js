@@ -11,11 +11,17 @@ async function handleJsonOrText(res) {
 
 function getAuthHeaders() {
   const token = localStorage.getItem("token");
-  return {
+
+  const headers = {
     Accept: "application/json",
     "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
   };
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  return headers;
 }
 
 export const crearPresupuestoParaReserva = async (idReserva, dto) => {
@@ -65,26 +71,26 @@ export const obtenerPresupuestoSegunReserva = async (idReserva) => {
   }
 };
 
-export const actualizarMontoPagadoPresupuesto = async (idReserva, montoPagado, token) => {
+export const actualizarMontoPagadoPresupuesto = async (idReserva, montoPagado) => {
   try {
-    const response = await fetch(
+    const res = await fetch(
       `${urlAPIPresupuesto}reserva/${idReserva}/monto-pagado`,
       {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ montoPagado: Number(montoPagado) }),
       }
     );
 
-    const data = await handleJsonOrText(response);
+    const data = await handleJsonOrText(res);
 
-    if (!response.ok) {
+    if (!res.ok) {
       let msg = data?.message || "Error al actualizar el monto pagado.";
       if (data?.errors) msg = Object.values(data.errors).flat().join(" ");
-      throw new ApiError(typeof msg === "string" ? msg : "Error al actualizar el monto pagado.", response.status);
+      throw new ApiError(
+        typeof msg === "string" ? msg : "Error al actualizar el monto pagado.",
+        res.status
+      );
     }
 
     return data;
@@ -93,4 +99,4 @@ export const actualizarMontoPagadoPresupuesto = async (idReserva, montoPagado, t
     console.error(err);
     throw new ApiError("Error al actualizar el monto pagado.");
   }
-    };
+};
