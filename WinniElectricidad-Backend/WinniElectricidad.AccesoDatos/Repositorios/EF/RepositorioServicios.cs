@@ -42,14 +42,14 @@ public class RepositorioServicios : IRepositorioServicio
     
     public async Task<IReadOnlyList<Servicio>> FindAllSegunEstado(bool activo, CancellationToken ct = default)
     {
-        var servicios = await _db.Servicios.ToListAsync(ct);
-
+        IQueryable<Servicio> query = _db.Servicios;
+        
         if (activo)
         {
-            servicios = servicios.Where(s => s.Activo).ToList();
+            query = query.Where(s => s.Activo);
         }
-
-        return servicios;
+        
+        return await query.ToListAsync(ct);
     }
 
     public async Task<IReadOnlyList<Servicio>> FindByIds(List<int> ids, CancellationToken ct = default)

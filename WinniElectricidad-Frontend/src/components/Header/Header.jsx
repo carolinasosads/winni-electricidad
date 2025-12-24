@@ -53,7 +53,7 @@ export default function AppHeader({
 
   const rol = localStorage.getItem("rol");
   const resenasPath = getPathByRol(rol, "resenas");
-  const serviciosPath = getPathByRol(rol, "servicios")
+  const serviciosPath = getPathByRol(rol, "servicios");
 
   const handleLogout = () => {
   localStorage.removeItem("token");
