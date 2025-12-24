@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
-import { crearUsuarioComoAdmin, buscarUsuariosAdmin,getServiciosActivos, getDireccionesUsuarioAdmin,} from "../../../services/authService";
+import {  crearUsuarioComoAdmin,  buscarUsuariosAdmin,  getServiciosActivos,  getDireccionesUsuarioAdmin,} from "../../../services/authService";
 
-import {crearReservaAdmin,crearReservaHistoricaAdmin,getReservasPorClienteAdmin,} from "../../../services/reservaService";
+import {
+  crearReservaAdmin,  crearReservaHistoricaAdmin,  getReservasPorClienteAdmin,} from "../../../services/reservaService";
 
-import { crearPresupuestoParaReserva } from "../../../services/presupuestoService";
+import {
+  crearPresupuestoParaReserva,  obtenerPresupuestoSegunReserva,  actualizarMontoPagadoPresupuesto,} from "../../../services/presupuestoService";
 
-import {Box,Paper,Typography,Grid,RadioGroup,FormControlLabel,Radio,TextField,Button,Divider,Alert,FormControl,InputLabel,Select,
-  MenuItem,FormHelperText,Chip,} from "@mui/material";
+import {  Box,  Paper,  Typography,  Grid,  RadioGroup,  FormControlLabel,  Radio,  TextField,  Button,  Divider,  Alert,  FormControl,
+  InputLabel,  Select,  MenuItem,  FormHelperText,  Chip,  Dialog,  DialogTitle,  DialogContent,  DialogActions,} from "@mui/material";
 
 import ApiError from "../../../services/ApiError";
 
@@ -58,6 +60,18 @@ export default function AdminCrearReservaPage() {
     notasInternas: "",
   });
   const [loadingPresupuesto, setLoadingPresupuesto] = useState(false);
+
+  // Modal de detalle presupuesto
+  const [openDetallePresupuesto, setOpenDetallePresupuesto] = useState(false);
+  const [detallePresupuesto, setDetallePresupuesto] = useState(null);
+  const [loadingDetallePresupuesto, setLoadingDetallePresupuesto] =
+    useState(false);
+
+  //para editar el monto pagado 
+  const [editMontoPagado, setEditMontoPagado] = useState("");
+  const [loadingEditMontoPagado, setLoadingEditMontoPagado] = useState(false);
+  const [errorEditMontoPagado, setErrorEditMontoPagado] = useState("");
+  const [successEditMontoPagado, setSuccessEditMontoPagado] = useState("");
 
   const [serviciosOpts, setServiciosOpts] = useState([]);
   const [loadingServicios, setLoadingServicios] = useState(false);
@@ -274,9 +288,7 @@ export default function AdminCrearReservaPage() {
     };
 
     setClienteSeleccionado(clienteNormalizado);
-    setSuccess(
-      `Cliente seleccionado: ${cliente.nombreCompleto || cliente.email}`
-    );
+    setSuccess(`Cliente seleccionado: ${cliente.nombreCompleto || cliente.email}`);
     setError("");
 
     setReservaSeleccionada(null);
@@ -404,9 +416,10 @@ export default function AdminCrearReservaPage() {
       setReservaParaPresupuesto(reservaSeleccionada);
 
       if (getTienePresupuesto(reservaSeleccionada)) {
+        const montoP = getMontoPresupuestado(reservaSeleccionada);
         setPresupuesto((prev) => ({
           ...prev,
-          montoTotal: String(getMontoPresupuestado(reservaSeleccionada)),
+          montoTotal: String(montoP),
           montoPagado: "",
           descripcionTrabajo: "",
           notasInternas: "",
@@ -504,9 +517,7 @@ export default function AdminCrearReservaPage() {
 
       const dto = {
         montoTotal: Number(presupuesto.montoTotal),
-        montoPagado: presupuesto.montoPagado
-          ? Number(presupuesto.montoPagado)
-          : 0,
+        montoPagado: presupuesto.montoPagado ? Number(presupuesto.montoPagado) : 0,
         descripcionTrabajo: presupuesto.descripcionTrabajo,
         notasInternas: presupuesto.notasInternas,
       };
@@ -527,6 +538,108 @@ export default function AdminCrearReservaPage() {
     }
   };
 
+  const handleVerDetallePresupuesto = async (res) => {
+    setError("");
+    setSuccess("");
+
+    try {
+      setLoadingDetallePresupuesto(true);
+      setDetallePresupuesto(null);
+      setErrorEditMontoPagado("");
+      setSuccessEditMontoPagado("");
+
+      const token = localStorage.getItem("token");
+
+      const data = await obtenerPresupuestoSegunReserva(res.idReserva, token);
+
+      setDetallePresupuesto(data);
+
+      const mp = data?.montoPagado ?? data?.MontoPagado ?? 0;
+      setEditMontoPagado(String(mp));
+
+      setOpenDetallePresupuesto(true);
+    } catch (err) {
+      console.error(err);
+      setError(
+        parseApiErrorMessage(err, "Error al obtener el detalle del presupuesto.")
+      );
+    } finally {
+      setLoadingDetallePresupuesto(false);
+    }
+  };
+
+  const handleGuardarMontoPagado = async () => {
+    setErrorEditMontoPagado("");
+    setSuccessEditMontoPagado("");
+
+    if (!detallePresupuesto) {
+      setErrorEditMontoPagado("No hay detalle de presupuesto cargado.");
+      return;
+    }
+
+    const idReserva =
+      detallePresupuesto?.idReserva ?? detallePresupuesto?.IdReserva ?? null;
+
+    if (!idReserva) {
+      setErrorEditMontoPagado(
+        "No se pudo determinar el idReserva del presupuesto."
+      );
+      return;
+    }
+
+    const monto = Number(editMontoPagado);
+
+    if (Number.isNaN(monto)) {
+      setErrorEditMontoPagado("El monto pagado debe ser un número.");
+      return;
+    }
+
+    if (monto < 0) {
+      setErrorEditMontoPagado("El monto pagado no puede ser negativo.");
+      return;
+    }
+
+    const montoTotal = Number(
+      detallePresupuesto?.montoTotal ?? detallePresupuesto?.MontoTotal ?? 0
+    );
+
+    if (montoTotal > 0 && monto > montoTotal) {
+      setErrorEditMontoPagado(
+        "El monto pagado no puede ser mayor al monto total."
+      );
+      return;
+    }
+
+    try {
+      setLoadingEditMontoPagado(true);
+
+      const token = localStorage.getItem("token");
+      const updated = await actualizarMontoPagadoPresupuesto(
+        idReserva,
+        monto,
+        token
+      );
+
+      setDetallePresupuesto((prev) => ({
+        ...(prev || {}),
+        ...updated,
+      }));
+
+      setSuccessEditMontoPagado("Monto pagado actualizado.");
+
+      if (clienteSeleccionado?.id) {
+        await cargarReservasDeCliente(clienteSeleccionado.id);
+      }
+    } catch (err) {
+      console.error(err);
+      setErrorEditMontoPagado(
+        parseApiErrorMessage(err, "Error al actualizar el monto pagado.")
+      );
+    } finally {
+      setLoadingEditMontoPagado(false);
+    }
+  };
+
   const reservaYaTienePresupuesto = getTienePresupuesto(reservaParaPresupuesto);
 
   const getStepFromMessage = (msg) => {
@@ -538,7 +651,6 @@ export default function AdminCrearReservaPage() {
       m.includes("reserva") ||
       m.includes("servicio") ||
       m.includes("dirección") ||
-      m.includes("direccion") ||
       m.includes("fecha") ||
       m.includes("hora")
     )
@@ -653,7 +765,8 @@ export default function AdminCrearReservaPage() {
                         {cliente.nombreCompleto || "Sin nombre"}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        {cliente.email} {cliente.telefono && `• ${cliente.telefono}`}
+                        {cliente.email}{" "}
+                        {cliente.telefono && `• ${cliente.telefono}`}
                       </Typography>
                     </Box>
                     <Button
@@ -815,7 +928,11 @@ export default function AdminCrearReservaPage() {
                         renderValue={(selected) => (
                           <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
                             {selected.map((idStr) => (
-                              <Chip key={idStr} label={labelById(idStr)} size="small" />
+                              <Chip
+                                key={idStr}
+                                label={labelById(idStr)}
+                                size="small"
+                              />
                             ))}
                           </Box>
                         )}
@@ -856,7 +973,9 @@ export default function AdminCrearReservaPage() {
                 <Grid container spacing={2} sx={{ mb: 2 }}>
                   <Grid item xs={12} md={6}>
                     <FormControl fullWidth>
-                      <InputLabel id="tipo-trabajo-label">Tipo de trabajo</InputLabel>
+                      <InputLabel id="tipo-trabajo-label">
+                        Tipo de trabajo
+                      </InputLabel>
                       <Select
                         labelId="tipo-trabajo-label"
                         label="Tipo de trabajo"
@@ -881,7 +1000,10 @@ export default function AdminCrearReservaPage() {
                         label="Dirección"
                         value={reserva.idDireccion}
                         onChange={(e) =>
-                          setReserva((prev) => ({ ...prev, idDireccion: e.target.value }))
+                          setReserva((prev) => ({
+                            ...prev,
+                            idDireccion: e.target.value,
+                          }))
                         }
                       >
                         {direccionesCliente.map((d) => (
@@ -991,6 +1113,7 @@ export default function AdminCrearReservaPage() {
                         <Button
                           size="small"
                           variant="contained"
+                          disabled={loadingDetallePresupuesto}
                           onClick={() => {
                             setError("");
                             setSuccess("");
@@ -998,16 +1121,7 @@ export default function AdminCrearReservaPage() {
                             setReservaParaPresupuesto(res);
 
                             if (tieneP) {
-                              setPresupuesto((prev) => ({
-                                ...prev,
-                                montoTotal: String(montoP),
-                                montoPagado: "",
-                                descripcionTrabajo: "",
-                                notasInternas: "",
-                              }));
-                              setSuccess(
-                                "Esta reserva ya tiene presupuesto. Se muestra el monto."
-                              );
+                              handleVerDetallePresupuesto(res);
                             } else {
                               resetPresupuesto();
                               setSuccess(
@@ -1016,7 +1130,7 @@ export default function AdminCrearReservaPage() {
                             }
                           }}
                         >
-                          {tieneP ? "VER PRESUPUESTO" : "AGREGAR PRESUPUESTO"}
+                          {tieneP ? "VER DETALLE" : "AGREGAR PRESUPUESTO"}
                         </Button>
                       </Paper>
                     );
@@ -1125,6 +1239,119 @@ export default function AdminCrearReservaPage() {
           )}
         </Paper>
       )}
+
+      {/* Modal de detalle del presupuesto y editr el monto pagado */}
+      <Dialog
+        open={openDetallePresupuesto}
+        onClose={() => {
+          setOpenDetallePresupuesto(false);
+          setErrorEditMontoPagado("");
+          setSuccessEditMontoPagado("");
+        }}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>Detalle del presupuesto</DialogTitle>
+
+        <DialogContent dividers>
+          {loadingDetallePresupuesto && (
+            <Typography variant="body2" color="text.secondary">
+              Cargando detalle...
+            </Typography>
+          )}
+
+          {!loadingDetallePresupuesto && !detallePresupuesto && (
+            <Alert severity="warning">
+              No se pudo cargar el detalle del presupuesto.
+            </Alert>
+          )}
+
+          {!loadingDetallePresupuesto && detallePresupuesto && (
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              <Typography>
+                <strong>Monto total:</strong> ${" "}
+                {detallePresupuesto?.montoTotal ?? detallePresupuesto?.MontoTotal}
+              </Typography>
+
+              <TextField
+                fullWidth
+                size="small"
+                label="Monto pagado"
+                type="number"
+                value={editMontoPagado}
+                onChange={(e) => setEditMontoPagado(e.target.value)}
+                inputProps={{ min: 0 }}
+                sx={{ mt: 1 }}
+              />
+
+              {errorEditMontoPagado && (
+                <Box sx={{ mt: 1 }}>
+                  <Alert severity="error">{errorEditMontoPagado}</Alert>
+                </Box>
+              )}
+
+              {successEditMontoPagado && (
+                <Box sx={{ mt: 1 }}>
+                  <Alert severity="success">{successEditMontoPagado}</Alert>
+                </Box>
+              )}
+
+              {!!(detallePresupuesto?.descripcionTrabajo ?? detallePresupuesto?.DescripcionTrabajo) && (
+                <Box sx={{ mt: 1 }}>
+                  <Typography variant="subtitle2">Descripción del trabajo</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {detallePresupuesto?.descripcionTrabajo ??
+                      detallePresupuesto?.DescripcionTrabajo}
+                  </Typography>
+                </Box>
+              )}
+
+              {!!(detallePresupuesto?.notasInternas ?? detallePresupuesto?.NotasInternas) && (
+                <Box sx={{ mt: 1 }}>
+                  <Typography variant="subtitle2">Notas internas</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {detallePresupuesto?.notasInternas ??
+                      detallePresupuesto?.NotasInternas}
+                  </Typography>
+                </Box>
+              )}
+
+              {!!(detallePresupuesto?.notas ?? detallePresupuesto?.Notas) && (
+                <Box sx={{ mt: 1 }}>
+                  <Typography variant="subtitle2">Notas</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {detallePresupuesto?.notas ?? detallePresupuesto?.Notas}
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          )}
+        </DialogContent>
+
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setOpenDetallePresupuesto(false);
+              setErrorEditMontoPagado("");
+              setSuccessEditMontoPagado("");
+            }}
+          >
+            Cerrar
+          </Button>
+
+          <Button
+            variant="contained"
+            onClick={handleGuardarMontoPagado}
+            disabled={
+              loadingEditMontoPagado ||
+              loadingDetallePresupuesto ||
+              !detallePresupuesto
+            }
+          >
+            {loadingEditMontoPagado ? "Guardando..." : "Guardar monto pagado"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

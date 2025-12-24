@@ -48,5 +48,13 @@ public class RepositorioPresupuestos : IRepositorioPresupuesto
         return await _db.Presupuestos
             .AsNoTracking()
             .OrderByDescending(p => p.FechaPresupuesto)
-            .ToListAsync(ct);    }
+            .ToListAsync(ct);
+    }
+    
+    public async Task<Presupuesto?> FindByReservaId(int idReserva, CancellationToken ct = default)
+    {
+        return await _db.Presupuestos
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.IdReserva == idReserva, ct);
+    }
 }

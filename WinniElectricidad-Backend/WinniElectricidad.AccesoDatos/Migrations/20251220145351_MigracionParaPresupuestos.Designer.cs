@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WinniElectricidad.AccesoDatos.Repositorios.EF;
 
@@ -11,9 +12,11 @@ using WinniElectricidad.AccesoDatos.Repositorios.EF;
 namespace WinniElectricidad.AccesoDatos.Migrations
 {
     [DbContext(typeof(WinniElectricidadContext))]
-    partial class WinniElectricidadContextModelSnapshot : ModelSnapshot
+    [Migration("20251220145351_MigracionParaPresupuestos")]
+    partial class MigracionParaPresupuestos
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -165,9 +168,6 @@ namespace WinniElectricidad.AccesoDatos.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("FechaPresupuesto")
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("DescripcionTrabajo")
                         .HasColumnType("nvarchar(max)");
@@ -321,40 +321,35 @@ namespace WinniElectricidad.AccesoDatos.Migrations
                         {
                             Id = 1,
                             Activo = true,
-                            Descripcion = "Instalaciones, reparaciones y mantenimiento eléctrico en hogares y comercios.",
-                            ImagenUrl = "/servicios/electricidad.jpeg",
+                            Descripcion = "Descripción genérica para el servicio de Electricidad",
                             Titulo = "Electricidad"
                         },
                         new
                         {
                             Id = 2,
                             Activo = true,
-                            Descripcion = "Instalación y reparación de cañerías, griferías y artefactos sanitarios.",
-                            ImagenUrl = "/servicios/sanitaria.jpeg",
+                            Descripcion = "Descripción genérica para el servicio de Sanitaria",
                             Titulo = "Sanitaria"
                         },
                         new
                         {
                             Id = 3,
                             Activo = true,
-                            Descripcion = "Instalación y mantenimiento de sistemas de aire acondicionado y calefacción.",
-                            ImagenUrl = "/servicios/climatizacion.jpeg",
+                            Descripcion = "Descripción genérica para el servicio de Climatización",
                             Titulo = "Climatización"
                         },
                         new
                         {
                             Id = 4,
                             Activo = true,
-                            Descripcion = "Instalación y mantenimiento de sistemas de riego para jardines.",
-                            ImagenUrl = "/servicios/riego.jpg",
+                            Descripcion = "Descripción genérica para el servicio de Riego",
                             Titulo = "Riego"
                         },
                         new
                         {
                             Id = 5,
                             Activo = true,
-                            Descripcion = "Servicios técnicos generales sujetos a evaluación previa.",
-                            ImagenUrl = "/servicios/otros.jpeg",
+                            Descripcion = "Descripción genérica para Otro",
                             Titulo = "Otro"
                         });
                 });
