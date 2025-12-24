@@ -178,7 +178,7 @@ public class ServicioController : ControllerBase
     ///
     /// **Flujo:**
     /// 1. Recibe el identificador del servicio como parámetro de ruta.  
-    /// 2. Ejecuta la lógica de activación mediante el servicio <see cref="_desactivarServicio"/>.  
+    /// 2. Ejecuta la lógica de activación mediante el servicio <see cref="_activarServicio"/>.  
     /// 3. Devuelve una confirmación si la operación fue exitosa.
     ///
     /// **Códigos de respuesta:**

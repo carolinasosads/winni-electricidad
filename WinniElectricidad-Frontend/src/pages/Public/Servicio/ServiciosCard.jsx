@@ -23,8 +23,6 @@ export default function ServicioCard({
   onToggleActivo,
   onSolicitar
 }) {
-  const [trabajoSeleccionado, setTrabajoSeleccionado] = useState(null);
-
   const esAdmin = rol === "Administrador";
   const esCliente = rol === "Cliente";
 

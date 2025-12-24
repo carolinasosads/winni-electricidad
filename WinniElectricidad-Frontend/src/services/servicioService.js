@@ -69,8 +69,8 @@ export async function desactivarServicio(idServicio) {
       });
     
     if (!resp.ok) {
-    const data = await handleJsonOrText(resp);
-    throw new ApiError(data?.message || `Error activando el servicio con id: ${idServicio}.`, resp.status);
+      const data = await handleJsonOrText(resp);
+      throw new ApiError(data?.message || `Error desactivando el servicio con id: ${idServicio}.`, resp.status);
     }
     
     return await resp.json();

@@ -1,4 +1,4 @@
-import { Box, Typography, Dialog, DialogTitle, DialogContent, DialogActions, Button } from "@mui/material";
+import { Box, Typography, Dialog, DialogTitle, DialogContent, DialogActions, Button, Alert } from "@mui/material";
 import HowToRegIcon from '@mui/icons-material/HowToReg';
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -20,35 +20,76 @@ export default function ServiciosPage() {
   const [servicios, setServicios] = useState([]);
   const [servicioAccion, setServicioAccion] = useState(null);
 
-  const loadServicios = async (signal) => {
-    const data =
-      rol === "Administrador"
-        ? await getServicios(signal)
-        : await getServiciosActivos(signal);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
+  
 
-    setServicios(data);
+  const loadServicios = async (signal) => {
+    try {
+      const data =
+        rol === "Administrador"
+          ? await getServicios(signal)
+          : await getServiciosActivos(signal);
+
+      setServicios(data);
+    } catch (err) {
+      if (err.name === "AbortError") return;
+      setErrorMsg(err?.message || "Error al cargar los servicios.");
+    }
+  };
+
+  const reloadServicios = async () => {
+    try {
+      setErrorMsg("");
+      await loadServicios();
+    } catch (err) {
+      setErrorMsg(err?.message || "Error al cargar los servicios.");
+    }
   };
 
   useEffect(() => {
+    setErrorMsg("");
+    setSuccessMsg("");
     const ac = new AbortController();
     loadServicios(ac.signal);
     return () => ac.abort();
   }, []);
 
   const confirmarToggle = async () => {
-    if (servicioAccion.activo) {
-      await desactivarServicio(servicioAccion.id);
-    } else {
-      await activarServicio(servicioAccion.id);
-    }
+    try {
+      setErrorMsg("");
+      setSuccessMsg("");
 
-    await loadServicios();
-    setServicioAccion(null);
+      if (servicioAccion.activo) {
+        await desactivarServicio(servicioAccion.id);
+        setSuccessMsg("¡Servicio desactivado con éxito!");
+      } else {
+        await activarServicio(servicioAccion.id);
+        setSuccessMsg("¡Servicio activado con éxito!");
+      }
+
+      await reloadServicios();
+      setServicioAccion(null);
+    } catch (err) {
+      setErrorMsg(err?.message || "Error al modificar el servicio.");
+    }
   };
 
   return (
     <Box sx={{ maxWidth: 1200, mx: "auto", px: 2, py: 4 }}>
       <ServiciosHeader />
+
+      {errorMsg && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {errorMsg}
+        </Alert>
+      )}
+      
+      {successMsg && (
+        <Alert severity="success" sx={{ mb: 3 }}>
+          {successMsg}
+        </Alert>
+      )}
 
       {!rol && (
         <Box

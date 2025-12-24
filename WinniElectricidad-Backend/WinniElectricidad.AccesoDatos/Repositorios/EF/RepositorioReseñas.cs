@@ -41,6 +41,7 @@ public class RepositorioReseñas : IRepositorioReseña
     {
         return await _db.Resenias
             .Where(r => r.Estado == EstadoReseña.Aprobada)
+            .OrderByDescending(r => r.FechaPublicacion)
             .ToListAsync(ct);
     }
 }
