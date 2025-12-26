@@ -1,8 +1,11 @@
 import { useState } from "react";
-import {  Box,  Paper,  Typography,  Drawer,  IconButton,  Divider,  CircularProgress,  Alert,  List,  ListItemText,  Button,  Dialog, DialogTitle,  DialogContent,  DialogActions,  Chip,  TextField,} from "@mui/material";
+import {  Box,  Paper,  Typography,  Drawer,  IconButton,  Divider,  Alert,  List,  ListItemText,  Button,  Dialog,
+  DialogTitle,  DialogContent,  DialogActions,  Chip,  TextField,  CircularProgress,} from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
-import {  obtenerPresupuestoSegunReserva,  actualizarMontoPagadoPresupuesto,} from "../../../services/presupuestoService";
+import {  crearPresupuestoParaReserva,  obtenerPresupuestoSegunReserva,  actualizarMontoPagadoPresupuesto,} from "../../../services/presupuestoService";
+
+import ApiError from "../../../services/ApiError";
 
 function getClienteNombre(c) {
   return c?.nombreCompleto ?? c?.NombreCompleto ?? "-";
@@ -28,12 +31,13 @@ function getReservaId(r) {
   return r?.idReserva ?? r?.IdReserva ?? r?.id ?? r?.Id ?? null;
 }
 function getReservaFecha(r) {
-  return r?.fechaHora ?? r?.FechaHora ?? r?.fechaReserva ?? r?.FechaReserva ?? "-";
+  return (
+    r?.fechaHora ?? r?.FechaHora ?? r?.fechaReserva ?? r?.FechaReserva ?? "-"
+  );
 }
 function getReservaEstado(r) {
   return r?.estado ?? r?.Estado ?? "-";
 }
-
 function getTienePresupuesto(r) {
   return r?.tienePresupuesto ?? r?.TienePresupuesto ?? false;
 }
@@ -63,7 +67,13 @@ function getPresuMontoPagado(p) {
   return v ?? 0;
 }
 function getPresuFecha(p) {
-  return p?.fechaCreacion ?? p?.FechaCreacion ?? p?.fechaPresupuesto ?? p?.FechaPresupuesto ?? "-";
+  return (
+    p?.fechaCreacion ??
+    p?.FechaCreacion ??
+    p?.fechaPresupuesto ??
+    p?.FechaPresupuesto ??
+    "-"
+  );
 }
 function getPresuDetalleTrabajo(p) {
   return p?.descripcionTrabajo ?? p?.DescripcionTrabajo ?? "-";
@@ -72,9 +82,13 @@ function getPresuNotasInternas(p) {
   return p?.notasInternas ?? p?.NotasInternas ?? p?.notas ?? p?.Notas ?? "-";
 }
 
-export default function DetalleClientes({
-  open,  onClose,  clienteSel,  detalle,  loadingDetalle,  errorDetalle,  mostrarReservas,  onToggleReservas,  reservas,  loadingReservas,
-  errorReservas,}) {
+function parseApiErrorMessage(err, fallback) {
+  if (err instanceof ApiError) return err.message || fallback;
+  return err?.message || fallback;
+}
+
+export default function DetalleClientes({  open,  onClose,  clienteSel,  detalle,  loadingDetalle,  errorDetalle,  mostrarReservas,
+  onToggleReservas,  reservas,  loadingReservas,  errorReservas,}) {
   const direcciones = detalle?.direcciones ?? detalle?.Direcciones ?? [];
 
   const [openPresu, setOpenPresu] = useState(false);
@@ -89,15 +103,27 @@ export default function DetalleClientes({
   const [montoPagadoEdit, setMontoPagadoEdit] = useState("");
   const [montoPagadoOriginal, setMontoPagadoOriginal] = useState("");
 
+  const [montoTotalNuevo, setMontoTotalNuevo] = useState("");
+  const [detalleTrabajoNuevo, setDetalleTrabajoNuevo] = useState("");
+  const [notasInternasNuevo, setNotasInternasNuevo] = useState("");
+  const [montoPagadoNuevo, setMontoPagadoNuevo] = useState("");
+
   const resetPresuUi = () => {
     setLoadingPresu(false);
     setSavingPresu(false);
     setErrorPresu(null);
     setSuccessPresu(null);
+
     setPresuSel(null);
     setReservaSel(null);
+
     setMontoPagadoEdit("");
     setMontoPagadoOriginal("");
+
+    setMontoTotalNuevo("");
+    setDetalleTrabajoNuevo("");
+    setNotasInternasNuevo("");
+    setMontoPagadoNuevo("");
   };
 
   const handleClosePresu = () => {
@@ -115,6 +141,12 @@ export default function DetalleClientes({
     setSuccessPresu(null);
     setPresuSel(null);
 
+    // reset creación
+    setMontoTotalNuevo("");
+    setDetalleTrabajoNuevo("");
+    setNotasInternasNuevo("");
+    setMontoPagadoNuevo("");
+
     const idReserva = getReservaId(r);
     if (!idReserva) {
       setErrorPresu("No se pudo determinar el ID de la reserva.");
@@ -122,20 +154,39 @@ export default function DetalleClientes({
       return;
     }
 
+    const tienePresupuesto = getTienePresupuesto(r);
+    if (!tienePresupuesto) {
+      setPresuSel(null); 
+      setLoadingPresu(false);
+      return;
+    }
+
     try {
       const data = await obtenerPresupuestoSegunReserva(idReserva);
+
       setPresuSel(data);
 
-      const mp = String(getPresuMontoPagado(data) ?? 0);
-      setMontoPagadoEdit(mp);
-      setMontoPagadoOriginal(mp);
+      if (data) {
+        const mp = String(getPresuMontoPagado(data) ?? 0);
+        setMontoPagadoEdit(mp);
+        setMontoPagadoOriginal(mp);
+      } else {
+        setMontoPagadoEdit("");
+        setMontoPagadoOriginal("");
+      }
     } catch (err) {
-      setErrorPresu(err?.message || "Error al obtener el presupuesto.");
+      if (err?.status >= 500) {
+        setPresuSel(null);
+      }
+      setErrorPresu(
+        parseApiErrorMessage(err, "Error al obtener el presupuesto.")
+      );
     } finally {
       setLoadingPresu(false);
     }
   };
 
+  // ---------- VALIDACIONES ----------
   const montoPagadoNumero = Number(montoPagadoEdit);
   const montoPagadoValido =
     montoPagadoEdit !== "" &&
@@ -144,6 +195,31 @@ export default function DetalleClientes({
 
   const hayCambiosMontoPagado = montoPagadoEdit !== montoPagadoOriginal;
 
+  const montoTotalNumero = Number(montoTotalNuevo);
+  const montoTotalValido =
+    montoTotalNuevo !== "" &&
+    !Number.isNaN(montoTotalNumero) &&
+    montoTotalNumero > 0;
+
+  const montoPagadoNuevoNumero =
+    montoPagadoNuevo === "" ? 0 : Number(montoPagadoNuevo);
+  const montoPagadoNuevoValido =
+    montoPagadoNuevo === "" ||
+    (!Number.isNaN(montoPagadoNuevoNumero) && montoPagadoNuevoNumero >= 0);
+
+  const detalleTrabajoValido = detalleTrabajoNuevo.trim().length >= 3;
+
+  const montoPagadoNoSuperaTotal =
+    montoPagadoNuevo === "" || montoPagadoNuevoNumero <= montoTotalNumero;
+
+  const puedeCrearPresupuesto =
+    !!reservaSel &&
+    montoTotalValido &&
+    detalleTrabajoValido &&
+    montoPagadoNuevoValido &&
+    montoPagadoNoSuperaTotal;
+
+  // ---------- ACCIONES ----------
   const handleCancelarEdicionMontoPagado = () => {
     setMontoPagadoEdit(montoPagadoOriginal);
     setSuccessPresu(null);
@@ -158,7 +234,7 @@ export default function DetalleClientes({
       return;
     }
     if (!montoPagadoValido) {
-      setErrorPresu("Ingresá un monto pagado válido (número mayor o igual a 0).");
+      setErrorPresu("Ingresá un monto pagado válido (>= 0).");
       return;
     }
 
@@ -167,12 +243,9 @@ export default function DetalleClientes({
     setSuccessPresu(null);
 
     try {
-      const token = localStorage.getItem("token");
-
       const actualizado = await actualizarMontoPagadoPresupuesto(
         idReserva,
-        montoPagadoNumero,
-        token
+        montoPagadoNumero
       );
 
       setPresuSel(actualizado);
@@ -183,7 +256,53 @@ export default function DetalleClientes({
 
       setSuccessPresu("Monto pagado actualizado");
     } catch (err) {
-      setErrorPresu(err?.message || "Error al actualizar el monto pagado.");
+      setErrorPresu(
+        parseApiErrorMessage(err, "Error al actualizar el monto pagado.")
+      );
+    } finally {
+      setSavingPresu(false);
+    }
+  };
+
+  const handleCrearPresupuesto = async () => {
+    if (!reservaSel) return;
+
+    const idReserva = getReservaId(reservaSel);
+    if (!idReserva) {
+      setErrorPresu("No se pudo determinar el ID de la reserva.");
+      return;
+    }
+
+    if (!puedeCrearPresupuesto) {
+      setErrorPresu(
+        "Completá el monto total, el detalle del trabajo y revisá el monto pagado."
+      );
+      return;
+    }
+
+    setSavingPresu(true);
+    setErrorPresu(null);
+    setSuccessPresu(null);
+
+    try {
+      const dto = {
+        montoTotal: Number(montoTotalNumero),
+        montoPagado: Number(montoPagadoNuevoNumero || 0),
+        descripcionTrabajo: detalleTrabajoNuevo.trim(),
+        notasInternas: (notasInternasNuevo || "").trim(),
+      };
+
+      const creado = await crearPresupuestoParaReserva(idReserva, dto);
+
+      setPresuSel(creado);
+
+      const mp = String(getPresuMontoPagado(creado) ?? dto.montoPagado ?? 0);
+      setMontoPagadoEdit(mp);
+      setMontoPagadoOriginal(mp);
+
+      setSuccessPresu("Presupuesto creado correctamente ");
+    } catch (err) {
+      setErrorPresu(parseApiErrorMessage(err, "Error al crear el presupuesto."));
     } finally {
       setSavingPresu(false);
     }
@@ -202,6 +321,7 @@ export default function DetalleClientes({
             <Typography variant="h6" fontWeight={700}>
               Detalle del cliente
             </Typography>
+
           </Box>
           <IconButton onClick={onClose}>
             <CloseIcon />
@@ -237,7 +357,6 @@ export default function DetalleClientes({
 
               {errorDetalle && <Alert severity="error">{errorDetalle}</Alert>}
 
-              {/* Direcciones */}
               <Paper sx={{ p: 2, mb: 2 }}>
                 <Typography fontWeight={700}>
                   Direcciones ({direcciones.length})
@@ -256,7 +375,6 @@ export default function DetalleClientes({
                 )}
               </Paper>
 
-              {/* Reservas */}
               <Paper sx={{ p: 2 }}>
                 <Box
                   sx={{
@@ -294,7 +412,7 @@ export default function DetalleClientes({
                       <List>
                         {reservas.map((r, i) => {
                           const idR = getReservaId(r) ?? i;
-                          const fecha = getReservaFecha(r);
+                          const fecha = formatearFecha(getReservaFecha(r));
                           const estado = getReservaEstado(r);
 
                           const tiene = getTienePresupuesto(r);
@@ -302,9 +420,6 @@ export default function DetalleClientes({
 
                           return (
                             <Paper key={idR} variant="outlined" sx={{ p: 1.5, mb: 1.2 }}>
-                              <Typography sx={{ fontWeight: 700 }}>
-                                Reserva #{getReservaId(r) ?? "-"}
-                              </Typography>
 
                               <Typography variant="body2">
                                 <b>Fecha:</b> {fecha}
@@ -317,7 +432,9 @@ export default function DetalleClientes({
                               <Chip
                                 size="small"
                                 sx={{ mb: 1 }}
-                                label={tiene ? `Presupuesto: $ ${monto}` : "Sin presupuesto"}
+                                label={
+                                  tiene ? `Presupuesto: $ ${monto}` : "Sin presupuesto"
+                                }
                                 color={tiene ? "success" : "default"}
                               />
 
@@ -325,9 +442,8 @@ export default function DetalleClientes({
                                 <Button
                                   variant="outlined"
                                   onClick={() => handleVerPresupuesto(r)}
-                                  disabled={!tiene}
                                 >
-                                  Ver presupuesto
+                                  {tiene ? "Ver presupuesto" : "Agregar presupuesto"}
                                 </Button>
                               </Box>
                             </Paper>
@@ -345,7 +461,8 @@ export default function DetalleClientes({
 
       <Dialog open={openPresu} onClose={handleClosePresu} fullWidth>
         <DialogTitle>
-          Presupuesto 
+          Presupuesto{" "}
+
         </DialogTitle>
 
         <DialogContent dividers>
@@ -356,13 +473,98 @@ export default function DetalleClientes({
             </Box>
           )}
 
-          {errorPresu && <Alert severity="error" sx={{ mb: 1 }}>{errorPresu}</Alert>}
-          {successPresu && <Alert severity="success" sx={{ mb: 1 }}>{successPresu}</Alert>}
-
-          {!loadingPresu && !errorPresu && presuSel === null && (
-            <Alert severity="info">Esta reserva no tiene presupuesto asociado.</Alert>
+          {errorPresu && (
+            <Alert severity="error" sx={{ mb: 1 }}>
+              {errorPresu}
+            </Alert>
+          )}
+          {successPresu && (
+            <Alert severity="success" sx={{ mb: 1 }}>
+              {successPresu}
+            </Alert>
           )}
 
+          {/* CREAR */}
+          {!loadingPresu && presuSel === null && (
+            <Box sx={{ display: "grid", gap: 1 }}>
+              <TextField
+                label="Monto total"
+                required
+                type="number"
+                value={montoTotalNuevo}
+                onChange={(e) => {
+                  setMontoTotalNuevo(e.target.value);
+                  setSuccessPresu(null);
+                  setErrorPresu(null);
+                }}
+                inputProps={{ min: 0, step: "0.01" }}
+                error={montoTotalNuevo !== "" && !montoTotalValido}
+                helperText={
+                  montoTotalNuevo === ""
+                    ? "Obligatorio"
+                    : !montoTotalValido
+                      ? "Debe ser mayor a 0"
+                      : ""
+                }
+              />
+
+              <TextField
+                label="Detalle del trabajo"
+                value={detalleTrabajoNuevo}
+                onChange={(e) => {
+                  setDetalleTrabajoNuevo(e.target.value);
+                  setSuccessPresu(null);
+                  setErrorPresu(null);
+                }}
+                multiline
+                minRows={2}
+                error={detalleTrabajoNuevo.length > 500}
+                helperText={
+                  detalleTrabajoNuevo.length > 500
+                    ? "No puede superar los 500 caracteres"
+                    : ""
+                }
+              />
+
+
+              <TextField
+                label="Notas internas"
+                value={notasInternasNuevo}
+                onChange={(e) => {
+                  setNotasInternasNuevo(e.target.value);
+                  setSuccessPresu(null);
+                  setErrorPresu(null);
+                }}
+                multiline
+                minRows={2}
+              />
+
+              <TextField
+                label="Monto pagado (opcional)"
+                type="number"
+                value={montoPagadoNuevo}
+                onChange={(e) => {
+                  setMontoPagadoNuevo(e.target.value);
+                  setSuccessPresu(null);
+                  setErrorPresu(null);
+                }}
+                inputProps={{ min: 0, step: "0.01" }}
+                error={
+                  (montoPagadoNuevo !== "" && !montoPagadoNuevoValido) ||
+                  (montoPagadoNuevo !== "" && !montoPagadoNoSuperaTotal)
+                }
+                helperText={
+                  montoPagadoNuevo !== "" && !montoPagadoNuevoValido
+                    ? "Debe ser >= 0"
+                    : montoPagadoNuevo !== "" && !montoPagadoNoSuperaTotal
+                      ? "No puede ser mayor al monto total"
+                      : ""
+                }
+              />
+            </Box>
+          )}
+
+          {/* VER/EDITAR */}
           {!loadingPresu && presuSel && (
             <Box sx={{ display: "grid", gap: 1 }}>
               <Typography>
@@ -404,27 +606,40 @@ export default function DetalleClientes({
             Cerrar
           </Button>
 
-          <Button
-            variant="outlined"
-            onClick={handleCancelarEdicionMontoPagado}
-            disabled={savingPresu || !hayCambiosMontoPagado}
-          >
-            Cancelar cambios
-          </Button>
+          {!loadingPresu && presuSel === null && (
+            <Button
+              variant="contained"
+              onClick={handleCrearPresupuesto}
+              disabled={savingPresu || !puedeCrearPresupuesto}
+            >
+              {savingPresu ? "Creando…" : "Crear presupuesto"}
+            </Button>
+          )}
 
-          <Button
-            variant="contained"
-            onClick={handleGuardarMontoPagado}
-            disabled={
-              savingPresu ||
-              loadingPresu ||
-              !presuSel ||
-              !hayCambiosMontoPagado ||
-              !montoPagadoValido
-            }
-          >
-            {savingPresu ? "Guardando…" : "Guardar cambios"}
-          </Button>
+          {!loadingPresu && presuSel && (
+            <>
+              <Button
+                variant="outlined"
+                onClick={handleCancelarEdicionMontoPagado}
+                disabled={savingPresu || !hayCambiosMontoPagado}
+              >
+                Cancelar cambios
+              </Button>
+
+              <Button
+                variant="contained"
+                onClick={handleGuardarMontoPagado}
+                disabled={
+                  savingPresu ||
+                  loadingPresu ||
+                  !hayCambiosMontoPagado ||
+                  !montoPagadoValido
+                }
+              >
+                {savingPresu ? "Guardando…" : "Guardar cambios"}
+              </Button>
+            </>
+          )}
         </DialogActions>
       </Dialog>
     </>

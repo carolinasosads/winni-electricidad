@@ -168,6 +168,10 @@ export default function FichaClientes() {
       <Typography variant="h5" sx={{ mb: 2, fontWeight: 700 }}>
         Ficha de clientes
       </Typography>
+      <Alert severity="info" sx={{ mb: 2 }}>
+        Esta es la ficha de clientes. Acá podés ver toda la información relacionada a un
+        cliente: datos personales, direcciones, reservas y presupuestos.
+      </Alert>
 
       <Paper sx={{ p: 2, mb: 2 }}>
         <FiltroClientes
