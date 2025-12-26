@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {  Box,  Typography,  Button,  Card,  CardContent,  CardMedia,  Container,  Rating,  Toolbar,  CssBaseline,} from "@mui/material";
 
-import { getServiciosActivos } from "../../../services/authService";
+import { getServiciosActivos } from "../../../services/servicioService";
 import { getResenasAprobadas } from "../../../services/resenaService";
 
 import { SitemarkIcon } from "../../../components/CustomIcons/CustomIcons.jsx";
