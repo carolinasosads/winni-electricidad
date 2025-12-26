@@ -28,6 +28,7 @@ export default function PaginaPrincipal() {
       setEstaLogueado(Boolean(token));
     };
     window.addEventListener("auth-change", handler);
+    handler();
     return () => window.removeEventListener("auth-change", handler);
   }, []);
 
@@ -138,20 +139,45 @@ export default function PaginaPrincipal() {
         r?.Puntuacion ??
         0;
 
-      return {
-        id: r?.id ?? r?.Id ?? `${nombre}-${idx}`,
-        nombre,
-        texto,
-        estrellas: Number(estrellas) || 0,
-      };
-    });
+        let imagenUrl =
+          r?.imagenUrl ??
+          r?.ImagenUrl ??
+          r?.urlImagen ??
+          r?.UrlImagen ??
+          r?.imagen ??
+          r?.Imagen ??
+          null;
+
+        if (typeof imagenUrl === "string") {
+          imagenUrl = imagenUrl.trim();
+          if (
+            imagenUrl &&
+            !imagenUrl.startsWith("http") &&
+            !imagenUrl.startsWith("/")
+          ) {
+            imagenUrl = `/${imagenUrl}`;
+          }
+        } else {
+          imagenUrl = null;
+        }
+
+        return {
+          id: r?.id ?? r?.Id ?? `${nombre}-${idx}`,
+          nombre,
+          texto,
+          estrellas: Number(estrellas) || 0,
+          imagenUrl,
+        };
+      })
+      .filter((x) => (x.texto || "").trim().length > 0)
+      .slice(0, 3);
   }, [resenasRaw]);
 
   useEffect(() => {
     const controller = new AbortController();
     setError(null);
 
-    getServiciosActivos()
+    getServiciosActivos(controller.signal)
       .then((data) => {
         const lista =
           (Array.isArray(data) && data) ||
@@ -169,13 +195,15 @@ export default function PaginaPrincipal() {
         if (e?.name === "AbortError") return;
         setError(e?.message || "Error al cargar servicios.");
       });
+
+    return () => controller.abort();
   }, []);
 
   useEffect(() => {
     const controller = new AbortController();
     setErrorResenas(null);
 
-    getResenasAprobadas()
+    getResenasAprobadas(controller.signal)
       .then((data) => {
         const lista =
           (Array.isArray(data) && data) ||
