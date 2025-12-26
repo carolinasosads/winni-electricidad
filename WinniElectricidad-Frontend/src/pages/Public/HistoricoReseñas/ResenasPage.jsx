@@ -23,7 +23,7 @@ import {
   getResenasAprobadas,
   desaprobarReseña
 } from "../../../services/resenaService";
-import { getServiciosActivos } from "../../../services/authService";
+import { getServiciosActivos } from "../../../services/servicioService";
 
 import RateReviewIcon from "@mui/icons-material/RateReview";
 

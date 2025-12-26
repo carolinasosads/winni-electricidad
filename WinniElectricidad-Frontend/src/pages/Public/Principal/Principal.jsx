@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {  Box,  Typography,  Button,  Card,  CardContent,  CardMedia,  Container,  Rating,} from "@mui/material";
 
-import { getServiciosActivos } from "../../../services/authService";
+import { getServiciosActivos } from "../../../services/servicioService.js";
 import { SitemarkIcon } from "../../../components/CustomIcons/CustomIcons.jsx";
 import { getResenasAprobadas } from "../../../services/resenaService";
 import AppHeader from "/src/components/Header/Header.jsx";

@@ -41,4 +41,18 @@ public class Servicio
             throw new ArgumentException("Ingresa una descripción más detallada.", nameof(descripcion));
         }
     }
+    
+    public void Desactivar()
+    {
+        if (!Activo)
+            throw new InvalidOperationException("El servicio ya está desactivado.");
+        Activo = false;
+    }
+    
+    public void Activar()
+    {
+        if (Activo)
+            throw new InvalidOperationException("El servicio ya está activo.");
+        Activo = true;
+    }
 }

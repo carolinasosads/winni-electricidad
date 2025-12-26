@@ -31,11 +31,11 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import AgendaFilters from "./AgendaFilters";
 import { CALENDAR_WIDTH, DAY_MIN_HEIGHT } from "./AgendaConstants";
 import {
-  getServiciosActivos,
   getDireccionesUsuario,
   getHorariosDisponibles,
   crearReserva,
 } from "../../../services/authService";
+import { getServiciosActivos } from "../../../services/servicioService";
 import ApiError from "../../../services/ApiError";
 
 export default function AgendaPage({ onReserve }) {

@@ -4,6 +4,7 @@ import {  AppBar as MuiAppBar,  Toolbar,  IconButton,  Tooltip,  Typography,  St
 import MenuIcon from "@mui/icons-material/Menu";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import RateReviewIcon from "@mui/icons-material/RateReview";
+import BuildIcon from '@mui/icons-material/Build';
 import LogoutIcon from "@mui/icons-material/Logout";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -36,14 +37,14 @@ export default function AppHeader({
     onToggleMenu?.(!menuOpen);
   };
 
-  const getResenasPathByRol = (rol) => {
+  const getPathByRol = (rol, page) => {
     switch (rol) {
       case "Administrador":
-        return "/admin/resenas";
+        return `/admin/${page}`;
       case "Cliente":
-        return "/cliente/resenas";
+        return `/cliente/${page}`;
       default:
-        return "/resenas";
+        return `/${page}`;
     }
   };
 
@@ -51,7 +52,8 @@ export default function AppHeader({
   const estaLogueado = Boolean(token);
 
   const rol = localStorage.getItem("rol");
-  const resenasPath = getResenasPathByRol(rol);
+  const resenasPath = getPathByRol(rol, "resenas");
+  const serviciosPath = getPathByRol(rol, "servicios");
 
   const handleLogout = () => {
   localStorage.removeItem("token");
@@ -125,6 +127,19 @@ export default function AppHeader({
                 Reseñas
               </Button>
             </Link>
+              <Link to={serviciosPath} style={{ textDecoration: "none" }}>
+                  <Button
+                      variant="outlined"
+                      size="small"
+                      startIcon={<BuildIcon />}
+                      sx={{
+                          textTransform: "none",
+                          borderRadius: 2
+                      }}
+                  >
+                      Servicios
+                  </Button>
+              </Link>
             {rightSlot ?? authSlotDefault}
           </Stack>
         </Stack>

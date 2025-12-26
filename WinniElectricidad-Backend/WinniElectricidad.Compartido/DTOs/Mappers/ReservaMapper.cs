@@ -55,7 +55,7 @@ public class ReservaMapper
             },
 
             Direccion = DireccionMapper.MapearDireccionADto(reserva.Direccion),
-            Servicios = ServicioMapper.MapearServiciosADtos(reserva.Servicios),
+            Servicios = ServicioMapper.MapearServiciosADtos(true, reserva.Servicios),
                 
         };
     }

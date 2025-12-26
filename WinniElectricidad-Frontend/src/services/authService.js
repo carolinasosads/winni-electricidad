@@ -1,7 +1,6 @@
 import ApiError from "./ApiError";
 
 const urlAPIUsuario = `${import.meta.env.VITE_API_URL}/WinniElectricidadApi/Usuario/`;
-const urlAPIServicio = `${import.meta.env.VITE_API_URL}/WinniElectricidadApi/Servicio/`;
 const urlAPIReserva  = `${import.meta.env.VITE_API_URL}/WinniElectricidadApi/Reserva/`;
 
 export const login = async (email, password) => {
@@ -201,29 +200,6 @@ function normalizarDireccion(d) {
     numero: d.numero?.toString().trim() || null,
     apto: d.apto?.toString().trim() || null
   };
-}
-
-export async function getServiciosActivos(signal) {
-  const token = localStorage.getItem("token");
-
-  const resp = await fetch(`${urlAPIServicio}activos`, {
-    method: "GET",
-    headers: {
-      Accept: "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    signal,
-  });
-
-  if (!resp.ok) {
-    const data = await handleJsonOrText(resp);
-    throw new ApiError(
-      data?.message || "No se pudieron obtener los servicios.",
-      resp.status
-    );
-  }
-
-  return await resp.json(); 
 }
 
 export async function getDireccionesUsuario(signal) {

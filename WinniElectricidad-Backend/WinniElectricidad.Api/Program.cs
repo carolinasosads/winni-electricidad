@@ -138,7 +138,9 @@ builder.Services.AddHttpClient<IHCaptchaVerifier, HCaptchaServicio>();
 builder.Services.AddScoped<IRecuperarContrasena, RecuperarContrasena>();
 builder.Services.AddScoped<IServicioOneTimeToken, ServicioOneTimeToken>();
 // - Servicio -
-builder.Services.AddScoped<IObtenerServiciosActivos, ObtenerServiciosActivos>();
+builder.Services.AddScoped<IObtenerServiciosSegunEstado, ObtenerServiciosSegunEstado>();
+builder.Services.AddScoped<IDesactivarServicio, DesactivarServicio>();
+builder.Services.AddScoped<IActivarServicio, ActivarServicio>();
 // - Direccion -
 builder.Services.AddScoped<IObtenerDirecciones, ObtenerDirecciones>();
 // - Reserva -

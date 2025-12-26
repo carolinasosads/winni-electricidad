@@ -6,16 +6,16 @@ using WinniElectricidad.LogicaNegocio.InterfacesRepositorios;
 namespace WinniElectricidad.Tests.Small.LogicaAplicacion;
 
 [TestFixture]
-public class ObtenerServiciosActivosTests
+public class ObtenerServiciosSegunEstadoTests
 {
     private Mock<IRepositorioServicio> _mockRepo;
-    private ObtenerServiciosActivos _servicio;
+    private ObtenerServiciosSegunEstado _servicio;
 
     [SetUp]
     public void Setup()
     {
         _mockRepo = new Mock<IRepositorioServicio>();
-        _servicio = new ObtenerServiciosActivos(_mockRepo.Object);
+        _servicio = new ObtenerServiciosSegunEstado(_mockRepo.Object);
     }
 
     [Test]
@@ -25,11 +25,11 @@ public class ObtenerServiciosActivosTests
         var lista = new List<Servicio> {
             new("Electricidad", "Instalaciones eléctricas completas", null)
         };
-        _mockRepo.Setup(r => r.FindAllActive(It.IsAny<CancellationToken>()))
+        _mockRepo.Setup(r => r.FindAllSegunEstado(true, It.IsAny<CancellationToken>()))
             .ReturnsAsync(lista);
 
         // Act
-        var result = await _servicio.Ejecutar();
+        var result = await _servicio.Ejecutar(true);
 
         // Assert
         Assert.Multiple(() =>
@@ -43,11 +43,11 @@ public class ObtenerServiciosActivosTests
     public async Task Ejecutar_CuandoNoHayActivos_DevuelveListaVacia()
     {
         // Arrange
-        _mockRepo.Setup(r => r.FindAllActive(It.IsAny<CancellationToken>()))
+        _mockRepo.Setup(r => r.FindAllSegunEstado(true,It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<Servicio>());
 
         // Act
-        var result = await _servicio.Ejecutar();
+        var result = await _servicio.Ejecutar(true);
 
         // Assert
         Assert.That(result, Is.Empty);
