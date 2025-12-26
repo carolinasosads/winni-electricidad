@@ -439,8 +439,7 @@ public class UsuarioController : ControllerBase
         var lista = await _listarTodosLosUsuarios.Listar(ct);
         return Ok(lista);
     }
-
-
+    
     /// <summary>
     /// Obtiene el detalle completo de un cliente específico, incluyendo
     /// direcciones, reservas y presupuestos asociados.

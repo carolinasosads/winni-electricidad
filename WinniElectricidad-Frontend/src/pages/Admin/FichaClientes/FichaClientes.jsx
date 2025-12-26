@@ -112,8 +112,6 @@ export default function FichaClientes() {
     if (!clienteSel) return;
 
     const idUsuario = getIdUsuario(clienteSel);
-    console.log("➡️ Llamando a detalle cliente con idUsuario:", idUsuario);
-
     if (!idUsuario) {
       setDetalle(null);
       setErrorDetalle("No se pudo determinar el ID del usuario.");
@@ -232,8 +230,6 @@ export default function FichaClientes() {
         <ListadoClientes
           clientes={resultados}
           onSelect={(c) => {
-            console.log("🟡 cliente seleccionado:", c);
-            console.log("🟢 idUsuario resuelto:", getIdUsuario(c));
             setClienteSel(c);
             setOpenDetalle(true);
           }}
