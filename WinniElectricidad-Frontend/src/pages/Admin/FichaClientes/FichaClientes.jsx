@@ -3,15 +3,22 @@ import { Box, Paper, Typography, Alert, CircularProgress } from "@mui/material";
 
 import ApiError from "../../../services/ApiError";
 import { buscarUsuariosAdmin } from "../../../services/authService";
-import {  listarClientesAdmin,  obtenerDetalleClienteAdmin,} from "../../../services/clienteService";
+import { listarClientesAdmin, obtenerDetalleClienteAdmin } from "../../../services/clienteService";
 import { getReservasPorClienteAdmin } from "../../../services/reservaService";
 
 import FiltroClientes from "./FiltroClientes";
 import ListadoClientes from "./ListadoClientes";
 import DetalleClientes from "./DetalleClientes";
 
-function getClienteId(c) {
-  return c?.id ?? c?.Id ?? c?.idUsuario ?? c?.IdUsuario ?? c?.usuarioId ?? null;
+function getIdUsuario(c) {
+  return (
+    c?.IdUsuario ??
+    c?.idUsuario ??
+    c?.Id ??      
+    c?.id ??
+    c?.usuarioId ??
+    null
+  );
 }
 
 export default function FichaClientes() {
@@ -63,7 +70,15 @@ export default function FichaClientes() {
     let alive = true;
     setErrorClientes(null);
 
-    if (!query.trim()) {
+    const q = query.trim();
+
+    if (!q) {
+      setClientes([]);
+      setModoListadoTotal(false);
+      return;
+    }
+
+    if (q.length < 2) {
       setClientes([]);
       setModoListadoTotal(false);
       return;
@@ -74,7 +89,7 @@ export default function FichaClientes() {
 
     const t = setTimeout(async () => {
       try {
-        const data = await buscarUsuariosAdmin(query.trim());
+        const data = await buscarUsuariosAdmin(q);
         if (!alive) return;
         setClientes(Array.isArray(data) ? data : []);
       } catch (err) {
@@ -96,10 +111,12 @@ export default function FichaClientes() {
   useEffect(() => {
     if (!clienteSel) return;
 
-    const userId = getClienteId(clienteSel);
-    if (!userId) {
+    const idUsuario = getIdUsuario(clienteSel);
+    console.log("➡️ Llamando a detalle cliente con idUsuario:", idUsuario);
+
+    if (!idUsuario) {
       setDetalle(null);
-      setErrorDetalle("No se pudo determinar el ID del cliente.");
+      setErrorDetalle("No se pudo determinar el ID del usuario.");
       return;
     }
 
@@ -116,11 +133,12 @@ export default function FichaClientes() {
 
     (async () => {
       try {
-        const data = await obtenerDetalleClienteAdmin(userId, ac.signal);
+        const data = await obtenerDetalleClienteAdmin(idUsuario, ac.signal);
         if (!ac.signal.aborted) setDetalle(data);
       } catch (err) {
-        if (!ac.signal.aborted)
+        if (!ac.signal.aborted) {
           setErrorDetalle(err?.message || "Ocurrió un error al cargar el detalle.");
+        }
       } finally {
         if (!ac.signal.aborted) setLoadingDetalle(false);
       }
@@ -131,9 +149,10 @@ export default function FichaClientes() {
 
   const handleMostrarReservas = async () => {
     if (!clienteSel) return;
-    const userId = getClienteId(clienteSel);
-    if (!userId) {
-      setErrorReservas("No se pudo determinar el ID del cliente.");
+
+    const idUsuario = getIdUsuario(clienteSel);
+    if (!idUsuario) {
+      setErrorReservas("No se pudo determinar el ID del usuario.");
       return;
     }
 
@@ -148,7 +167,7 @@ export default function FichaClientes() {
     setReservasCliente([]);
 
     try {
-      const data = await getReservasPorClienteAdmin(userId);
+      const data = await getReservasPorClienteAdmin(idUsuario);
       setReservasCliente(Array.isArray(data) ? data : []);
     } catch (err) {
       setErrorReservas(err?.message || "Error cargando reservas del cliente.");
@@ -168,6 +187,7 @@ export default function FichaClientes() {
       <Typography variant="h5" sx={{ mb: 2, fontWeight: 700 }}>
         Ficha de clientes
       </Typography>
+
       <Alert severity="info" sx={{ mb: 2 }}>
         Esta es la ficha de clientes. Acá podés ver toda la información relacionada a un
         cliente: datos personales, direcciones, reservas y presupuestos.
@@ -202,7 +222,7 @@ export default function FichaClientes() {
 
           {!loadingClientes && !errorClientes && resultados.length === 0 && (
             <Alert severity="info">
-              Usá el buscador o tocá <b>“Ver todos”</b> para mostrar clientes.
+              Usá el buscador (mínimo 2 caracteres) o tocá <b>“Ver todos”</b> para mostrar clientes.
             </Alert>
           )}
         </Box>
@@ -212,6 +232,8 @@ export default function FichaClientes() {
         <ListadoClientes
           clientes={resultados}
           onSelect={(c) => {
+            console.log("🟡 cliente seleccionado:", c);
+            console.log("🟢 idUsuario resuelto:", getIdUsuario(c));
             setClienteSel(c);
             setOpenDetalle(true);
           }}
