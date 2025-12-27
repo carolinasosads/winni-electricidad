@@ -54,10 +54,6 @@ builder.Services.Configure<ResendClientOptions>(
 builder.Services.AddTransient<IResend, ResendClient>();
 
 // --- OpenAI ---
-builder.Services.AddSingleton<OpenAIClient>(_ =>
-    new OpenAIClient(builder.Configuration["OPENAI_API_KEY"])
-);
-
 builder.Services.Configure<OpenAiOptions>(
     builder.Configuration.GetSection("OpenAI")
 );
