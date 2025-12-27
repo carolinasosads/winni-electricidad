@@ -636,5 +636,32 @@ public class ReservaController : ControllerBase
                 return StatusCode(500, new { message = "Error inesperado." });
             }
         }
+    
+    
+    [HttpGet("mis-reservas")]
+    [Authorize(Roles = "Cliente")]
+    [ProducesResponseType(typeof(IEnumerable<ReservaListadoDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<IEnumerable<ReservaListadoDto>>> GetMisReservas(CancellationToken ct)
+    {
+        try
+        {
+            var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(idClaim))
+                return Unauthorized(new { message = "Token inválido o expirado." });
+
+            var idUsuario = int.Parse(idClaim);
+
+            var reservas = await _obtenerReservasPorCliente.EjecutarAsync(idUsuario, ct);
+
+            return Ok(reservas);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "Error inesperado." });
+        }
+    }
+
 
 }

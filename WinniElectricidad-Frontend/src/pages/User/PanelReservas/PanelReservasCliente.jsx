@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  getReservasPorEstado,
-  getReservasFinalizadas,
+  getMisReservasCliente,
   aprobarReserva,
   cancelarReserva,
   modificarReserva,
@@ -79,16 +78,16 @@ export default function PanelReservasCliente() {
     return filtrarPorMesYAnio(todasLasReservasDelCliente, mesActual, anioActual);
   }, [todasLasReservasDelCliente, mesActual, anioActual]);
 
-  // ---- Cargar reservas del cliente por estado ----
+  // ---- Cargar SOLO mis reservas ----
   async function recargarTodo() {
     try {
-      // Esto debería venir filtrado por usuario logueado.
-      const [p, c, ca, f] = await Promise.all([
-        getReservasPorEstado("Pendiente"),
-        getReservasPorEstado("Confirmada"),
-        getReservasPorEstado("Cancelada"),
-        getReservasFinalizadas(),
-      ]);
+      const all = await getMisReservasCliente();
+      const arr = Array.isArray(all) ? all : [];
+
+      const p = arr.filter((r) => r.estado === "Pendiente");
+      const c = arr.filter((r) => r.estado === "Confirmada");
+      const ca = arr.filter((r) => r.estado === "Cancelada");
+      const f = arr.filter((r) => r.estado === "Finalizada");
 
       setPendientes(ordenarPorHorario(p));
       setConfirmadas(ordenarPorHorario(c));
@@ -100,6 +99,7 @@ export default function PanelReservasCliente() {
       setMensajeError(
         "Error al cargar tus reservas. Por favor, intente nuevamente."
       );
+      setMensajeOk(null);
     }
   }
 

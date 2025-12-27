@@ -5,14 +5,25 @@ import CheckCircleOutline from "@mui/icons-material/CheckCircleOutline";
 import HighlightOff from "@mui/icons-material/HighlightOff";
 import EditCalendar from "@mui/icons-material/EditCalendar";
 
-export default function ReservaDetailModalCliente({
-  open,
-  onClose,
-  reserva,
-  onAceptar,
-  onCancelar,
-  onModificar,
-}) {
+const getTituloReserva = (reserva) => {
+  if (!reserva) return "Reserva";
+
+  const fecha = new Date(reserva.fechaReserva).toLocaleDateString("es-UY", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+
+  const servicios = Array.isArray(reserva.servicios)
+    ? reserva.servicios.map((s) => s.titulo).join(", ")
+    : null;
+
+  return servicios
+    ? `${fecha} · ${servicios}`
+    : `Reserva del ${fecha}`;
+};
+
+export default function ReservaDetailModalCliente({  open,  onClose,  reserva,  onAceptar,  onCancelar,  onModificar,}) {
   if (!reserva) return null;
 
   const baseBtnStyle = {
@@ -45,8 +56,12 @@ export default function ReservaDetailModalCliente({
         >
           {/* HEADER */}
           <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
-            <Typography variant="h6" fontWeight={600} sx={{ textTransform: "none" }}>
-              Reserva
+            <Typography
+              variant="h6"
+              fontWeight={600}
+              sx={{ textTransform: "none" }}
+            >
+              {getTituloReserva(reserva)}
             </Typography>
 
             <IconButton onClick={onClose}>
@@ -65,7 +80,6 @@ export default function ReservaDetailModalCliente({
               gap: 1.2,
             }}
           >
-            {/* Sección: Reserva */}
             <Typography
               variant="subtitle2"
               sx={{ fontWeight: 700, color: "primary.main", mt: 1 }}
@@ -84,7 +98,9 @@ export default function ReservaDetailModalCliente({
                 {[
                   reserva.direccion?.calle?.trim(),
                   reserva.direccion?.numero?.trim() || null,
-                  reserva.direccion?.apto ? `Apto ${reserva.direccion.apto}` : null,
+                  reserva.direccion?.apto
+                    ? `Apto ${reserva.direccion.apto}`
+                    : null,
                   reserva.direccion?.esquina
                     ? `Esq. ${reserva.direccion.esquina}`
                     : null,
@@ -124,7 +140,6 @@ export default function ReservaDetailModalCliente({
                 );
               }
 
-              // CLIENTE: SOLO PENDIENTE -> aceptar/modificar/cancelar
               if (estado === "pendiente") {
                 return (
                   <>
@@ -163,8 +178,8 @@ export default function ReservaDetailModalCliente({
 
               return (
                 <Typography color="text.secondary">
-                  Esta reserva no está pendiente. Solo podés gestionar reservas en estado{" "}
-                  <strong>Pendiente</strong>.
+                  Esta reserva no está pendiente. Solo podés gestionar reservas en
+                  estado <strong>Pendiente</strong>.
                 </Typography>
               );
             })()}

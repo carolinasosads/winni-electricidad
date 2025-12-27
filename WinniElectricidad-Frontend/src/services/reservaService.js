@@ -156,3 +156,19 @@ export async function crearReservaHistoricaAdmin(idUsuario, reservaDto) {
   return await resp.json(); 
 }
 
+
+
+//---------------
+export async function getMisReservasCliente() {
+  const resp = await fetch(`${urlAPIReserva}mis-reservas`, {
+    method: "GET",
+    headers: getAuthHeaders(),
+  });
+
+  if (!resp.ok) {
+    const data = await handleJsonOrText(resp);
+    throw new ApiError(data?.message || "Error obteniendo tus reservas", resp.status);
+  }
+
+  return await resp.json();
+}
