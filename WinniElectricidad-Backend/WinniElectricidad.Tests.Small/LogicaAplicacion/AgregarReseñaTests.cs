@@ -1,5 +1,6 @@
 using Moq;
 using WinniElectricidad.Compartido.DTOs.Reseñas;
+using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Reseña;
 using WinniElectricidad.LogicaAplicacion.Servicios.Reseña;
 using WinniElectricidad.LogicaNegocio.Entidades;
 using WinniElectricidad.LogicaNegocio.ExcepcionesPersonalizadas.Reseñas;
@@ -13,6 +14,7 @@ public class AgregarReseñaSmallTests
     private Mock<IRepositorioReseña> _mockRepoReseña;
     private Mock<IRepositorioUsuario> _mockRepoUsuario;
     private Mock<IRepositorioServicio> _mockRepoServicio;
+    private Mock<IModeracionOpenAi> _mockServicioModeracion;
     private AgregarReseña _servicio;
 
     [SetUp]
@@ -21,11 +23,13 @@ public class AgregarReseñaSmallTests
         _mockRepoReseña = new Mock<IRepositorioReseña>();
         _mockRepoUsuario = new Mock<IRepositorioUsuario>();
         _mockRepoServicio = new Mock<IRepositorioServicio>();
+        _mockServicioModeracion = new Mock<IModeracionOpenAi>();
 
         _servicio = new AgregarReseña(
             _mockRepoReseña.Object,
             _mockRepoUsuario.Object,
-            _mockRepoServicio.Object);
+            _mockRepoServicio.Object,
+            _mockServicioModeracion.Object);
     }
 
     [Test]

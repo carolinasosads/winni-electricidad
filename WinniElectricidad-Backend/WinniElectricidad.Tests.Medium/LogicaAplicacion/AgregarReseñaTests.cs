@@ -1,5 +1,7 @@
+using Moq;
 using WinniElectricidad.AccesoDatos.Repositorios.EF;
 using WinniElectricidad.Compartido.DTOs.Reseñas;
+using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Reseña;
 using WinniElectricidad.LogicaAplicacion.Servicios.Reseña;
 using WinniElectricidad.LogicaNegocio.Entidades;
 using WinniElectricidad.LogicaNegocio.ExcepcionesPersonalizadas.Reseñas;
@@ -41,11 +43,14 @@ public class AgregarReseñaTests
             var repoReseñas = new RepositorioReseñas(context);
             var repoUsuarios = new RepositorioUsuarios(context);
             var repoServicios = new RepositorioServicios(context);
-
+            
+            var moderacionMock = new Mock<IModeracionOpenAi>();
+            
             var servicioAgregar = new AgregarReseña(
                 repositorioReseña: repoReseñas,
                 repositorioUsuario: repoUsuarios,
-                repositorioServicio: repoServicios
+                repositorioServicio: repoServicios,
+                moderacionMock.Object
             );
 
             var dtoEntrada = new ReseñaACrearDto
@@ -109,10 +114,13 @@ public class AgregarReseñaTests
             var repoUsuarios = new RepositorioUsuarios(context);
             var repoServicios = new RepositorioServicios(context);
 
+            var moderacionMock = new Mock<IModeracionOpenAi>();
+            
             var servicioAgregar = new AgregarReseña(
                 repositorioReseña: repoReseñas,
                 repositorioUsuario: repoUsuarios,
-                repositorioServicio: repoServicios
+                repositorioServicio: repoServicios,
+                moderacionMock.Object
             );
 
             var dtoEntrada = new ReseñaACrearDto
@@ -158,11 +166,14 @@ public class AgregarReseñaTests
             var repoReseñas = new RepositorioReseñas(context);
             var repoUsuarios = new RepositorioUsuarios(context);
             var repoServicios = new RepositorioServicios(context);
+            
+            var moderacionMock = new Mock<IModeracionOpenAi>();
 
             var servicioAgregar = new AgregarReseña(
                 repositorioReseña: repoReseñas,
                 repositorioUsuario: repoUsuarios,
-                repositorioServicio: repoServicios
+                repositorioServicio: repoServicios,
+                moderacionMock.Object
             );
 
             var dtoEntrada = new ReseñaACrearDto
@@ -179,6 +190,71 @@ public class AgregarReseñaTests
                     idUsuario: 7,
                     imagenUrl: null,
                     ct: CancellationToken.None));
+
+            Assert.That(context.Resenias.Count(), Is.EqualTo(0));
+        }
+    }
+    
+    [Test]
+    public async Task Ejecutar_ReseñaOfensiva_LanzaReseñaOfensivaExceptionYNoGuarda()
+    {
+        // Arrange
+        var (context, connection) = await DbContextHelper.CrearContextoSqliteEnMemoria();
+        await using (connection)
+        await using (context)
+        {
+            var usuario = new UsuarioCliente(
+                nombreCompleto: "Cliente",
+                passwordHash: "123",
+                email: "cliente@test.com",
+                telefono: "099000000",
+                direcciones: new List<Direccion>())
+            {
+                IdUsuario = 1
+            };
+
+            var servicio = new Servicio("Electricidad", "Test descripcion detallada", null)
+            {
+                Id = 10,
+                Activo = true
+            };
+
+            context.Usuarios.Add(usuario);
+            context.Servicios.Add(servicio);
+            await context.SaveChangesAsync();
+
+            var repoReseñas = new RepositorioReseñas(context);
+            var repoUsuarios = new RepositorioUsuarios(context);
+            var repoServicios = new RepositorioServicios(context);
+
+            var moderacionMock = new Mock<IModeracionOpenAi>();
+            moderacionMock
+                .Setup(m => m.EsOfensiva(It.IsAny<string>()))
+                .ReturnsAsync(true);
+
+            var servicioAgregar = new AgregarReseña(
+                repoReseñas,
+                repoUsuarios,
+                repoServicios,
+                moderacionMock.Object
+            );
+
+            var dtoEntrada = new ReseñaACrearDto
+            {
+                IdServicio = 10,
+                Descripcion = "Texto ofensivo",
+                Calificacion = 1
+            };
+
+            // Act + Assert
+            Assert.ThrowsAsync<ReseñaOfensivaException>(() =>
+                servicioAgregar.Ejecutar(
+                    dtoEntrada,
+                    idUsuario: 1,
+                    imagenUrl: null,
+                    ct: CancellationToken.None
+                )
+            );
 
             Assert.That(context.Resenias.Count(), Is.EqualTo(0));
         }
