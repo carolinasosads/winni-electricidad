@@ -5,6 +5,7 @@ import Login from "../../pages/Public/Login/Login.jsx";
 import ResetPassword from "../../pages/Public/Login/ResetPassword";
 import ResenaPage from "../../pages/Public/HistoricoReseñas/ResenasPage.jsx";
 
+import { PrivateRoute } from "../routes/PrivateRoute.jsx";
 import { ProtectedRoute } from "../routes/ProtectedRoute.jsx";
 
 import MainLayout from "../../layout/MainLayout.jsx";
@@ -17,6 +18,8 @@ import HistoricoClientes from "../../pages/Admin/HistoricoClientes/HistoricoClie
 import PanelReservas from "../../pages/Admin/PanelReservas/PanelReservas.jsx"
 
 import AdminCrearReservaPage from "../../pages/Admin/CrearCliente/AdminCrearReserva.jsx";
+
+import FichaClientes from "../../pages/Admin/FichaClientes/FichaClientes.jsx"
 
 import PaginaPrincipal from "../../pages/Public/Principal/Principal.jsx"
 import ServiciosPage from "../../pages/Public/Servicio/ServiciosPage.jsx";
@@ -64,6 +67,7 @@ export default function App() {
         <Route path="historico" element={<HistoricoClientes />} />
         <Route path="panel-reservas" element={<PanelReservas />} />
         <Route path="crear-reserva" element={<AdminCrearReservaPage />} />
+        <Route path="ficha-clientes" element={<FichaClientes />} />
         <Route path="servicios" element={<ServiciosPage />} />       
       </Route>
 
