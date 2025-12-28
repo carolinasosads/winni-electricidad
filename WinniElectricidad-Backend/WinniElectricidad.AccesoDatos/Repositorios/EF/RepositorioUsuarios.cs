@@ -66,12 +66,13 @@ public class RepositorioUsuarios : IRepositorioUsuario
 
     public async Task ChangePassword(int idUsuario, string passwordHash, CancellationToken ct = default)
     {
-        await _db.Usuarios
-            .Where(u => u.IdUsuario == idUsuario)
-            .ExecuteUpdateAsync(
-                s => s.SetProperty(u => u.PasswordHash, passwordHash),
-                ct
-            );
+        var usuario = await FindById(idUsuario, ct);
+        if (usuario is null)
+            throw new InvalidOperationException("Usuario no encontrado");
+
+        usuario.PasswordHash = passwordHash;
+
+        await _db.SaveChangesAsync(ct);
     }
 
     public async Task<IReadOnlyList<Direccion>> FindAddressByUserId(int idUsuario, CancellationToken ct = default)

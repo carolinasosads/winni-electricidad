@@ -82,6 +82,7 @@ public class RecuperarContrasena : IRecuperarContrasena
         
         await _repositorioUsuario.ChangePassword(tokenActivo.IdUsuario, passwordHash, ct);
         
-        await _repositorioOneTimeToken.MarkUsed(tokenHash, ct);
+        tokenActivo.Usado = true;
+        await _repositorioOneTimeToken.Update(tokenActivo, ct);
     }
 }

@@ -19,30 +19,42 @@ public class RepositorioOneTimeTokens : IRepositorioOneTimeToken
         await _db.OneTimeTokens.AddAsync(token, ct);
         await _db.SaveChangesAsync(ct);
     }
-
-    public async Task MarkUsed(string tokenHash, CancellationToken ct = default)
+    
+    public async Task Update(OneTimeToken token, CancellationToken ct = default)
     {
-        await _db.OneTimeTokens
-            .Where(t => t.TokenHash == tokenHash)
-            .ExecuteUpdateAsync(
-                s => s.SetProperty(t => t.Usado, true),
-                ct
-            );
+        _db.OneTimeTokens.Update(token);
+        await _db.SaveChangesAsync(ct);
     }
 
     public async Task<OneTimeToken?> GetActiveByHash(string tokenHash, CancellationToken ct = default)
     {
-        var now = DateTimeOffset.UtcNow;
-        return await _db.OneTimeTokens.FirstOrDefaultAsync(t => t.TokenHash == tokenHash && t.Tipo == OneTimeTokenTipo.ReseteoDeContrasena && !t.Usado && t.ExpiraEl > now, ct);
+        var token = await _db.OneTimeTokens
+            .Where(t =>
+                t.TokenHash == tokenHash &&
+                t.Tipo == OneTimeTokenTipo.ReseteoDeContrasena &&
+                !t.Usado)
+            .OrderByDescending(t => t.Id)
+            .FirstOrDefaultAsync(ct);
+
+        if (token is null)
+            return null;
+
+        return token.ExpiraEl <= DateTimeOffset.UtcNow ? null : token;
     }
 
     public async Task<OneTimeToken?> GetActiveByUser(int idUsuario, CancellationToken ct = default)
     {
-        var now = DateTimeOffset.UtcNow;
-        return await _db.OneTimeTokens.FirstOrDefaultAsync(
-            t => t.IdUsuario == idUsuario 
-                 && t.Tipo == OneTimeTokenTipo.ReseteoDeContrasena
-                 && !t.Usado 
-                 && t.ExpiraEl > now, ct);
+        var token = await _db.OneTimeTokens
+            .Where(t =>
+                t.IdUsuario == idUsuario &&
+                t.Tipo == OneTimeTokenTipo.ReseteoDeContrasena &&
+                !t.Usado)
+            .OrderByDescending(t => t.Id)
+            .FirstOrDefaultAsync(ct);
+
+        if (token is null)
+            return null;
+
+        return token.ExpiraEl <= DateTimeOffset.UtcNow ? null : token;
     }
 }
