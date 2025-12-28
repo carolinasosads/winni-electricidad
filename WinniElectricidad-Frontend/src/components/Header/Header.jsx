@@ -6,6 +6,7 @@ import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import RateReviewIcon from "@mui/icons-material/RateReview";
 import BuildIcon from '@mui/icons-material/Build';
 import LogoutIcon from "@mui/icons-material/Logout";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { Link, useNavigate } from "react-router-dom";
 
 const AppBar = styled(MuiAppBar)(({ theme }) => ({
@@ -25,6 +26,7 @@ export default function AppHeader({
   logo,
   title = "",
   showMenuButton = false,
+  showBackButton = false,
   menuOpen = false,
   onToggleMenu,
   rightSlot,
@@ -91,6 +93,18 @@ export default function AppHeader({
               <Tooltip title={menuOpen ? "Cerrar menú" : "Abrir menú"}>
                 <IconButton size="small" onClick={handleMenuClick}>
                   {menuOpen ? <MenuOpenIcon /> : <MenuIcon />}
+                </IconButton>
+              </Tooltip>
+            )}
+
+            {showBackButton && (
+              <Tooltip title="Volver al inicio">
+                <IconButton
+                  size="small"
+                  onClick={() => navigate(homeHref)}
+                  sx={{ mr: 0.5 }}
+                >
+                  <ArrowBackIcon />
                 </IconButton>
               </Tooltip>
             )}

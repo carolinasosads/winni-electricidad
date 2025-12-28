@@ -5,7 +5,6 @@ import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 
 import AppHeader from '../components/Header/Header.jsx';
-import LogoutButton from '../components/UI/Button/Button.jsx';
 import SeccionSideBar from '../components/SideBar/SideBar.jsx';
 
 export default function MainLayout() {
@@ -34,12 +33,7 @@ export default function MainLayout() {
         showMenuButton
         menuOpen={expanded}
         onToggleMenu={(next) => setExpanded(next)}
-        homeHref="/principal"
-        rightSlot={
-            <>
-            <LogoutButton />
-            </>
-        }
+        homeHref="/"
         />
       {/* Sidebar */}
       <SeccionSideBar
