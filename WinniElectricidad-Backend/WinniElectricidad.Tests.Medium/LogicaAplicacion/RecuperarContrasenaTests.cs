@@ -4,7 +4,6 @@ using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Notificacion;
 using WinniElectricidad.LogicaAplicacion.Servicios.Usuario;
 using WinniElectricidad.LogicaNegocio.Entidades;
 using WinniElectricidad.LogicaNegocio.ExcepcionesPersonalizadas.Tokens;
-using WinniElectricidad.LogicaNegocio.InterfacesRepositorios;
 using WinniElectricidad.Tests.Medium.Utils;
 
 namespace WinniElectricidad.Tests.Medium.LogicaAplicacion;
