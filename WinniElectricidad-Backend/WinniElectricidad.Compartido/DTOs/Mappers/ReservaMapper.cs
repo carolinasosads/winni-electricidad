@@ -1,4 +1,5 @@
-﻿using WinniElectricidad.Compartido.DTOs.Reservas;
+﻿using WinniElectricidad.Compartido.DTOs.Direcciones;
+using WinniElectricidad.Compartido.DTOs.Reservas;
 using WinniElectricidad.Compartido.DTOs.Usuarios.Reserva;
 using WinniElectricidad.Compartido.Reservas;
 using WinniElectricidad.LogicaNegocio.Entidades;
@@ -63,21 +64,40 @@ public class ReservaMapper
     
     public static ReservaListadoDto MapearAReservaListadoDto(Reserva reserva)
     {
-        var direccion = reserva.Direccion != null ? $"{reserva.Direccion.Calle} {reserva.Direccion.Numero ?? ""} - Esquina {reserva.Direccion.Esquina}"
-            : string.Empty;
+        var servicios = (reserva.Servicios ?? new List<Servicio>())
+            .Select(s => s.Titulo)
+            .Where(t => !string.IsNullOrWhiteSpace(t))
+            .Distinct()
+            .ToList();
 
-        var tienePresupuesto = reserva.Presupuesto != null;
-        var monto = tienePresupuesto ? reserva.Presupuesto!.Monto : 0m;
+        var nombreServicio = servicios.FirstOrDefault() ?? string.Empty;
+
+        var direccionDescripcion = reserva.Direccion != null
+            ? $"{reserva.Direccion.Calle} {reserva.Direccion.Numero ?? ""}".Trim()
+            : string.Empty;
 
         return new ReservaListadoDto
         {
             IdReserva = reserva.IdReserva,
             FechaReserva = reserva.FechaReserva,
             Estado = reserva.EstadoReserva.ToString(),
-            NombreServicio = reserva.Servicios.FirstOrDefault()?.Titulo ?? string.Empty,
-            DireccionDescripcion = direccion,
-            TienePresupuesto = tienePresupuesto,
-            MontoPresupuestado = monto
+            NombreServicio = nombreServicio,
+            Servicios = servicios,
+            TienePresupuesto = reserva.Presupuesto != null,
+            MontoPresupuestado = reserva.Presupuesto?.Monto ?? 0m,
+
+            RequiereConfirmacionCliente = reserva.RequiereConfirmacionCliente,
+
+            Direccion = reserva.Direccion == null
+                ? null
+                : new WinniElectricidad.Compartido.DTOs.Direcciones.DireccionDto
+                {
+                    IdDireccion = reserva.Direccion.IdDireccion,
+                    Calle = reserva.Direccion.Calle,
+                    Esquina = reserva.Direccion.Esquina,
+                    Numero = reserva.Direccion.Numero,
+                    Apto = reserva.Direccion.Apto
+                }
         };
     }
 }

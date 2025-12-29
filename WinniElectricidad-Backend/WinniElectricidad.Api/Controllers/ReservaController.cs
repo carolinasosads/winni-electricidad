@@ -27,12 +27,13 @@ public class ReservaController : ControllerBase
     private readonly IModificarReserva _modificarReserva;
     private readonly IObtenerReservasPorCliente _obtenerReservasPorCliente;
     private readonly IRegistrarReservaHistoricaAdmin _registrarReservaHistoricaAdmin;
+    private readonly IObtenerMisReservasClienteConDetalle _obtenerMisReservasClienteConDetalle;
 
     /// <summary>
     /// Inicializa una nueva instancia del <see cref="ReservaController"/> con las dependencias necesarias.
     /// </summary>
     public ReservaController(IObtenerHorariosDisponibles obtenerHorariosDisponibles, IAgendarReserva agendarReserva, IObtenerHistoricoMensualReservas obtenerHistoricoMensualReservas, IObtenerHistoricoFinalizadas obtenerHistoricoFinalizadas,IObtenerReservasPorEstado obtenerReservasPorEstado,  IAprobarReserva aprobarReserva,
-        ICancelarReserva cancelarReserva, IModificarReserva modificarReserva, IObtenerReservasPorCliente obtenerReservasPorCliente, IRegistrarReservaHistoricaAdmin registrarReservaHistoricaAdmin)
+        ICancelarReserva cancelarReserva, IModificarReserva modificarReserva, IObtenerReservasPorCliente obtenerReservasPorCliente, IRegistrarReservaHistoricaAdmin registrarReservaHistoricaAdmin, IObtenerMisReservasClienteConDetalle obtenerMisReservasClienteConDetalle)
     {
         _obtenerHorariosDisponibles = obtenerHorariosDisponibles;
         _agendarReserva = agendarReserva;
@@ -44,6 +45,7 @@ public class ReservaController : ControllerBase
         _modificarReserva =  modificarReserva;
         _obtenerReservasPorCliente = obtenerReservasPorCliente;
         _registrarReservaHistoricaAdmin = registrarReservaHistoricaAdmin;
+        _obtenerMisReservasClienteConDetalle = obtenerMisReservasClienteConDetalle;
     }
     
     /// <summary>
@@ -352,29 +354,43 @@ public class ReservaController : ControllerBase
     /// <response code="400">La reserva no existe o no puede ser aprobada.</response>
     /// <response code="500">Error inesperado del servidor.</response>
     [HttpPatch("aprobar/{idReserva:int}")]
-    [Authorize(Roles = "Administrador")]
-    [ProducesResponseType(typeof(IEnumerable<HistoricoReservaDto>), StatusCodes.Status200OK)]
+    [Authorize(Roles = "Administrador,Cliente")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Aprobar([FromRoute] int idReserva, CancellationToken ct)
+    public async Task<IActionResult> Aprobar([FromRoute] int idReserva, CancellationToken ct)
+    {
+        try
         {
-            try
+            var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(idClaim))
+                return Unauthorized(new { message = "Token inválido o expirado." });
+
+            var idUsuario = int.Parse(idClaim);
+            var esAdmin = User.IsInRole("Administrador");
+
+            await _aprobarReserva.Ejecutar(idReserva, idUsuario, esAdmin, ct);
+
+            return Ok(new
             {
-                await _aprobarReserva.Ejecutar(idReserva, ct);
-                return Ok(new { message = "Reserva aprobada con éxito." });
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, new { message = "Error inesperado." });
-            }
+                message = esAdmin ? "Reserva aprobada con éxito." : "Reserva confirmada con éxito."
+            });
         }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "Error inesperado." });
+        }
+    }
+
 
     /// <summary>
     /// Cancela una reserva existente por su identificador.
@@ -410,7 +426,7 @@ public class ReservaController : ControllerBase
     /// <response code="400">La reserva no existe o no puede ser cancelada.</response>
     /// <response code="500">Error inesperado del servidor.</response>
         [HttpPatch("cancelar/{idReserva:int}")]
-        [Authorize(Roles = "Administrador")]
+        [Authorize(Roles = "Administrador,Cliente")]
         [ProducesResponseType(typeof(IEnumerable<HistoricoReservaDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Cancelar([FromRoute] int idReserva, CancellationToken ct)
@@ -469,31 +485,45 @@ public class ReservaController : ControllerBase
     /// <response code="200">Reserva modificada correctamente.</response>
     /// <response code="400">La reserva no existe o los datos son inválidos.</response>
     /// <response code="500">Error inesperado del servidor.</response>
-        [HttpPatch("modificar")]
-        [Authorize(Roles = "Administrador")]
-        [ProducesResponseType(typeof(IEnumerable<HistoricoReservaDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Modificar([FromBody] ReservaAModificarDto dto, CancellationToken ct)
+    [HttpPatch("modificar")]
+    [Authorize(Roles = "Administrador,Cliente")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> Modificar([FromBody] ReservaAModificarDto dto, CancellationToken ct)
+    {
+        try
         {
-            try
+            var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(idClaim))
+                return Unauthorized(new { message = "Token inválido o expirado." });
+
+            var idUsuario = int.Parse(idClaim);
+            var esAdmin = User.IsInRole("Administrador");
+
+            await _modificarReserva.Ejecutar(dto, esAdmin, ct);
+
+            return Ok(new
             {
-                await _modificarReserva.Ejecutar(dto, ct);
-                return Ok(new { message = "Reserva modificada con éxito." });
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, new { message = "Error inesperado." });
-            }
+                message = esAdmin
+                    ? "Cambio sugerido. La reserva quedó pendiente para que el cliente la apruebe."
+                    : "Cambio sugerido. La reserva quedó pendiente para revisión del administrador."
+            });
         }
-    
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "Error inesperado." });
+        }
+    }
     
         /// <summary>
     /// Crea una reserva de presupuesto para un usuario específico (flujo administrador).
@@ -516,12 +546,13 @@ public class ReservaController : ControllerBase
     /// <param name="idUsuario">
     /// Identificador del usuario para el que se creará la reserva.
     /// </param>
-    /// <param name="nuevaReserva">
+    /// <param name="nuevaReserva">    [Authorize(Roles = "Administrador,Cliente")]
+
     /// Datos necesarios para crear la reserva (fecha, hora, dirección, servicios).
     /// </param>
     /// <param name="ct">Token de cancelación.</param>
     [HttpPost("admin/agendar/{idUsuario:int}")]
-    [Authorize(Roles = "Administrador")]
+    [Authorize(Roles = "Administrador,Cliente")]
     [ProducesResponseType(typeof(ReservaCreadaDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> AgendarParaUsuario(
@@ -638,6 +669,29 @@ public class ReservaController : ControllerBase
         }
     
     
+    /// <summary>
+    /// Obtiene el listado de reservas asociadas al usuario cliente autenticado.
+    /// </summary>
+    /// <remarks>
+    /// Este endpoint devuelve únicamente las reservas pertenecientes al cliente
+    /// que realiza la solicitud, identificado a partir del token JWT.
+    /// Incluye el detalle necesario para su visualización en el panel del cliente.
+    /// </remarks>
+    /// <param name="ct">
+    /// Token de cancelación para abortar la operación si la solicitud es cancelada.
+    /// </param>
+    /// <returns>
+    /// Un listado de reservas del cliente autenticado.
+    /// </returns>
+    /// <response code="200">
+    /// Devuelve el listado de reservas del cliente.
+    /// </response>
+    /// <response code="401">
+    /// El token es inválido, expiró o el usuario no está autenticado.
+    /// </response>
+    /// <response code="500">
+    /// Ocurrió un error inesperado al obtener las reservas.
+    /// </response>
     [HttpGet("mis-reservas")]
     [Authorize(Roles = "Cliente")]
     [ProducesResponseType(typeof(IEnumerable<ReservaListadoDto>), StatusCodes.Status200OK)]
@@ -653,7 +707,7 @@ public class ReservaController : ControllerBase
 
             var idUsuario = int.Parse(idClaim);
 
-            var reservas = await _obtenerReservasPorCliente.EjecutarAsync(idUsuario, ct);
+            var reservas = await _obtenerMisReservasClienteConDetalle.Ejecutar(idUsuario, ct);
 
             return Ok(reservas);
         }
@@ -662,6 +716,5 @@ public class ReservaController : ControllerBase
             return StatusCode(500, new { message = "Error inesperado." });
         }
     }
-
 
 }

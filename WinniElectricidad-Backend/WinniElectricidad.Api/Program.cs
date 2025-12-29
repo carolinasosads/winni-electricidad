@@ -9,6 +9,7 @@ using Resend;
 using WinniElectricidad.AccesoDatos.Repositorios.EF;
 using WinniElectricidad.Api.Servicios;
 using WinniElectricidad.Compartido.Configuracion;
+using WinniElectricidad.LogicaAplicacion.CasosDeUso.Reservas;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Notificacion;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Presupuesto;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Reseña;
@@ -167,6 +168,7 @@ builder.Services.AddScoped<IObtenerReservasPorEstado, ObtenerReservasPorEstado>(
 builder.Services.AddScoped<IAprobarReserva, AprobarReserva>();
 builder.Services.AddScoped<ICancelarReserva, CancelarReserva>();
 builder.Services.AddScoped<IModificarReserva, ModificarReserva>();
+builder.Services.AddScoped<IObtenerMisReservasClienteConDetalle, ObtenerMisReservasClienteConDetalle>();
 // - Notificacion -
 builder.Services.AddScoped<IEnviarEmail, EnviarEmail>();
 builder.Services.AddScoped<IServicioHash, ServicioHash>();
