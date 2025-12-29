@@ -11,12 +11,15 @@ public class AgregarReseña : IAgregarReseña
     private readonly IRepositorioReseña _repositorioReseña;
     private readonly IRepositorioUsuario _repositorioUsuario;
     private readonly IRepositorioServicio _repositorioServicio;
+    
+    private readonly IModeracionOpenAi _moderacionOpenAi;
 
-    public AgregarReseña(IRepositorioReseña repositorioReseña, IRepositorioUsuario repositorioUsuario,  IRepositorioServicio repositorioServicio)
+    public AgregarReseña(IRepositorioReseña repositorioReseña, IRepositorioUsuario repositorioUsuario,  IRepositorioServicio repositorioServicio, IModeracionOpenAi moderacionOpenAi)
     {
         _repositorioReseña = repositorioReseña;
         _repositorioUsuario = repositorioUsuario;
         _repositorioServicio = repositorioServicio;
+        _moderacionOpenAi = moderacionOpenAi;
     }
 
     public async Task<ReseñaCreadaDto> Ejecutar(ReseñaACrearDto nuevaReseña, int idUsuario, string? imagenUrl,
@@ -31,6 +34,13 @@ public class AgregarReseña : IAgregarReseña
         if (servicio is null)
         {
             throw new ReseñaException("Debes seleccionar un servicio válido.");
+        }
+
+        var esOfensiva = await _moderacionOpenAi.EsOfensiva(nuevaReseña.Descripcion);
+
+        if (esOfensiva)
+        {
+            throw new ReseñaOfensivaException("La reseña no cumple con las normas establecidas.");
         }
         
         var reseña = ReseñaMapper.MapearNuevaReseñaDtoAEntidad(nuevaReseña, idUsuario, imagenUrl);

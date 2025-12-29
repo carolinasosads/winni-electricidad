@@ -1,11 +1,14 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using OpenAI;
 using Resend;
 using WinniElectricidad.AccesoDatos.Repositorios.EF;
 using WinniElectricidad.Api.Servicios;
+using WinniElectricidad.Compartido.Configuracion;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Notificacion;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Presupuesto;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Reseña;
@@ -49,6 +52,18 @@ builder.Services.Configure<ResendClientOptions>(
 );
 
 builder.Services.AddTransient<IResend, ResendClient>();
+
+// --- OpenAI ---
+builder.Services.Configure<OpenAiOptions>(
+    builder.Configuration.GetSection("OpenAI")
+);
+
+builder.Services.AddSingleton<OpenAIClient>(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<OpenAiOptions>>().Value;
+    return new OpenAIClient(options.ApiKey);
+});
+
 
 // --- Autenticación ---
 var jwtSettings = builder.Configuration.GetSection("Jwt");
@@ -160,6 +175,7 @@ builder.Services.AddScoped<IAgregarReseña, AgregarReseña>();
 builder.Services.AddScoped<IServicioImagenes, ServicioImagenes>();
 builder.Services.AddScoped<IObtenerReseñasAprobadas, ObtenerReseñasAprobadas>();
 builder.Services.AddScoped<IDesaprobarReseña, DesaprobarReseña>();
+builder.Services.AddScoped<IModeracionOpenAi, ModeracionOpenAi>();
 // - Administrador -
 builder.Services.AddScoped<ICrearUsuarioDesdeAdmin, CrearUsuarioDesdeAdmin>();
 builder.Services.AddScoped<IBuscarUsuarios, BuscarUsuarios>();

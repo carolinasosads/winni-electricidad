@@ -141,6 +141,14 @@ export default function CrearResena() {
           sx={{ mb: 2 }}
         />
 
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ display: "block", mb: 2 }}
+        >
+          Las reseñas son moderadas por un sistema inteligente para garantizar un espacio respetuoso.
+        </Typography>
+
         {/* Calificación */}
         <Typography>Calificación</Typography>
         <Rating

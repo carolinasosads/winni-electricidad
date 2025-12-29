@@ -70,11 +70,12 @@ public class ReseñaController : ControllerBase
     /// Una respuesta HTTP con los datos de la reseña creada.
     /// </returns>
     /// <response code="200">La reseña fue creada correctamente.</response>
-    /// <response code="400">La solicitud contiene datos inválidos.</response>
+    /// <response code="400">La solicitud contiene datos inválidos o la reseña fue catalogada como ofensiva.</response>
     /// <response code="401">Token inválido o expirado.</response>
     /// <response code="403">Permisos insuficientes para realizar la acción.</response>
     /// <response code="409">Conflicto según reglas de negocio.</response>
     /// <response code="500">Error inesperado del servidor.</response>
+    /// <response code="503">Error inesperado del servicio de OpenAI.</response>
     [HttpPost]
     [ProducesResponseType(typeof(ReseñaCreadaDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -107,6 +108,14 @@ public class ReseñaController : ControllerBase
         catch (UnauthorizedAccessException ex)
         {
             return Forbid(ex.Message);
+        }
+        catch (ReseñaOfensivaException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        } 
+        catch (ModeracionIaNoDisponibleException )
+        {
+            return StatusCode(503, new { message = "No se pudo validar la reseña en este momento. Intentalo de nuevo más tarde." });
         }
         catch (Exception)
         {

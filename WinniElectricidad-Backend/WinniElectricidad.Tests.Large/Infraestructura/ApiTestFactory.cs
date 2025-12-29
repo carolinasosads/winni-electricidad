@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using WinniElectricidad.AccesoDatos.Repositorios.EF;
+using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Reseña;
+using WinniElectricidad.Tests.Large.Mocks;
 
 namespace WinniElectricidad.Tests.Large.Infraestructura;
 
@@ -53,6 +55,14 @@ public class ApiTestFactory : WebApplicationFactory<Program>
 
             services.AddDbContext<WinniElectricidadContext>(options =>
                 options.UseSqlite(_connection));
+            
+            var moderacionDescriptor = services.SingleOrDefault(
+                d => d.ServiceType == typeof(IModeracionOpenAi));
+
+            if (moderacionDescriptor != null)
+                services.Remove(moderacionDescriptor);
+
+            services.AddSingleton<IModeracionOpenAi, ModeracionOpenAiFake>();
 
             var sp = services.BuildServiceProvider();
             using var scope = sp.CreateScope();
