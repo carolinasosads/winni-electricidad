@@ -30,7 +30,6 @@ export default function AppHeader({
   showBackButton = false,
   menuOpen = false,
   onToggleMenu,
-  rightSlot,
   homeHref = "/"
 }) {
   const theme = useTheme();
@@ -196,6 +195,5 @@ AppHeader.propTypes = {
   showMenuButton: PropTypes.bool,
   menuOpen: PropTypes.bool,
   onToggleMenu: PropTypes.func,
-  rightSlot: PropTypes.node,
   homeHref: PropTypes.string
 };

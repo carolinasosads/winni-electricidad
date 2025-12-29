@@ -244,6 +244,10 @@ export default function AgendaPage({ onReserve }) {
     }
   };
 
+  const noHayHorariosDisponibles =
+    !loadingDisponibilidad &&
+    disponibilidad.length === 0;
+
   // ---- render ----
   return (
     <Box sx={{ bgcolor: (t) => t.palette.background.default }}>
@@ -292,43 +296,54 @@ export default function AgendaPage({ onReserve }) {
                 </Typography>
 
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                  {mobileAvailableDays.map((d) => {
-                    const selected = selectedDate && isSameDay(selectedDate, d.date);
+                  {mobileAvailableDays.length === 0 ? (
+                    <Typography color="text.secondary">
+                      No hay días disponibles.
+                    </Typography>
+                  ) : (
+                    mobileAvailableDays.map((d) => {
+                      const selected =
+                        selectedDate && isSameDay(selectedDate, d.date);
 
-                    return (
-                      <Button
-                        key={d.date.toISOString()}
-                        variant={selected ? "contained" : "outlined"}
-                        onClick={() => {
-                          setSelectedDate(d.date);
-                          setSelectedSlot(null);
-                        }}
-                        sx={{
-                          justifyContent: "space-between",
-                          textTransform: "none",
-                        }}
-                      >
-                        <Typography
+                      return (
+                        <Button
+                          key={d.date.toISOString()}
+                          variant={selected ? "contained" : "outlined"}
+                          onClick={() => {
+                            setSelectedDate(d.date);
+                            setSelectedSlot(null);
+                            setReservaSuccess("");
+                            setReservaError("");
+                          }}
                           sx={{
-                            fontWeight: selected ? 700 : 600,
-                            color: selected ? "inherit" : "primary.main",
+                            justifyContent: "space-between",
+                            textTransform: "none",
                           }}
                         >
-                          {format(d.date, "EEE d MMM", { locale: es })}
-                        </Typography>
+                          <Typography
+                            sx={{
+                              fontWeight: selected ? 700 : 600,
+                              color: selected ? "inherit" : "primary.main",
+                            }}
+                          >
+                            {format(d.date, "EEE d MMM", { locale: es })}
+                          </Typography>
 
-                        <Chip
-                          size="small"
-                          label={`${d.availableCount} turnos`}
-                          variant="outlined"
-                          sx={{
-                            color: selected ? "inherit" : "primary.main",
-                            borderColor: selected ? "transparent" : "primary.light",
-                          }}
-                        />
-                      </Button>
-                    );
-                  })}
+                          <Chip
+                            size="small"
+                            label={`${d.availableCount} turnos`}
+                            variant="outlined"
+                            sx={{
+                              color: selected ? "inherit" : "primary.main",
+                              borderColor: selected
+                                ? "transparent"
+                                : "primary.light",
+                            }}
+                          />
+                        </Button>
+                      );
+                    })
+                  )}
                 </Box>
               </Paper>
             ) : (
@@ -481,13 +496,8 @@ export default function AgendaPage({ onReserve }) {
             {/* HORARIOS DISPONIBLES */}
             <Paper
               variant="outlined"
-              sx={{
-                p: 2,
-                mt: 3,
-                mx: "auto",
-                width: CALENDAR_WIDTH,
-              }}
-            >
+              sx={{ p: 2, mt: 2 }}
+            > 
               <Typography variant="h6" fontWeight={700} gutterBottom>
                 Horarios disponibles
               </Typography>
@@ -520,16 +530,22 @@ export default function AgendaPage({ onReserve }) {
                 </Typography>
               )}
 
-              {!loadingDisponibilidad && errorDisponibilidad && (
-                <Typography color="error" sx={{ mb: 1 }}>
-                  {errorDisponibilidad}
-                </Typography>
-              )}
-
-              {!selectedDate && (
-                <Typography color="text.secondary" sx={{ mb: 2 }}>
-                  Seleccioná un día del calendario.
-                </Typography>
+              {!loadingDisponibilidad && (
+                <>
+                  {errorDisponibilidad ? (
+                    <Typography color="error" sx={{ mb: 2 }}>
+                      No se pudo cargar la disponibilidad. Intentá nuevamente más tarde.
+                    </Typography>
+                  ) : noHayHorariosDisponibles ? (
+                    <Typography color="text.secondary" sx={{ mb: 2 }}>
+                      No hay horarios disponibles en este momento.
+                    </Typography>
+                  ) : !selectedDate ? (
+                    <Typography color="text.secondary" sx={{ mb: 2 }}>
+                      Seleccioná un día del calendario.
+                    </Typography>
+                  ) : null}
+                </>
               )}
 
               {selectedDate && (
