@@ -123,7 +123,13 @@ export default function ResenasPage() {
   };
 
   return (
-    <Box sx={{ maxWidth: 1200, mx: "auto", px: 2, py: 4 }}>
+    <Box sx={{
+      maxWidth: 1200,
+      mx: "auto",
+      px: 2,
+      py: 4,
+      overflowX: "hidden"
+    }}>
       {!estaLogueado && (
         <>
           <AppHeader
@@ -158,8 +164,9 @@ export default function ResenasPage() {
             borderRadius: 2,
             bgcolor: "grey.50",
             display: "flex",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: { xs: "flex-start", sm: "center" },
+            justifyContent: { sm: "space-between" },
             gap: 2
           }}
         >
@@ -201,6 +208,7 @@ export default function ResenasPage() {
           sx={{
             display: "grid",
             gap: 4,
+            minWidth: 0,
             gridTemplateColumns: {
               xs: "1fr",
               sm: "repeat(2, 1fr)",

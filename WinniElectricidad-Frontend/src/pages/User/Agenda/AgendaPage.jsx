@@ -558,7 +558,7 @@ export default function AgendaPage({ onReserve }) {
 
                   {slots.length === 0 ? (
                     <Typography color="text.secondary" sx={{ mb: 2 }}>
-                      No hay horarios para{" "}
+                      No hay horarios para el {" "}
                       <strong>{format(selectedDate, "PPP", { locale: es })}</strong>. Probá otro día.
                     </Typography>
                   ) : (

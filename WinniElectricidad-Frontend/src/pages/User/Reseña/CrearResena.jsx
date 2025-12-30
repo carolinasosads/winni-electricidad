@@ -100,7 +100,10 @@ export default function CrearResena() {
         justifyContent: "center",
         mt: 4,
         px: 2,
+        boxSizing: "border-box",
         width: "100%",
+        overflowX: "hidden",
+        overflowY: "visible",
       }}
     >
       <Paper
@@ -110,6 +113,8 @@ export default function CrearResena() {
           maxWidth: 520,
           p: 4,
           borderRadius: 3,
+          mt: { xs: 2, sm: 4 },
+          mb: { xs: 4, sm: 6 },
         }}
       >
         <Typography variant="h5" sx={{ mb: 3, fontWeight: 600 }}>

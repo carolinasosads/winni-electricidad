@@ -90,7 +90,7 @@ export default function AppHeader({
 
   return (
     <AppBar color="inherit" position="absolute">
-      <Toolbar sx={{ mx: { xs: -0.75, sm: -1 } }}>
+      <Toolbar sx={{ px: { xs: 1, sm: 2 } }}>
         <Stack
           direction="row"
           justifyContent="space-between"

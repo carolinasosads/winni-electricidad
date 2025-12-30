@@ -45,7 +45,9 @@ export default function ResenaCard({
         position: "relative",
         borderRadius: 3,
         height: "100%",
-        boxShadow: "0 8px 24px rgba(0,0,0,0.06)"
+        boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
+        width: "100%",
+        minWidth: 0
       }}
     >
       {esAdmin && (
@@ -72,9 +74,9 @@ export default function ResenaCard({
 
       <CardContent
         sx={{
-          px: 4,
-          pt: 6,
-          pb: 4,
+          px: { xs: 2, sm: 4 },
+          pt: { xs: 4, sm: 6 },
+          pb: { xs: 3, sm: 4 },
           textAlign: "center"
         }}
       >
