@@ -11,7 +11,7 @@ import {
   Select,
   FormControl,
 } from "@mui/material";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { es } from "date-fns/locale";
@@ -26,9 +26,14 @@ export default function ModificarReservaModal({
 }) {
   if (!reserva) return null;
 
-  const fechaInicial = new Date(reserva.fechaReserva);
-  const [fecha, setFecha] = useState(fechaInicial);
+  const [fecha, setFecha] = useState(new Date(reserva.fechaReserva));
   const [errorBack, setErrorBack] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setFecha(new Date(reserva.fechaReserva));
+    setErrorBack(null);
+  }, [reserva, open]);
 
   const SLOTS = [
     { key: "09:00", hour: 9, minute: 0 },
@@ -43,20 +48,27 @@ export default function ModificarReservaModal({
     fecha.getMinutes()
   ).padStart(2, "0")}`;
 
-  const handleModificar = () => {
+  const handleModificar = async () => {
     setErrorBack(null);
+    setLoading(true);
 
-    const yyyy = fecha.getFullYear();
-    const MM = String(fecha.getMonth() + 1).padStart(2, "0");
-    const dd = String(fecha.getDate()).padStart(2, "0");
-    const hh = String(fecha.getHours()).padStart(2, "0");
-    const mm = String(fecha.getMinutes()).padStart(2, "0");
+    try {
+      const yyyy = fecha.getFullYear();
+      const MM = String(fecha.getMonth() + 1).padStart(2, "0");
+      const dd = String(fecha.getDate()).padStart(2, "0");
+      const hh = String(fecha.getHours()).padStart(2, "0");
+      const mm = String(fecha.getMinutes()).padStart(2, "0");
 
-    const fechaLocalString = `${yyyy}-${MM}-${dd}T${hh}:${mm}:00`;
+      const fechaLocalString = `${yyyy}-${MM}-${dd}T${hh}:${mm}:00`;
 
-    onSubmit(fechaLocalString).catch((err) => {
-      setErrorBack(err.message || "Error modificando la reserva.");
-    });
+      await onSubmit(fechaLocalString);
+    } catch (err) {
+      setErrorBack(
+        err?.message || "No se pudo modificar la reserva. Intentá nuevamente."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -148,9 +160,11 @@ export default function ModificarReservaModal({
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={onClose}>Cancelar</Button>
-        <Button variant="contained" onClick={handleModificar}>
-          Guardar cambios
+        <Button onClick={onClose} disabled={loading}>
+          Cancelar
+        </Button>
+        <Button variant="contained" onClick={handleModificar} disabled={loading}>
+          {loading ? "Guardando..." : "Guardar cambios"}
         </Button>
       </DialogActions>
     </Dialog>

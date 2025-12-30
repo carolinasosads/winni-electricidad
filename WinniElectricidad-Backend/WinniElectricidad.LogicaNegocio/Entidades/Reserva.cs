@@ -171,6 +171,7 @@ public class Reserva
         }
 
         ValidarNoExpirada();
+        ValidarFechaReserva(nuevaFecha);
 
         var hayConflicto = reservasEnRango.Any(r =>
             r.IdReserva != IdReserva &&              

@@ -5,7 +5,7 @@ import {
   getReservasFinalizadas,
   aprobarReserva,
   cancelarReserva,
-  modificarReserva
+  modificarReserva,
 } from "../../../services/reservaService";
 
 import CalendarioSemanal from "./CalendarioSemanal";
@@ -20,7 +20,7 @@ import {
   Drawer,
   IconButton,
   useMediaQuery,
-  Alert
+  Alert,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 
@@ -104,9 +104,13 @@ export default function PanelReservas() {
       recargarTodo();
       setMensajeOk(resp.message);
       setMensajeError(null);
+
+      return resp;
     } catch (err) {
-      setMensajeError(err?.message || "Error al aprobar la reserva.");
+      const msg = err?.message || "Error al aprobar la reserva.";
+      setMensajeError(msg);
       setMensajeOk(null);
+      throw err; 
     }
   };
 
@@ -118,9 +122,13 @@ export default function PanelReservas() {
       recargarTodo();
       setMensajeOk(resp.message);
       setMensajeError(null);
+
+      return resp;
     } catch (err) {
-      setMensajeError(err?.message || "Error al cancelar la reserva.");
+      const msg = err?.message || "Error al cancelar la reserva.";
+      setMensajeError(msg);
       setMensajeOk(null);
+      throw err; 
     }
   };
 
@@ -131,10 +139,7 @@ export default function PanelReservas() {
 
   const handleModificarReserva = async (nuevaFecha) => {
     try {
-      const resp = await modificarReserva(
-        selectedReserva.idReserva,
-        nuevaFecha
-      );
+      const resp = await modificarReserva(selectedReserva.idReserva, nuevaFecha);
 
       setOpenModificar(false);
       setSelectedReserva(null);
@@ -142,9 +147,13 @@ export default function PanelReservas() {
       recargarTodo();
       setMensajeOk(resp.message);
       setMensajeError(null);
+
+      return resp;
     } catch (err) {
-      setMensajeError(err?.message || "Error al modificar la reserva.");
+      const msg = err?.message || "Error al modificar la reserva.";
+      setMensajeError(msg);
       setMensajeOk(null);
+      throw err;
     }
   };
 
@@ -252,9 +261,7 @@ export default function PanelReservas() {
               }}
             >
               <MenuIcon fontSize="small" />
-              <Typography variant="button">
-                Abrir panel lateral
-              </Typography>
+              <Typography variant="button">Abrir panel lateral</Typography>
             </IconButton>
           </Box>
 

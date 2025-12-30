@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import {
   Box,
   Modal,
@@ -6,6 +7,7 @@ import {
   Divider,
   Button,
   IconButton,
+  Alert,
 } from "@mui/material";
 
 import CloseIcon from "@mui/icons-material/Close";
@@ -23,6 +25,13 @@ export default function ReservaDetailModal({
 }) {
   if (!reserva) return null;
 
+  const [errorModal, setErrorModal] = useState(null);
+  const [loadingAction, setLoadingAction] = useState(false);
+
+  useEffect(() => {
+    if (open) setErrorModal(null);
+  }, [open, reserva]);
+
   const baseBtnStyle = {
     fontWeight: 400,
     py: 1.2,
@@ -30,11 +39,19 @@ export default function ReservaDetailModal({
     borderRadius: 2,
   };
   const btnStyle = { ...baseBtnStyle };
-  const btnStyleOutline = {
-    ...baseBtnStyle,
-    borderWidth: 2,
-  };
+  const btnStyleOutline = { ...baseBtnStyle, borderWidth: 2 };
 
+  const ejecutarAccion = async (fn, fallbackMsg) => {
+    setErrorModal(null);
+    setLoadingAction(true);
+    try {
+      await fn(reserva); // fn debe devolver Promise (PanelReservas ahora hace throw)
+    } catch (err) {
+      setErrorModal(err?.message || fallbackMsg);
+    } finally {
+      setLoadingAction(false);
+    }
+  };
 
   return (
     <Modal open={open} onClose={onClose}>
@@ -57,25 +74,30 @@ export default function ReservaDetailModal({
         >
           {/* HEADER */}
           <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
-            <Typography
-              variant="h6"
-              fontWeight={600} 
-              sx={{ textTransform: "none" }}
-            >
+            <Typography variant="h6" fontWeight={600} sx={{ textTransform: "none" }}>
               Reserva
             </Typography>
 
-            <IconButton onClick={onClose}>
+            <IconButton onClick={onClose} disabled={loadingAction}>
               <CloseIcon />
             </IconButton>
           </Box>
 
           <Divider sx={{ mb: 2 }} />
 
+          {/* ERROR EN EL MODAL */}
+          {errorModal && (
+            <Alert
+              severity="error"
+              sx={{ mb: 2 }}
+              onClose={() => setErrorModal(null)}
+            >
+              {errorModal}
+            </Alert>
+          )}
+
           {/* DETALLE */}
           <Box sx={{ lineHeight: 1.8, display: "flex", flexDirection: "column", gap: 1.2 }}>
-
-            {/* Sección: Cliente */}
             <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "primary.main", mt: 1 }}>
               Datos del Cliente
             </Typography>
@@ -92,14 +114,13 @@ export default function ReservaDetailModal({
               </Typography>
             </Box>
 
-            {/* Sección: Reserva */}
             <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "primary.main", mt: 2 }}>
               Detalle de la Reserva
             </Typography>
 
             <Box sx={{ pl: 1 }}>
               <Typography>
-                <strong>Servicio:</strong> {reserva.servicios?.map(s => s.titulo).join(", ")}
+                <strong>Servicio:</strong> {reserva.servicios?.map((s) => s.titulo).join(", ")}
               </Typography>
 
               <Typography>
@@ -108,15 +129,14 @@ export default function ReservaDetailModal({
                   reserva.direccion.calle?.trim(),
                   reserva.direccion.numero?.trim() || null,
                   reserva.direccion.apto ? `Apto ${reserva.direccion.apto}` : null,
-                  reserva.direccion.esquina ? `Esq. ${reserva.direccion.esquina}` : null
+                  reserva.direccion.esquina ? `Esq. ${reserva.direccion.esquina}` : null,
                 ]
                   .filter(Boolean)
                   .join(", ")}
               </Typography>
 
               <Typography>
-                <strong>Fecha:</strong>{" "}
-                {new Date(reserva.fechaReserva).toLocaleString("es-UY")}
+                <strong>Fecha:</strong> {new Date(reserva.fechaReserva).toLocaleString("es-UY")}
               </Typography>
 
               <Typography>
@@ -127,7 +147,6 @@ export default function ReservaDetailModal({
                 <strong>Comentario:</strong> {reserva.comentario || "Sin comentarios"}
               </Typography>
             </Box>
-
           </Box>
 
           {/* BOTONES */}
@@ -153,9 +172,12 @@ export default function ReservaDetailModal({
                       color="success"
                       startIcon={<CheckCircleOutline />}
                       sx={btnStyle}
-                      onClick={() => onAprobar(reserva)}
+                      disabled={loadingAction}
+                      onClick={() =>
+                        ejecutarAccion(onAprobar, "Error al aprobar la reserva.")
+                      }
                     >
-                      Aprobar
+                      {loadingAction ? "Procesando..." : "Aprobar"}
                     </Button>
 
                     <Button
@@ -163,9 +185,12 @@ export default function ReservaDetailModal({
                       color="error"
                       startIcon={<HighlightOff />}
                       sx={btnStyleOutline}
-                      onClick={() => onCancelar(reserva)}
+                      disabled={loadingAction}
+                      onClick={() =>
+                        ejecutarAccion(onCancelar, "Error al cancelar la reserva.")
+                      }
                     >
-                      Rechazar
+                      {loadingAction ? "Procesando..." : "Rechazar"}
                     </Button>
 
                     <Button
@@ -173,6 +198,7 @@ export default function ReservaDetailModal({
                       color="primary"
                       startIcon={<EditCalendar />}
                       sx={btnStyleOutline}
+                      disabled={loadingAction}
                       onClick={() => onSugerirCambio(reserva)}
                     >
                       Sugerir modificación
@@ -189,46 +215,38 @@ export default function ReservaDetailModal({
                       color="error"
                       startIcon={<HighlightOff />}
                       sx={btnStyleOutline}
-                      onClick={() => onCancelar(reserva)}
+                      disabled={loadingAction}
+                      onClick={() =>
+                        ejecutarAccion(onCancelar, "Error al cancelar la reserva.")
+                      }
                     >
-                      Cancelar
+                      {loadingAction ? "Procesando..." : "Cancelar"}
                     </Button>
-                  {
+
                     <Button
                       variant="outlined"
                       color="primary"
                       startIcon={<EditCalendar />}
                       sx={btnStyleOutline}
+                      disabled={loadingAction}
                       onClick={() => onSugerirCambio(reserva)}
                     >
                       Sugerir modificación
-                    </Button>}
+                    </Button>
                   </>
                 );
               }
 
               if (estado === "cancelada") {
                 return (
-                  <>
-                    {/*<Button
-                      variant="outlined"
-                      color="primary"
-                      startIcon={<EditCalendar />}
-                      sx={btnStyleOutline}
-                      onClick={() => onSugerirCambio(reserva)}
-                    >
-                      Sugerir modificación
-                    </Button>*/}
-                    <Typography color="text.secondary">
-                      Esta reserva está cancelada. No se pueden realizar acciones.
-                    </Typography>
-                  </>
+                  <Typography color="text.secondary">
+                    Esta reserva está cancelada. No se pueden realizar acciones.
+                  </Typography>
                 );
               }
 
               return null;
             })()}
-
           </Box>
         </Paper>
       </Box>
