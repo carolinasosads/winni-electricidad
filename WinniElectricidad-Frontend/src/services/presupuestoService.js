@@ -76,38 +76,28 @@ export const obtenerPresupuestoSegunReserva = async (idReserva, signal) => {
   }
 };
 
-export const actualizarMontoPagadoPresupuesto = async (
-  idReserva,
-  montoPagado,
-  signal
-) => {
+export const registrarPagoPresupuesto = async (idReserva, monto, signal) => {
   try {
-    const res = await fetch(
-      `${urlAPIPresupuesto}reserva/${idReserva}/monto-pagado`,
-      {
-        method: "PATCH",
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ montoPagado: Number(montoPagado) }),
-        signal,
-      }
-    );
+    const res = await fetch(`${urlAPIPresupuesto}reserva/${idReserva}/pagos`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ monto: Number(monto) }),
+      signal,
+    });
 
     const data = await handleJsonOrText(res);
 
     if (!res.ok) {
-      let msg = data?.message || "Error al actualizar el monto pagado.";
+      let msg = data?.message || "Error al registrar el pago.";
       if (data?.errors) msg = Object.values(data.errors).flat().join(" ");
-      throw new ApiError(
-        typeof msg === "string" ? msg : "Error al actualizar el monto pagado.",
-        res.status
-      );
+      throw new ApiError(typeof msg === "string" ? msg : "Error al registrar el pago.", res.status);
     }
 
     return data;
   } catch (err) {
-    if (err?.name === "AbortError") return; // request cancelado
+    if (err?.name === "AbortError") return;
     if (err instanceof ApiError) throw err;
     console.error(err);
-    throw new ApiError("Error al actualizar el monto pagado.");
+    throw new ApiError("Error al registrar el pago.");
   }
 };

@@ -23,7 +23,7 @@ public class RepositorioPresupuestos : IRepositorioPresupuesto
     public async Task<Presupuesto?> FindById(int id, CancellationToken ct = default)
     {
         return await _db.Presupuestos
-            .AsNoTracking()
+            .Include(p => p.Pagos)
             .FirstOrDefaultAsync(p => p.Id == id, ct);    }
 
     public async Task Update(Presupuesto presupuesto, CancellationToken ct = default)
@@ -54,7 +54,7 @@ public class RepositorioPresupuestos : IRepositorioPresupuesto
     public async Task<Presupuesto?> FindByReservaId(int idReserva, CancellationToken ct = default)
     {
         return await _db.Presupuestos
-            .AsNoTracking()
+            .Include(p => p.Pagos)
             .FirstOrDefaultAsync(p => p.IdReserva == idReserva, ct);
     }
 }

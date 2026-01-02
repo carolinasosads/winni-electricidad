@@ -187,6 +187,29 @@ public class WinniElectricidadContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
+        // -------------------- PAGOS --------------------
+        modelBuilder.Entity<Pago>(entity =>
+        {
+            entity.HasKey(p => p.IdPago);
+
+            entity.Property(p => p.Monto)
+                .HasPrecision(18, 2)
+                .IsRequired();
+
+            entity.Property(p => p.FechaHoraRealizado)
+                .IsRequired();
+
+            entity.HasOne(p => p.Usuario)
+                .WithMany(u => u.Pagos)
+                .HasForeignKey(p => p.IdUsuario)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(p => p.Presupuesto)
+                .WithMany(x => x.Pagos)
+                .HasForeignKey(p => p.IdPresupuesto)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
         modelBuilder.Entity<Servicio>().HasData(
                 new Servicio
                 {

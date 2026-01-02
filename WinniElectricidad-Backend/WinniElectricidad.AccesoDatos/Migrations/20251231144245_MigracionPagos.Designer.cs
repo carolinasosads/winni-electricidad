@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WinniElectricidad.AccesoDatos.Repositorios.EF;
 
@@ -11,9 +12,11 @@ using WinniElectricidad.AccesoDatos.Repositorios.EF;
 namespace WinniElectricidad.AccesoDatos.Migrations
 {
     [DbContext(typeof(WinniElectricidadContext))]
-    partial class WinniElectricidadContextModelSnapshot : ModelSnapshot
+    [Migration("20251231144245_MigracionPagos")]
+    partial class MigracionPagos
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -155,11 +158,16 @@ namespace WinniElectricidad.AccesoDatos.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int?>("PresupuestoId")
+                        .HasColumnType("int");
+
                     b.HasKey("IdPago");
 
                     b.HasIndex("IdPresupuesto");
 
                     b.HasIndex("IdUsuario");
+
+                    b.HasIndex("PresupuestoId");
 
                     b.ToTable("Pagos");
                 });
@@ -508,7 +516,7 @@ namespace WinniElectricidad.AccesoDatos.Migrations
             modelBuilder.Entity("WinniElectricidad.LogicaNegocio.Entidades.Pago", b =>
                 {
                     b.HasOne("WinniElectricidad.LogicaNegocio.Entidades.Presupuesto", "Presupuesto")
-                        .WithMany("Pagos")
+                        .WithMany()
                         .HasForeignKey("IdPresupuesto")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -518,6 +526,10 @@ namespace WinniElectricidad.AccesoDatos.Migrations
                         .HasForeignKey("IdUsuario")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("WinniElectricidad.LogicaNegocio.Entidades.Presupuesto", null)
+                        .WithMany("Pagos")
+                        .HasForeignKey("PresupuestoId");
 
                     b.Navigation("Presupuesto");
 

@@ -17,24 +17,24 @@ public static class PresupuestoMapper
             IdUsuario = idUsuarioCliente,
             Monto = dto.MontoTotal,
             MontoPagado = dto.MontoPagado,
-            Notas = dto.NotasInternas,
+            Notas = notas,
             FechaPresupuesto = DateTime.UtcNow,
             DescripcionTrabajo = dto.DescripcionTrabajo
         };
     }
-
     public static PresupuestoDto MapearAPresupuestoDto(LogicaNegocio.Entidades.Presupuesto presupuesto)
     {
+        var montoPagadoCalculado = (presupuesto.Pagos?.Sum(p => p.Monto)) ?? 0m;
+
         return new PresupuestoDto
         {
             Id = presupuesto.Id,
             IdReserva = presupuesto.IdReserva,
             MontoTotal = presupuesto.Monto,
-            MontoPagado = presupuesto.MontoPagado,
+            MontoPagado = montoPagadoCalculado,
             Notas = presupuesto.Notas,
             FechaCreacion = presupuesto.FechaPresupuesto,
             DescripcionTrabajo = presupuesto.DescripcionTrabajo,
-            
         };
     }
 }
