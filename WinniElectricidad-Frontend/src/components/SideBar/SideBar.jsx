@@ -178,16 +178,16 @@ function Sidebar({
                   />
 
                   <SidebarPageItem
-                    id="admin-historico-clientes"
-                    title="Histórico de Clientes"
+                    id="admin-ficha-clientes"
+                    title="Clientes"
                     icon={<GroupIcon />}
-                    href="/admin/historico"
-                    selected={pathname.startsWith("/admin/historico")}
+                    href="/admin/ficha-clientes"
+                    selected={pathname.startsWith("/admin/ficha-clientes")}
                   />
 
                   <SidebarPageItem
                     id="admin-panel-reservas"
-                    title="Panel de Reservas"
+                    title="Reservas"
                     icon={<ViewAgendaIcon />}
                     href="/admin/panel-reservas"
                     selected={pathname.startsWith("/admin/panel-reservas")}
@@ -195,17 +195,10 @@ function Sidebar({
 
                   <SidebarPageItem
                     id="admin-crear-cliente-reserva"
-                    title="Gestionar Presupuesto"
+                    title="Gestionar Presupuestos"
                     icon={<DateRangeIcon />}
                     href="/admin/crear-reserva"
                     selected={pathname.startsWith("/admin/crear-reserva")}
-                  />
-                  <SidebarPageItem
-                    id="admin-ficha-clientes"
-                    title="Ficha clientes"
-                    icon={<AccountBoxIcon />}
-                    href="/admin/ficha-clientes"
-                    selected={pathname.startsWith("/admin/ficha-clientes")}
                   />
                 </>
               )}
