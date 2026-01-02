@@ -8,7 +8,7 @@ import {
   Rating,
   CircularProgress,
   Alert,
-  Paper
+  Divider
 } from "@mui/material";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 
@@ -27,7 +27,6 @@ export default function CrearResena() {
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
 
-  // Cargar servicios
   useEffect(() => {
     getServiciosActivos().then((res) => {
       setServicios(res);
@@ -96,44 +95,48 @@ export default function CrearResena() {
   return (
     <Box
       sx={{
+        width: "100%",
+        px: { xs: 2, sm: 0 },
+        py: { xs: 3, sm: 5 },
         display: "flex",
         justifyContent: "center",
-        mt: 4,
-        px: 2,
         boxSizing: "border-box",
-        width: "100%",
-        overflowX: "hidden",
-        overflowY: "visible",
       }}
     >
-      <Paper
-        elevation={3}
+      <Box
         sx={{
           width: "100%",
           maxWidth: 520,
-          p: 4,
-          borderRadius: 3,
-          mt: { xs: 2, sm: 4 },
-          mb: { xs: 4, sm: 6 },
+          display: "flex",
+          flexDirection: "column",
+          gap: 2.5,
+
+          px: { xs: 2, sm: 3 },
+          py: { xs: 3, sm: 4 },
+
+          backgroundColor: { xs: "grey.50", sm: "transparent" },
+          borderRadius: { xs: 2, sm: 0 },
         }}
       >
-        <Typography variant="h5" sx={{ mb: 3, fontWeight: 600 }}>
+        {/* Acento superior */}
+        <Box
+          sx={{
+            width: 48,
+            height: 4,
+            backgroundColor: "primary.main",
+            borderRadius: 2,
+          }}
+        />
+
+        <Typography variant="h5" fontWeight={600}>
           Publicar Reseña
         </Typography>
 
-        {errorMsg && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {errorMsg}
-          </Alert>
-        )}
+        <Divider />
 
-        {successMsg && (
-          <Alert severity="success" sx={{ mb: 2 }}>
-            {successMsg}
-          </Alert>
-        )}
+        {errorMsg && <Alert severity="error">{errorMsg}</Alert>}
+        {successMsg && <Alert severity="success">{successMsg}</Alert>}
 
-        {/* Descripción */}
         <TextField
           label="Descripción"
           multiline
@@ -143,26 +146,20 @@ export default function CrearResena() {
           onChange={(e) => setDescripcion(e.target.value)}
           inputProps={{ maxLength: 500 }}
           required
-          sx={{ mb: 2 }}
         />
 
-        <Typography
-          variant="caption"
-          color="text.secondary"
-          sx={{ display: "block", mb: 2 }}
-        >
+        <Typography variant="caption" color="text.secondary">
           Las reseñas son moderadas por un sistema inteligente para garantizar un espacio respetuoso.
         </Typography>
 
-        {/* Calificación */}
-        <Typography>Calificación</Typography>
-        <Rating
-          value={calificacion}
-          onChange={(e, newValue) => setCalificacion(newValue)}
-          sx={{ mb: 2 }}
-        />
+        <Box>
+          <Typography fontWeight={500}>Calificación</Typography>
+          <Rating
+            value={calificacion}
+            onChange={(e, newValue) => setCalificacion(newValue)}
+          />
+        </Box>
 
-        {/* Selección de servicio */}
         <TextField
           select
           label="Servicio"
@@ -170,7 +167,6 @@ export default function CrearResena() {
           required
           value={idServicio}
           onChange={(e) => setIdServicio(e.target.value)}
-          sx={{ mb: 2 }}
         >
           {servicios.map((s) => (
             <MenuItem key={s.id} value={s.id}>
@@ -179,8 +175,7 @@ export default function CrearResena() {
           ))}
         </TextField>
 
-        {/* Carga de imagen */}
-        <Typography variant="body2" sx={{ mb: 1 }}>
+        <Typography variant="body2">
           Formatos permitidos: JPG, JPEG, PNG
         </Typography>
 
@@ -188,14 +183,18 @@ export default function CrearResena() {
           variant="outlined"
           component="label"
           startIcon={<AddPhotoAlternateIcon />}
-          sx={{ mb: 2 }}
         >
           Subir imagen
-          <input type="file" accept=".jpg,.jpeg,.png" hidden onChange={handleImagen} />
+          <input
+            type="file"
+            accept=".jpg,.jpeg,.png"
+            hidden
+            onChange={handleImagen}
+          />
         </Button>
 
         {preview && (
-          <Box sx={{ mb: 2, textAlign: "center" }}>
+          <Box textAlign="center">
             <img
               src={preview}
               alt="Preview"
@@ -214,11 +213,15 @@ export default function CrearResena() {
           fullWidth
           onClick={handleSubmit}
           disabled={loading}
-          sx={{ py: 1.2, fontSize: "1rem" }}
+          sx={{
+            py: 1.4,
+            fontSize: "1rem",
+            mt: 2,
+          }}
         >
           {loading ? <CircularProgress size={24} /> : "Publicar Reseña"}
         </Button>
-      </Paper>
+      </Box>
     </Box>
   );
 }

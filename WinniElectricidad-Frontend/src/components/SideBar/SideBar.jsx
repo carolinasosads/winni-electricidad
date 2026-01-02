@@ -141,8 +141,8 @@ function Sidebar({
               {isCliente && (
                 <>
                   <SidebarPageItem
-                    id="perfil-cliente"
-                    title="Perfil"
+                    id="dashboard-cliente"
+                    title="Dashboard"
                     icon={<AccountBoxIcon />}
                     href="/cliente"
                     selected={pathname === "/cliente"}
