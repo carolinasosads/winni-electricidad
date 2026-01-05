@@ -1,7 +1,10 @@
-import { Box, Typography, Dialog, DialogTitle, DialogContent, DialogActions, Button, Alert } from "@mui/material";
+import { Box, Typography, Dialog, DialogTitle, DialogContent, DialogActions, Button, Alert, Toolbar } from "@mui/material";
 import HowToRegIcon from '@mui/icons-material/HowToReg';
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
+import AppHeader from "../../../components/Header/Header.jsx";
+import { SitemarkIcon } from "../../../components/CustomIcons/CustomIcons.jsx";
 
 import ServiciosCard from "./ServiciosCard";
 import ServiciosHeader from "./ServiciosHeader";
@@ -15,6 +18,8 @@ import {
 
 export default function ServiciosPage() {
   const rol = localStorage.getItem("rol");
+  const estaLogueado = Boolean(localStorage.getItem("token"));
+
   const navigate = useNavigate();
 
   const [servicios, setServicios] = useState([]);
@@ -22,7 +27,6 @@ export default function ServiciosPage() {
 
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
-  
 
   const loadServicios = async (signal) => {
     try {
@@ -77,6 +81,16 @@ export default function ServiciosPage() {
 
   return (
     <Box sx={{ maxWidth: 1200, mx: "auto", px: 2, py: 4 }}>
+      {!estaLogueado && (
+        <>
+          <AppHeader
+            logo={<SitemarkIcon />}
+            showBackButton
+            homeHref="/"
+          />
+          <Toolbar />
+        </>
+      )}
       <ServiciosHeader />
 
       {errorMsg && (

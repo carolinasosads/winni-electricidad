@@ -9,6 +9,7 @@ import {
 } from "../../../services/reservaService";
 
 import CalendarioSemanal from "./CalendarioSemanal";
+import CalendarioDiarioMobile from "./CalendarioDiarioMobile";
 import ReservaDetailModal from "./ReservaDetailModal";
 import ModificarReservaModal from "./ModificarReservaModal";
 import EstadoList from "./EstadoList";
@@ -33,6 +34,7 @@ const ordenarPorHorario = (reservas) => {
 
 export default function PanelReservas() {
   // ---- Estados ----
+  const [diaSeleccionado, setDiaSeleccionado] = useState(new Date());
   const [mesActual, setMesActual] = useState(new Date().getMonth() + 1);
   const [anioActual, setAnioActual] = useState(new Date().getFullYear());
 
@@ -157,7 +159,15 @@ export default function PanelReservas() {
   };
 
   return (
-    <Box sx={{ p: 2, width: "100%" }}>
+    <Box
+      sx={{
+        p: 2,
+        width: "100%",
+        maxWidth: "100%",
+        overflowX: "hidden",
+        boxSizing: "border-box",
+      }}
+    >
       <Typography variant="h4" fontWeight={700} sx={{ mb: 2 }}>
         Panel de Reservas
       </Typography>
@@ -248,11 +258,20 @@ export default function PanelReservas() {
             </IconButton>
           </Box>
 
-          <CalendarioSemanal
-            reservas={reservasMes}
-            onSelectReserva={setSelectedReserva}
-            onCambioSemana={handleCambioSemana}
-          />
+          {isMobile ? (
+            <CalendarioDiarioMobile
+              diaSeleccionado={diaSeleccionado}
+              setDiaSeleccionado={setDiaSeleccionado}
+              reservas={reservasMes}
+              onSelectReserva={setSelectedReserva}
+            />
+          ) : (
+            <CalendarioSemanal
+              reservas={reservasMes}
+              onSelectReserva={setSelectedReserva}
+              onCambioSemana={handleCambioSemana}
+            />
+          )}
 
           <Drawer
             anchor="left"
@@ -260,7 +279,12 @@ export default function PanelReservas() {
             onClose={() => setOpenDrawer(false)}
             variant="temporary"
             PaperProps={{
-              sx: { width: 300, p: 2, pt: 3 },
+              sx: {
+                width: "80vw",
+                maxWidth: 300,
+                p: 2,
+                pt: 3,
+              },
             }}
           >
             <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>

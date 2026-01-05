@@ -13,6 +13,10 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import AppHeader from "../../../components/Header/Header.jsx";
+import { Toolbar } from "@mui/material";
+import { SitemarkIcon } from "../../../components/CustomIcons/CustomIcons.jsx";
+
 import ResenasHeader from "./ResenasHeader";
 import ResenasFiltros from "./ResenasFiltros";
 import ResenaCard from "./ResenaCard";
@@ -29,6 +33,8 @@ import RateReviewIcon from "@mui/icons-material/RateReview";
 
 export default function ResenasPage() {
   const rol = localStorage.getItem("rol");
+  const estaLogueado = Boolean(localStorage.getItem("token"));
+
   const navigate = useNavigate();
 
   const [resenas, setResenas] = useState([]);
@@ -117,7 +123,24 @@ export default function ResenasPage() {
   };
 
   return (
-    <Box sx={{ maxWidth: 1200, mx: "auto", px: 2, py: 4 }}>
+    <Box sx={{
+      maxWidth: 1200,
+      mx: "auto",
+      px: 2,
+      py: 4,
+      overflowX: "hidden"
+    }}>
+      {!estaLogueado && (
+        <>
+          <AppHeader
+            logo={<SitemarkIcon />}
+            showBackButton
+            homeHref="/"
+          />
+          <Toolbar />
+        </>
+      )}
+            
       <ResenasHeader promedio={promedio} total={resenas.length} />
 
       {errorMsg && (
@@ -141,8 +164,9 @@ export default function ResenasPage() {
             borderRadius: 2,
             bgcolor: "grey.50",
             display: "flex",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: { xs: "flex-start", sm: "center" },
+            justifyContent: { sm: "space-between" },
             gap: 2
           }}
         >
@@ -184,6 +208,7 @@ export default function ResenasPage() {
           sx={{
             display: "grid",
             gap: 4,
+            minWidth: 0,
             gridTemplateColumns: {
               xs: "1fr",
               sm: "repeat(2, 1fr)",

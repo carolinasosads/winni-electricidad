@@ -6,7 +6,9 @@ import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import RateReviewIcon from "@mui/icons-material/RateReview";
 import BuildIcon from '@mui/icons-material/Build';
 import LogoutIcon from "@mui/icons-material/Logout";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { Link, useNavigate } from "react-router-dom";
+import { useMediaQuery } from "@mui/material";
 
 const AppBar = styled(MuiAppBar)(({ theme }) => ({
   borderBottom: `1px solid ${(theme.vars ?? theme).palette.divider}`,
@@ -25,12 +27,14 @@ export default function AppHeader({
   logo,
   title = "",
   showMenuButton = false,
+  showBackButton = false,
   menuOpen = false,
   onToggleMenu,
-  rightSlot,
   homeHref = "/"
 }) {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   const navigate = useNavigate();
 
   const handleMenuClick = () => {
@@ -65,20 +69,28 @@ export default function AppHeader({
 };
 
  const authSlotDefault = estaLogueado ? (
-  <Button
-    onClick={handleLogout}
-    variant="outlined"
-    size="small"
-    startIcon={<LogoutIcon />}
-    sx={{ textTransform: "none", borderRadius: 2 }}
-  >
-    Cerrar sesión
-  </Button>
+  isMobile ? (
+    <Tooltip title="Cerrar sesión">
+      <IconButton size="small" color="primary" onClick={handleLogout}>
+        <LogoutIcon />
+      </IconButton>
+    </Tooltip>
+  ) : (
+    <Button
+      onClick={handleLogout}
+      variant="outlined"
+      size="small"
+      startIcon={<LogoutIcon />}
+      sx={{ textTransform: "none", borderRadius: 2 }}
+    >
+      Cerrar sesión
+    </Button>
+  )
 ) : null;
 
   return (
     <AppBar color="inherit" position="absolute">
-      <Toolbar sx={{ mx: { xs: -0.75, sm: -1 } }}>
+      <Toolbar sx={{ px: { xs: 1, sm: 2 } }}>
         <Stack
           direction="row"
           justifyContent="space-between"
@@ -91,6 +103,18 @@ export default function AppHeader({
               <Tooltip title={menuOpen ? "Cerrar menú" : "Abrir menú"}>
                 <IconButton size="small" onClick={handleMenuClick}>
                   {menuOpen ? <MenuOpenIcon /> : <MenuIcon />}
+                </IconButton>
+              </Tooltip>
+            )}
+
+            {showBackButton && (
+              <Tooltip title="Volver al inicio">
+                <IconButton
+                  size="small"
+                  onClick={() => navigate(homeHref)}
+                  sx={{ mr: 0.5 }}
+                >
+                  <ArrowBackIcon />
                 </IconButton>
               </Tooltip>
             )}
@@ -116,31 +140,48 @@ export default function AppHeader({
           </Stack>
 
           {/* DERECHA */}
-          <Stack direction="row" spacing={2} alignItems="center">
-            <Link to={resenasPath} style={{ textDecoration: "none" }}>
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<RateReviewIcon />}
-                sx={{ textTransform: "none", borderRadius: 2 }}
-              >
-                Reseñas
-              </Button>
-            </Link>
-              <Link to={serviciosPath} style={{ textDecoration: "none" }}>
+          <Stack direction="row" spacing={0.5} alignItems="center">
+            {isMobile ? (
+              <>
+                <Tooltip title="Reseñas">
+                  <IconButton size="small" color="primary" component={Link} to={resenasPath}>
+                    <RateReviewIcon />
+                  </IconButton>
+                </Tooltip>
+
+                <Tooltip title="Servicios">
+                  <IconButton size="small" color="primary" component={Link} to={serviciosPath}>
+                    <BuildIcon />
+                  </IconButton>
+                </Tooltip>
+              </>
+            ) : (
+              <>
+                <Link to={resenasPath} style={{ textDecoration: "none" }}>
                   <Button
-                      variant="outlined"
-                      size="small"
-                      startIcon={<BuildIcon />}
-                      sx={{
-                          textTransform: "none",
-                          borderRadius: 2
-                      }}
+                    variant="outlined"
+                    size="small"
+                    startIcon={<RateReviewIcon />}
+                    sx={{ textTransform: "none", borderRadius: 2 }}
                   >
-                      Servicios
+                    Reseñas
                   </Button>
-              </Link>
-            {rightSlot ?? authSlotDefault}
+                </Link>
+
+                <Link to={serviciosPath} style={{ textDecoration: "none" }}>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<BuildIcon />}
+                    sx={{ textTransform: "none", borderRadius: 2 }}
+                  >
+                    Servicios
+                  </Button>
+                </Link>
+              </>
+            )}
+
+            {authSlotDefault}
           </Stack>
         </Stack>
       </Toolbar>
@@ -154,6 +195,5 @@ AppHeader.propTypes = {
   showMenuButton: PropTypes.bool,
   menuOpen: PropTypes.bool,
   onToggleMenu: PropTypes.func,
-  rightSlot: PropTypes.node,
   homeHref: PropTypes.string
 };

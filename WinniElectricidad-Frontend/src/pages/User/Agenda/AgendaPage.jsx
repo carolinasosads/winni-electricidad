@@ -23,8 +23,10 @@ import {
   Chip,
   Divider,
   TextField,
+  useMediaQuery,
 } from "@mui/material";
 import Alert from "@mui/material/Alert";
+import { useTheme } from "@mui/material/styles";
 
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
@@ -39,6 +41,9 @@ import { getServiciosActivos } from "../../../services/servicioService";
 import ApiError from "../../../services/ApiError";
 
 export default function AgendaPage({ onReserve }) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
 
@@ -156,6 +161,19 @@ export default function AgendaPage({ onReserve }) {
     return (info.slots ?? []).map((time) => ({ time }));
   }, [selectedDate, monthAvailability]);
 
+  const mobileAvailableDays = useMemo(
+    () =>
+      disponibilidad
+        .filter((d) => d.slots.length > 0)
+        .sort((a, b) => a.date - b.date)
+        .slice(0, 14)
+        .map((d) => ({
+          date: d.date,
+          availableCount: d.slots.length,
+        })),
+    [disponibilidad]
+  );
+
   // ---- reservar ----
   const handleReserve = async () => {
     if (!selectedDate || !selectedSlot) return;
@@ -184,9 +202,7 @@ export default function AgendaPage({ onReserve }) {
       if (onReserve) onReserve(reservaCreada);
 
       const fechaStr = format(selectedDate, "PPP", { locale: es });
-      setReservaSuccess(
-        `Reserva creada con éxito para ${fechaStr} ${selectedSlot}.`
-      );
+      setReservaSuccess(`Reserva creada con éxito para ${fechaStr} ${selectedSlot}.`);
       setReservaError("");
 
       // limpiar campos
@@ -196,9 +212,7 @@ export default function AgendaPage({ onReserve }) {
       // volver a pedir disponibilidad para refrescar el calendario
       try {
         const dataDisponibilidadActualizada = await getHorariosDisponibles();
-        setDisponibilidad(
-          normalizarDisponibilidad(dataDisponibilidadActualizada)
-        );
+        setDisponibilidad(normalizarDisponibilidad(dataDisponibilidadActualizada));
       } catch (e) {
         console.error("No se pudo actualizar la disponibilidad:", e);
       }
@@ -230,13 +244,22 @@ export default function AgendaPage({ onReserve }) {
     }
   };
 
+  const noHayHorariosDisponibles =
+    !loadingDisponibilidad &&
+    disponibilidad.length === 0;
+
   // ---- render ----
   return (
-    <Box
-      sx={{ minHeight: "100vh", bgcolor: (t) => t.palette.background.default }}
-    >
-      <Box sx={{ p: { xs: 2, sm: 3 }, flex: 1 }}>
-        <Box sx={{ maxWidth: 1000, mb: 3 }}>
+    <Box sx={{ bgcolor: (t) => t.palette.background.default }}>
+      <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 1000, mx: "auto" }}>
+        <Box
+          sx={{
+            maxWidth: CALENDAR_WIDTH,
+            mx: "auto",
+            mb: 3,
+            textAlign: { xs: "center", sm: "left" },
+          }}
+        >
           <Typography variant="h4" fontWeight={700} gutterBottom>
             Reservas para visitas de presupuesto
           </Typography>
@@ -266,160 +289,219 @@ export default function AgendaPage({ onReserve }) {
               errorServicios={errorServicios}
             />
 
-            {/* CALENDARIO */}
-            <Paper
-              variant="outlined"
-              sx={{
-                p: 2,
-                mt: 2,
-                mx: "auto",
-                width: CALENDAR_WIDTH,
-                overflow: "hidden",
-              }}
-            >
-              {/* Header de mes */}
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  mb: 1,
-                }}
-              >
-                <IconButton
-                  size="small"
-                  onClick={() =>
-                    setCurrentMonth(addMonths(currentMonth, -1))
-                  }
-                >
-                  <ChevronLeftIcon />
-                </IconButton>
-
-                <Typography variant="h6" fontWeight={700}>
-                  {format(currentMonth, "LLLL yyyy", { locale: es })}
+            {isMobile ? (
+              <Paper variant="outlined" sx={{ p: 2, mt: 2 }}>
+                <Typography variant="h6" fontWeight={700} gutterBottom>
+                  Días disponibles
                 </Typography>
 
-                <IconButton
-                  size="small"
-                  onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-                >
-                  <ChevronRightIcon />
-                </IconButton>
-              </Box>
-
-              {/* Nombres de días */}
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(7, 1fr)",
-                  textAlign: "center",
-                  mb: 1,
-                  columnGap: 1,
-                }}
-              >
-                {["lun", "mar", "mié", "jue", "vie", "sáb", "dom"].map((d) => (
-                  <Box key={d}>
-                    <Typography
-                      variant="caption"
-                      fontWeight={700}
-                      color="text.secondary"
-                    >
-                      {d.toUpperCase()}
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                  {mobileAvailableDays.length === 0 ? (
+                    <Typography color="text.secondary">
+                      No hay días disponibles.
                     </Typography>
-                  </Box>
-                ))}
-              </Box>
+                  ) : (
+                    mobileAvailableDays.map((d) => {
+                      const selected =
+                        selectedDate && isSameDay(selectedDate, d.date);
 
-              {/* Grilla de días */}
-              <Box
+                      return (
+                        <Button
+                          key={d.date.toISOString()}
+                          variant={selected ? "contained" : "outlined"}
+                          onClick={() => {
+                            setSelectedDate(d.date);
+                            setSelectedSlot(null);
+                            setReservaSuccess("");
+                            setReservaError("");
+                          }}
+                          sx={{
+                            justifyContent: "space-between",
+                            textTransform: "none",
+                          }}
+                        >
+                          <Typography
+                            sx={{
+                              fontWeight: selected ? 700 : 600,
+                              color: selected ? "inherit" : "primary.main",
+                            }}
+                          >
+                            {format(d.date, "EEE d MMM", { locale: es })}
+                          </Typography>
+
+                          <Chip
+                            size="small"
+                            label={`${d.availableCount} turnos`}
+                            variant="outlined"
+                            sx={{
+                              color: selected ? "inherit" : "primary.main",
+                              borderColor: selected
+                                ? "transparent"
+                                : "primary.light",
+                            }}
+                          />
+                        </Button>
+                      );
+                    })
+                  )}
+                </Box>
+              </Paper>
+            ) : (
+              <Paper
+                variant="outlined"
                 sx={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(7, 1fr)",
-                  gap: 1,
-                  minHeight: {
-                    xs: 6 * DAY_MIN_HEIGHT.xs,
-                    sm: 6 * DAY_MIN_HEIGHT.sm,
-                    md: 6 * DAY_MIN_HEIGHT.md,
-                  },
+                  p: 2,
+                  mt: 2,
+                  mx: "auto",
+                  width: CALENDAR_WIDTH,
+                  overflow: "hidden",
                 }}
               >
-                {calendarDays.map((date) => {
-                  const inThisMonth = isSameMonth(date, currentMonth);
-                  const info = infoFor(date);
-                  const isSelected =
-                    !!selectedDate && isSameDay(selectedDate, date);
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    mb: 1,
+                  }}
+                >
+                  <IconButton size="small" onClick={() => setCurrentMonth(addMonths(currentMonth, -1))}>
+                    <ChevronLeftIcon />
+                  </IconButton>
 
-                  return (
-                    <Box key={date.toISOString()}>
-                      <Button
-                        variant={isSelected ? "outlined" : "text"}
-                        onClick={() => {
-                          setSelectedDate(date);
-                          setSelectedSlot(null);
-                          setReservaSuccess("");
-                          setReservaError("");
-                        }}
-                        disabled={!info.hasAvailability || !inThisMonth}
-                        sx={{
-                          width: "100%",
-                          minHeight: DAY_MIN_HEIGHT.md,
-                          borderRadius: 2,
-                          borderColor: isSelected
-                            ? "primary.main"
-                            : "divider",
-                          bgcolor: "background.paper",
-                          color: "text.primary",
-                          opacity: inThisMonth ? 1 : 0.45,
-                          display: "flex",
-                          flexDirection: "column",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          textTransform: "none",
-                          "&:disabled": { opacity: 0.35 },
-                        }}
-                      >
-                        <Typography variant="body2">
-                          {format(date, "d", { locale: es })}
-                        </Typography>
+                  <Typography variant="h6" fontWeight={700}>
+                    {format(currentMonth, "LLLL yyyy", { locale: es })}
+                  </Typography>
 
-                        <Chip
-                          size="small"
-                          label={
-                            info.hasAvailability
-                              ? `${info.availableCount} turnos`
-                              : "—"
-                          }
-                          variant="outlined"
-                          sx={{
-                            borderColor: info.hasAvailability
-                              ? "primary.light"
-                              : "divider",
-                          }}
-                        />
-                      </Button>
+                  <IconButton size="small" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>
+                    <ChevronRightIcon />
+                  </IconButton>
+                </Box>
+
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(7, 1fr)",
+                    textAlign: "center",
+                    mb: 1,
+                    columnGap: 1,
+                  }}
+                >
+                  {["lun", "mar", "mié", "jue", "vie", "sáb", "dom"].map((d) => (
+                    <Box key={d}>
+                      <Typography variant="caption" fontWeight={700} color="text.secondary">
+                        {d.toUpperCase()}
+                      </Typography>
                     </Box>
-                  );
-                })}
-              </Box>
-            </Paper>
+                  ))}
+                </Box>
+
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(7, 1fr)",
+                    gap: 1,
+                    minHeight: {
+                      xs: 6 * DAY_MIN_HEIGHT.xs,
+                      sm: 6 * DAY_MIN_HEIGHT.sm,
+                      md: 6 * DAY_MIN_HEIGHT.md,
+                    },
+                  }}
+                >
+                  {calendarDays.map((date) => {
+                    const inThisMonth = isSameMonth(date, currentMonth);
+                    const info = infoFor(date);
+                    const isSelected = !!selectedDate && isSameDay(selectedDate, date);
+                    const isAvailable = info.hasAvailability && inThisMonth;
+
+                    return (
+                      <Box key={date.toISOString()}>
+                        <Button
+                          variant={isSelected ? "outlined" : "text"}
+                          onClick={() => {
+                            setSelectedDate(date);
+                            setSelectedSlot(null);
+                            setReservaSuccess("");
+                            setReservaError("");
+                          }}
+                          disabled={!isAvailable}
+                          sx={{
+                            width: "100%",
+                            minHeight: DAY_MIN_HEIGHT.md,
+                            borderRadius: 2,
+
+                            /* SELECCION */
+                            borderColor: isSelected ? "primary.main" : "divider",
+                            bgcolor: isSelected ? "rgba(25,118,210,0.06)" : "background.paper",
+
+                            color: "text.primary",
+
+                            opacity: inThisMonth ? 1 : 0.45,
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            textTransform: "none",
+
+                            /* HOVER */
+                            "&:hover": isAvailable && {
+                              bgcolor: "rgba(25,118,210,0.08)",
+                            },
+
+                            "& .MuiTouchRipple-child": {
+                              backgroundColor: "rgba(25,118,210,0.35)",
+                            },
+
+                            "&:disabled": {
+                              opacity: 0.35,
+                            },
+                          }}
+                        >
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              fontWeight: isSelected ? 700 : 500,
+
+                              color: isAvailable
+                                ? isSelected
+                                  ? "primary.main"
+                                  : "primary.main"
+                                : "text.disabled",
+                            }}
+                          >
+                            {format(date, "d", { locale: es })}
+                          </Typography>
+
+                          <Chip
+                            size="small"
+                            label={info.hasAvailability ? `${info.availableCount} turnos` : "—"}
+                            variant="outlined"
+                            sx={{
+                              color: info.hasAvailability
+                                ? "primary.main"
+                                : "text.disabled",
+                              borderColor: info.hasAvailability
+                                ? "primary.light"
+                                : "divider",
+                            }}
+                          />
+                        </Button>
+                      </Box>
+                    );
+                  })}
+                </Box>
+              </Paper>
+            )}
 
             {/* HORARIOS DISPONIBLES */}
             <Paper
               variant="outlined"
-              sx={{
-                p: 2,
-                mt: 3,
-                mx: "auto",
-                width: CALENDAR_WIDTH,
-                maxHeight: 500,
-                overflow: "auto",
-              }}
+              sx={{ p: 2, mt: 2 }}
             >
               <Typography variant="h6" fontWeight={700} gutterBottom>
                 Horarios disponibles
               </Typography>
 
-              {/* Mensajes de reserva */}
               {reservaSuccess && (
                 <Alert
                   severity="success"
@@ -448,28 +530,22 @@ export default function AgendaPage({ onReserve }) {
                 </Typography>
               )}
 
-              {!loadingDisponibilidad && errorDisponibilidad && (
-                <Typography color="error" sx={{ mb: 1 }}>
-                  {errorDisponibilidad}
-                </Typography>
-              )}
-
-              <TextField
-                label="Comentarios (opcional)"
-                placeholder="Ej: timbre roto, preferencia por la tarde, etc."
-                fullWidth
-                multiline
-                minRows={3}
-                value={comentarios}
-                onChange={(e) => setComentarios(e.target.value)}
-                sx={{ mb: 2 }}
-                disabled={!selectedDate}
-              />
-
-              {!selectedDate && (
-                <Typography color="text.secondary">
-                  Seleccioná un día del calendario.
-                </Typography>
+              {!loadingDisponibilidad && (
+                <>
+                  {errorDisponibilidad ? (
+                    <Typography color="error" sx={{ mb: 2 }}>
+                      No se pudo cargar la disponibilidad. Intentá nuevamente más tarde.
+                    </Typography>
+                  ) : noHayHorariosDisponibles ? (
+                    <Typography color="text.secondary" sx={{ mb: 2 }}>
+                      No hay horarios disponibles en este momento.
+                    </Typography>
+                  ) : !selectedDate ? (
+                    <Typography color="text.secondary" sx={{ mb: 2 }}>
+                      Seleccioná un día del calendario.
+                    </Typography>
+                  ) : null}
+                </>
               )}
 
               {selectedDate && (
@@ -477,50 +553,50 @@ export default function AgendaPage({ onReserve }) {
                   <Typography variant="body2" color="text.secondary">
                     {format(selectedDate, "PPPP", { locale: es })}
                   </Typography>
+
                   <Divider sx={{ my: 1.5 }} />
 
                   {slots.length === 0 ? (
-                    <Typography color="text.secondary">
-                      No hay horarios para{" "}
-                      <strong>
-                        {format(selectedDate, "PPP", { locale: es })}
-                      </strong>
-                      . Probá otro día.
+                    <Typography color="text.secondary" sx={{ mb: 2 }}>
+                      No hay horarios para el <strong>{format(selectedDate, "PPP", { locale: es })}</strong>. Probá otro día.
                     </Typography>
                   ) : (
-                    <>
-                      <Box
-                        sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}
-                      >
-                        {slots.map((s) => (
-                          <Button
-                            key={s.time}
-                            size="small"
-                            variant={
-                              selectedSlot === s.time
-                                ? "contained"
-                                : "outlined"
-                            }
-                            onClick={() => setSelectedSlot(s.time)}
-                            sx={{ borderRadius: 2 }}
-                          >
-                            {s.time}
-                          </Button>
-                        ))}
-                      </Box>
-
-                      {selectedSlot && (
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}>
+                      {slots.map((s) => (
                         <Button
-                          variant="contained"
-                          color="primary"
-                          fullWidth
-                          sx={{ mt: 2, borderRadius: 2 }}
-                          onClick={handleReserve}
+                          key={s.time}
+                          size="small"
+                          variant={selectedSlot === s.time ? "contained" : "outlined"}
+                          onClick={() => setSelectedSlot(s.time)}
+                          sx={{ borderRadius: 2 }}
                         >
-                          Confirmar reserva
+                          {s.time}
                         </Button>
-                      )}
-                    </>
+                      ))}
+                    </Box>
+                  )}
+
+                  <TextField
+                    label="Comentarios (opcional)"
+                    placeholder="Ej: timbre roto, preferencia por la tarde, etc."
+                    fullWidth
+                    multiline
+                    minRows={3}
+                    value={comentarios}
+                    onChange={(e) => setComentarios(e.target.value)}
+                    sx={{ mb: 2 }}
+                  />
+
+                  {selectedSlot && (
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      fullWidth
+                      sx={{ mt: 0, borderRadius: 2 }}
+                      onClick={handleReserve}
+                    >
+                      Confirmar reserva
+                    </Button>
                   )}
                 </>
               )}
@@ -548,8 +624,6 @@ function combinarFechaYHora(fecha, horaStr) {
 function normalizarDisponibilidad(dataDisponibilidad) {
   return (dataDisponibilidad ?? []).map((d) => ({
     date: new Date(d.fecha),
-    slots: (d.horas ?? [])
-      .filter((h) => h.disponible)
-      .map((h) => h.hora),
+    slots: (d.horas ?? []).filter((h) => h.disponible).map((h) => h.hora),
   }));
 }

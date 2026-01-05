@@ -12,9 +12,9 @@ import MainLayout from "../../layout/MainLayout.jsx";
 
 import AgendaPage from "../../pages/User/Agenda/AgendaPage.jsx";
 import CrearResena from "../../pages/User/Reseña/CrearResena.jsx";
+import ClienteDashboard from "../../pages/User/Dashboard/ClienteDashboard.jsx";
 
 import DashboardAdmin from "../../pages/Admin/Dashboard/DashboardAdmin.jsx"
-import HistoricoClientes from "../../pages/Admin/HistoricoClientes/HistoricoClientes.jsx"
 import PanelReservas from "../../pages/Admin/PanelReservas/PanelReservas.jsx"
 
 import AdminCrearReservaPage from "../../pages/Admin/CrearCliente/AdminCrearReserva.jsx";
@@ -46,7 +46,7 @@ export default function App() {
           </ProtectedRoute>
         }
       >
-        <Route index element={<AgendaPage />} />
+        <Route index element={<ClienteDashboard />} />
         <Route path="agenda" element={<AgendaPage />} />
         <Route path="resenas" element={<ResenaPage />} />
         <Route path="resenas/crear" element={<CrearResena />} />
@@ -64,7 +64,6 @@ export default function App() {
       >
         <Route index element={<DashboardAdmin />} />
         <Route path="resenas" element={<ResenaPage />} />
-        <Route path="historico" element={<HistoricoClientes />} />
         <Route path="panel-reservas" element={<PanelReservas />} />
         <Route path="crear-reserva" element={<AdminCrearReservaPage />} />
         <Route path="ficha-clientes" element={<FichaClientes />} />

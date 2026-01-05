@@ -1,44 +1,31 @@
 import { Box, Typography, Card, CardActionArea } from "@mui/material";
-import EventNoteIcon from "@mui/icons-material/EventNote";
-import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
-import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
-import BuildIcon from "@mui/icons-material/Build";
+import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import RateReviewIcon from "@mui/icons-material/RateReview";
+import BuildIcon from "@mui/icons-material/Build";
 import { useNavigate } from "react-router-dom";
 
-export default function DashboardAdmin() {
+export default function ClienteDashboard() {
   const navigate = useNavigate();
 
   const acciones = [
     {
-      titulo: "Panel de reservas",
-      descripcion: "Gestioná y visualizá todas las reservas.",
-      icono: EventNoteIcon,
-      ruta: "/admin/panel-reservas",
-    },
-    {
-      titulo: "Gestión de presupuestos",
-      descripcion: "Agregá un nuevo presupuesto a una reserva y cliente preexistente o creala de cero.",
-      icono: AddCircleOutlineIcon,
-      ruta: "/admin/crear-reserva",
-    },
-    {
-      titulo: "Ficha de clientes",
-      descripcion: "Consultá información de los clientes.",
-      icono: PeopleAltIcon,
-      ruta: "/admin/ficha-clientes",
+      titulo: "Agendar presupuesto",
+      descripcion:
+        "Solicitá una visita de presupuesto.",
+      icono: EventAvailableIcon,
+      ruta: "/cliente/agenda",
     },
     {
       titulo: "Servicios",
-      descripcion: "Administrá los servicios disponibles.",
+      descripcion: "Explorá los servicios disponibles.",
       icono: BuildIcon,
-      ruta: "/admin/servicios",
+      ruta: "/cliente/servicios",
     },
     {
       titulo: "Reseñas",
-      descripcion: "Moderá y revisá reseñas de clientes.",
+      descripcion: "Ver o crear una reseña.",
       icono: RateReviewIcon,
-      ruta: "/admin/resenas",
+      ruta: "/cliente/resenas",
     },
   ];
 
@@ -58,7 +45,7 @@ export default function DashboardAdmin() {
       <Box
         sx={{
           width: "100%",
-          maxWidth: 1100,
+          maxWidth: 900,
           display: "flex",
           flexDirection: "column",
           gap: 4,
@@ -78,11 +65,11 @@ export default function DashboardAdmin() {
           />
 
           <Typography variant="h4" fontWeight={600}>
-            Panel de administración
+            Hola!
           </Typography>
 
           <Typography color="text.secondary" mt={1}>
-            Desde acá podés gestionar reservas, presupuestos, clientes, servicios y reseñas del sistema.
+            Desde acá podés consultar disponibilidad, explorar servicios y compartir tu experiencia con Winni Electricidad.
           </Typography>
         </Box>
 
