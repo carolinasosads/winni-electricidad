@@ -30,4 +30,6 @@ public class ReservaListadoDto
     
     public bool RequiereConfirmacionCliente { get; set; } = false;
 
+    [MaxLength(500, ErrorMessage = "El comentario no puede superar los 500 caracteres.")]
+    public string? Comentario { get; set; }
 }

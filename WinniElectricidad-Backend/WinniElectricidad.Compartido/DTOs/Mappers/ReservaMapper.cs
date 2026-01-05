@@ -72,10 +72,6 @@ public class ReservaMapper
 
         var nombreServicio = servicios.FirstOrDefault() ?? string.Empty;
 
-        var direccionDescripcion = reserva.Direccion != null
-            ? $"{reserva.Direccion.Calle} {reserva.Direccion.Numero ?? ""}".Trim()
-            : string.Empty;
-
         return new ReservaListadoDto
         {
             IdReserva = reserva.IdReserva,
@@ -85,8 +81,8 @@ public class ReservaMapper
             Servicios = servicios,
             TienePresupuesto = reserva.Presupuesto != null,
             MontoPresupuestado = reserva.Presupuesto?.Monto ?? 0m,
-
             RequiereConfirmacionCliente = reserva.RequiereConfirmacionCliente,
+            Comentario = reserva.Comentario,
 
             Direccion = reserva.Direccion == null
                 ? null
