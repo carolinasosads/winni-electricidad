@@ -171,7 +171,7 @@ function Sidebar({
                 <>
                   <SidebarPageItem
                     id="admin-dashboard"
-                    title="Dashboard Admin"
+                    title="Dashboard"
                     icon={<BarChartIcon />}
                     href="/admin"
                     selected={pathname === "/admin" || pathname === "/admin/"}
@@ -195,7 +195,7 @@ function Sidebar({
 
                   <SidebarPageItem
                     id="admin-crear-cliente-reserva"
-                    title="Gestionar Presupuestos"
+                    title="Presupuestos"
                     icon={<DateRangeIcon />}
                     href="/admin/crear-reserva"
                     selected={pathname.startsWith("/admin/crear-reserva")}

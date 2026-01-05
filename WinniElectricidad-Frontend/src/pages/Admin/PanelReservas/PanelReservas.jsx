@@ -159,7 +159,15 @@ export default function PanelReservas() {
   };
 
   return (
-    <Box sx={{ p: 2, width: "100%" }}>
+    <Box
+      sx={{
+        p: 2,
+        width: "100%",
+        maxWidth: "100%",
+        overflowX: "hidden",
+        boxSizing: "border-box",
+      }}
+    >
       <Typography variant="h4" fontWeight={700} sx={{ mb: 2 }}>
         Panel de Reservas
       </Typography>
@@ -271,7 +279,12 @@ export default function PanelReservas() {
             onClose={() => setOpenDrawer(false)}
             variant="temporary"
             PaperProps={{
-              sx: { width: 300, p: 2, pt: 3 },
+              sx: {
+                width: "80vw",
+                maxWidth: 300,
+                p: 2,
+                pt: 3,
+              },
             }}
           >
             <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>

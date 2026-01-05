@@ -91,15 +91,16 @@ export default function CalendarioDiarioMobile({
   return (
     <Box
       sx={{
-        px: 1,
+        width: "100%",
         maxWidth: "100%",
         overflowX: "hidden",
         boxSizing: "border-box",
       }}
     >
-      {/* Header con navegación */}
+      {/* Header */}
       <Box
         sx={{
+          px: 1,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -116,7 +117,7 @@ export default function CalendarioDiarioMobile({
           <ChevronLeftIcon />
         </IconButton>
 
-        <Box sx={{ textAlign: "center" }}>
+        <Box sx={{ textAlign: "center", px: 1 }}>
           <Typography fontWeight={700}>
             {diaSeleccionado.toLocaleDateString("es-UY", {
               weekday: "long",
@@ -146,12 +147,12 @@ export default function CalendarioDiarioMobile({
         </IconButton>
       </Box>
 
-      <Stack spacing={2}>
+      <Stack spacing={2} sx={{ px: 1 }}>
         {HORAS.map((slot) => {
           const reserva = reservaDelSlot(slot);
 
           return (
-            <Box key={slot.label} sx={{ maxWidth: "100%" }}>
+            <Box key={slot.label} sx={{ width: "100%" }}>
               <Typography fontWeight={600} sx={{ mb: 0.5 }}>
                 {slot.label}
               </Typography>
@@ -170,7 +171,7 @@ export default function CalendarioDiarioMobile({
                     borderRadius: 2,
                     fontWeight: 600,
                     cursor: "pointer",
-                    maxWidth: "100%",
+                    width: "100%",
                     boxSizing: "border-box",
                     wordBreak: "break-word",
                     ...estiloReservaBase(reserva),
