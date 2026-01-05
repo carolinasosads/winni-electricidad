@@ -497,7 +497,7 @@ export default function AgendaPage({ onReserve }) {
             <Paper
               variant="outlined"
               sx={{ p: 2, mt: 2 }}
-            > 
+            >
               <Typography variant="h6" fontWeight={700} gutterBottom>
                 Horarios disponibles
               </Typography>
@@ -558,8 +558,7 @@ export default function AgendaPage({ onReserve }) {
 
                   {slots.length === 0 ? (
                     <Typography color="text.secondary" sx={{ mb: 2 }}>
-                      No hay horarios para el {" "}
-                      <strong>{format(selectedDate, "PPP", { locale: es })}</strong>. Probá otro día.
+                      No hay horarios para el <strong>{format(selectedDate, "PPP", { locale: es })}</strong>. Probá otro día.
                     </Typography>
                   ) : (
                     <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}>

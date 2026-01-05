@@ -7,13 +7,6 @@ import { useNavigate } from "react-router-dom";
 export default function ClienteDashboard() {
   const navigate = useNavigate();
 
-  const email = localStorage.getItem("email");
-
-  const nombre = email
-    ? email.split("@")[0].charAt(0).toUpperCase() +
-      email.split("@")[0].slice(1)
-    : "Usuario";
-
   const acciones = [
     {
       titulo: "Agendar presupuesto",
@@ -72,11 +65,11 @@ export default function ClienteDashboard() {
           />
 
           <Typography variant="h4" fontWeight={600}>
-            Hola {nombre},
+            Hola!
           </Typography>
 
           <Typography color="text.secondary" mt={1}>
-            Desde acá podés consultar disponibilidad, explorar servicios y compartir tu experiencia.
+            Desde acá podés consultar disponibilidad, explorar servicios y compartir tu experiencia con Winni Electricidad.
           </Typography>
         </Box>
 
