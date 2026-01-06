@@ -11,6 +11,7 @@ using WinniElectricidad.AccesoDatos.Repositorios.EF;
 using WinniElectricidad.Api.Servicios;
 using WinniElectricidad.Compartido.Configuracion;
 using WinniElectricidad.LogicaAplicacion.CasosDeUso.Reservas;
+using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Consulta;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Notificacion;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Pago;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Presupuesto;
@@ -18,6 +19,7 @@ using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Reseña;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Reserva;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Servicio;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Usuario;
+using WinniElectricidad.LogicaAplicacion.Servicios.Consultas;
 using WinniElectricidad.LogicaAplicacion.Servicios.Notificacion;
 using WinniElectricidad.LogicaAplicacion.Servicios.Pago;
 using WinniElectricidad.LogicaAplicacion.Servicios.Presupuesto;
@@ -203,6 +205,9 @@ builder.Services.AddScoped<IObtenerDetalleUsuario, ObtenerDetalleUsuario>();
 builder.Services.AddScoped<IObtenerPresupuestoPorReserva, ObtenerPresupuestoPorReserva>();
 builder.Services.AddScoped<IObtenerPresupuesto, ObtenerPresupuesto>();
 builder.Services.AddScoped<IRegistrarPagoPresupuesto, RegistrarPagoPresupuesto>();
+
+//--formulario 
+builder.Services.AddScoped<ICrearConsulta, CrearConsulta>();
 
 // -- Repositorios --
 builder.Services.AddScoped<IRepositorioUsuario, RepositorioUsuarios>();
