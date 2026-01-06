@@ -50,5 +50,4 @@ public class ConsultasController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Ocurrió un error inesperado al procesar la consulta." });
         }
     }
-
 }
