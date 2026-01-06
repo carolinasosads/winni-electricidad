@@ -1,13 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  getMisReservasCliente,
-  aprobarReserva,
-  cancelarReserva,
-  modificarReserva,
-} from "../../../services/reservaService";
-
+import {  getMisReservasCliente, aprobarReserva,  cancelarReserva,  modificarReserva,} from "../../../services/reservaService";
 import ReservaDetailModalCliente from "./ReservaDetailModalCliente";
 import CalendarioSemanal from "../../Admin/PanelReservas/CalendarioSemanal";
+import CalendarioDiarioMobile from "../../Admin/PanelReservas/CalendarioDiarioMobile";
 import ModificarReservaModal from "../../Admin/PanelReservas/ModificarReservaModal";
 
 import {
@@ -92,6 +87,7 @@ function ColumnaReservas({ titulo, chipColor, items, onSelect }) {
 }
 
 export default function PanelReservasCliente() {
+  const [diaSeleccionado, setDiaSeleccionado] = useState(new Date());
   const [mesActual, setMesActual] = useState(new Date().getMonth() + 1);
   const [anioActual, setAnioActual] = useState(new Date().getFullYear());
 
@@ -401,7 +397,15 @@ export default function PanelReservasCliente() {
   );
 
   return (
-    <Box sx={{ p: 2, width: "100%" }}>
+    <Box
+      sx={{
+        p: 2,
+        width: "100%",
+        maxWidth: "100%",
+        overflowX: "hidden",
+        boxSizing: "border-box",
+      }}
+    >
       <Typography variant="h4" fontWeight={700} sx={{ mb: 2 }}>
         Mis Reservas
       </Typography>
@@ -444,13 +448,14 @@ export default function PanelReservasCliente() {
             </IconButton>
           </Box>
 
-          <CalendarioSemanal
+          <CalendarioDiarioMobile
+            diaSeleccionado={diaSeleccionado}
+            setDiaSeleccionado={setDiaSeleccionado}
             reservas={reservasMesParaCalendario}
             onSelectReserva={(r) => {
               setModalFeedback(null);
               setSelectedReserva(r);
             }}
-            onCambioSemana={handleCambioSemana}
           />
 
           <Drawer
@@ -458,7 +463,14 @@ export default function PanelReservasCliente() {
             open={openDrawer}
             onClose={() => setOpenDrawer(false)}
             variant="temporary"
-            PaperProps={{ sx: { width: 320, p: 2, pt: 3 } }}
+            PaperProps={{
+              sx: {
+                width: "80vw",
+                maxWidth: 320,
+                p: 2,
+                pt: 3,
+              },
+            }}
           >
             <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
               Listas de Reservas
