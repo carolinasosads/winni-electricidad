@@ -24,13 +24,54 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 
-// ---- Helper para ordenar por horario ----
 const ordenarPorHorario = (reservas) => {
   if (!Array.isArray(reservas)) return [];
   return [...reservas].sort(
     (a, b) => new Date(a.fechaReserva) - new Date(b.fechaReserva)
   );
 };
+
+const LS_KEY = "winni_reservas_pendientes_confirmacion_cliente";
+
+function leerIdsPendientesConfirmacion() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr)) return [];
+    return arr.map((x) => Number(x)).filter((x) => Number.isFinite(x));
+  } catch {
+    return [];
+  }
+}
+
+function guardarIdsPendientesConfirmacion(ids) {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify(ids));
+  } catch {}
+}
+
+function agregarIdPendienteConfirmacion(idReserva) {
+  const id = Number(idReserva);
+  if (!Number.isFinite(id)) return;
+  const ids = leerIdsPendientesConfirmacion();
+  if (!ids.includes(id)) {
+    ids.push(id);
+    guardarIdsPendientesConfirmacion(ids);
+  }
+}
+
+function limpiarIdsQueYaNoEstanPendientes(pendientes) {
+  const pendientesIds = new Set(
+    (pendientes || [])
+      .map((r) => Number(r.idReserva))
+      .filter((x) => Number.isFinite(x))
+  );
+
+  const ids = leerIdsPendientesConfirmacion();
+  const filtrados = ids.filter((id) => pendientesIds.has(id));
+  if (filtrados.length !== ids.length) guardarIdsPendientesConfirmacion(filtrados);
+}
 
 export default function PanelReservas() {
   // ---- Estados ----
@@ -63,14 +104,22 @@ export default function PanelReservas() {
         getReservasPorEstado("Cancelada"),
         getReservasFinalizadas(),
       ]);
-      setPendientes(ordenarPorHorario(p));
-      setConfirmadas(ordenarPorHorario(c));
-      setCanceladas(ordenarPorHorario(ca));
-      setFinalizadas(ordenarPorHorario(f));
+
+      const pOrdenadas = ordenarPorHorario(p);
+      const cOrdenadas = ordenarPorHorario(c);
+      const caOrdenadas = ordenarPorHorario(ca);
+      const fOrdenadas = ordenarPorHorario(f);
+
+      setPendientes(pOrdenadas);
+      setConfirmadas(cOrdenadas);
+      setCanceladas(caOrdenadas);
+      setFinalizadas(fOrdenadas);
+
+      limpiarIdsQueYaNoEstanPendientes(pOrdenadas);
 
       const data = await getReservasPorMesYAnio(mesActual, anioActual);
       setReservasMes(data);
-    } catch (error) {
+    } catch {
       setMensajeError(
         "Error al cargar las reservas. Por favor, intente nuevamente."
       );
@@ -140,6 +189,8 @@ export default function PanelReservas() {
   const handleModificarReserva = async (nuevaFecha) => {
     try {
       const resp = await modificarReserva(selectedReserva.idReserva, nuevaFecha);
+
+      agregarIdPendienteConfirmacion(selectedReserva.idReserva);
 
       setOpenModificar(false);
       setSelectedReserva(null);

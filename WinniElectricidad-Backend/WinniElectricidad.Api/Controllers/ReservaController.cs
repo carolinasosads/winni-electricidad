@@ -499,7 +499,6 @@ public class ReservaController : ControllerBase
             if (string.IsNullOrEmpty(idClaim))
                 return Unauthorized(new { message = "Token inválido o expirado." });
 
-            var idUsuario = int.Parse(idClaim);
             var esAdmin = User.IsInRole("Administrador");
 
             await _modificarReserva.Ejecutar(dto, esAdmin, ct);
@@ -508,7 +507,7 @@ public class ReservaController : ControllerBase
             {
                 message = esAdmin
                     ? "Cambio sugerido. La reserva quedó pendiente para que el cliente la apruebe."
-                    : "Cambio sugerido. La reserva quedó pendiente para revisión del administrador."
+                    : "Cambio sugerido. La reserva quedó pendiente para revisión del representante."
             });
         }
         catch (ArgumentException ex)
@@ -546,7 +545,7 @@ public class ReservaController : ControllerBase
     /// <param name="idUsuario">
     /// Identificador del usuario para el que se creará la reserva.
     /// </param>
-    /// <param name="nuevaReserva">    [Authorize(Roles = "Administrador,Cliente")]
+    /// <param name="nuevaReserva">  
 
     /// Datos necesarios para crear la reserva (fecha, hora, dirección, servicios).
     /// </param>

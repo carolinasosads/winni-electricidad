@@ -166,7 +166,7 @@ export default function ReservaDetailModalCliente({
 
                         {esPendiente && !requiereConfirmacionCliente && (
                             <Alert severity="info">
-                                Esta reserva está pendiente de revisión del administrador. Cuando haya un cambio que necesite tu
+                                Esta reserva está pendiente de revisión del representante. Cuando haya un cambio que necesite tu
                                 confirmación, vas a poder aceptarla desde acá.
                             </Alert>
                         )}

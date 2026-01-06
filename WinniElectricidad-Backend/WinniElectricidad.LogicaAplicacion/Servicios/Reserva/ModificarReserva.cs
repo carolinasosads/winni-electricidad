@@ -45,8 +45,6 @@ public class ModificarReserva : IModificarReserva
 
         await _repositorioReserva.Update(reserva, cancellationToken);
 
-        // --------- EMAILS ---------
-
         var cliente = reserva.UsuarioCliente
                       ?? throw new InvalidOperationException("El cliente asociado a la reserva no existe.");
 
@@ -57,6 +55,22 @@ public class ModificarReserva : IModificarReserva
         var comentario = string.IsNullOrWhiteSpace(reserva.Comentario)
             ? "Sin comentarios adicionales." : reserva.Comentario;
         var tipoServicio = reserva.TipoServicioReserva.ToString();
+
+        var bloqueEstadoCliente = (esAdmin && reserva.RequiereConfirmacionCliente)
+            ? @"
+                <p>
+                    Esta nueva fecha es una <strong>sugerida</strong> y quedará pendiente de tu confirmación.
+                </p>
+                <p>
+                    Tu reserva volverá a estado <strong>Pendiente</strong> hasta que confirmemos juntos la nueva fecha.
+                </p>
+                <p>
+                    Ante cualquier duda o ajuste que quieras realizar, podés responder desde tu panel de reservas.
+                </p>"
+            : @"
+                <p>
+                    La reserva quedó <strong>Pendiente</strong> para su revisión.
+                </p>";
 
         var cuerpoCliente = $@"
             <div style='font-family: Arial, sans-serif; color: #333;'>
@@ -69,27 +83,7 @@ public class ModificarReserva : IModificarReserva
                 <p><strong>Fecha anterior:</strong> {fechaAnteriorString}</p>
                 <p><strong>Nueva fecha sugerida:</strong> {fechaNuevaString}</p>
 
-               {{esAdmin && reserva.RequiereConfirmacionCliente && (
-                  <>
-                    <p>
-                      Esta nueva fecha es una <strong>propuesta</strong> y quedará pendiente de tu confirmación.
-                    </p>
-
-                    <p>
-                      Tu reserva volverá a estado <strong>Pendiente</strong> hasta que confirmemos juntos la nueva fecha.
-                    </p>
-
-                    <p>
-                      Ante cualquier duda o ajuste que quieras realizar, no dudes en responder desde tu panel de reservas.
-                    </p>
-                  </>
-                )}}
-
-                {{!(esAdmin && reserva.RequiereConfirmacionCliente) && (
-                  <p>
-                    La reserva quedó <strong>Pendiente</strong> para su revisión.
-                  </p>
-                )}}
+                {bloqueEstadoCliente}
 
                 <p>¡Gracias por confiar en Winni Electricidad!</p>
             </div>";
