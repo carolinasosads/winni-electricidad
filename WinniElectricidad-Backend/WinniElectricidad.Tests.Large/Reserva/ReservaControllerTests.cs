@@ -2,6 +2,7 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using WinniElectricidad.Compartido.DTOs.Reservas;
+using WinniElectricidad.Compartido.DTOs.Usuarios.Reserva;
 using WinniElectricidad.Tests.Large.Infraestructura;
 
 namespace WinniElectricidad.Tests.Large.Reserva;
@@ -144,4 +145,73 @@ public class ReservaControllerTests : LargeTestBase
         // Assert
         Assert.That(resp.StatusCode, Is.EqualTo(HttpStatusCode.Forbidden));
     }
+    
+    [Test]
+    public async Task GetMisReservas_TokenValido_DeberiaRetornarListaValida()
+    {
+        // Arrange
+        const string endpoint = EndpointBase + "mis-reservas";
+
+        await DbSeeder.CleanDatabaseAsync(Factory);
+
+        var usuario = await DbSeeder.SeedUsuarioConDireccionesAsync(Factory);
+
+        var fechaReserva = DateTime.Today.AddDays(3);
+        while (fechaReserva.DayOfWeek == DayOfWeek.Sunday)
+            fechaReserva = fechaReserva.AddDays(1);
+        fechaReserva = fechaReserva.Date.AddHours(9);
+
+        // Usamos el seeder existente (NO toca usuario)
+        await DbSeeder.SeedReservaAsync(Factory, fechaReserva);
+
+        var token = Jwt.GenerarTokenValido(usuario.IdUsuario, usuario.Email, "Cliente");
+        Client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", token);
+
+        // Act
+        var resp = await Client.GetAsync(endpoint);
+
+        // Assert
+        Assert.That(resp.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+        var reservas = await resp.Content.ReadFromJsonAsync<List<ReservaListadoDto>>();
+
+        Assert.That(reservas, Is.Not.Null);
+    }
+
+[Test]
+public async Task GetMisReservas_SinToken_DeberiaRetornarUnauthorized()
+{
+    // Arrange
+    const string endpoint = EndpointBase + "mis-reservas";
+
+    Client.DefaultRequestHeaders.Authorization = null;
+
+    // Act
+    var resp = await Client.GetAsync(endpoint);
+
+    // Assert
+    Assert.That(resp.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+}
+
+[Test]
+public async Task GetMisReservas_RolIncorrecto_DeberiaRetornarForbidden()
+{
+    // Arrange
+    const string endpoint = EndpointBase + "mis-reservas";
+
+    await DbSeeder.CleanDatabaseAsync(Factory);
+    var usuario = await DbSeeder.SeedUsuarioConDireccionesAsync(Factory);
+
+    var token = Jwt.GenerarTokenConRol(usuario.IdUsuario, usuario.Email, "Administrador");
+    Client.DefaultRequestHeaders.Authorization =
+        new AuthenticationHeaderValue("Bearer", token);
+
+    // Act
+    var resp = await Client.GetAsync(endpoint);
+
+    // Assert
+    Assert.That(resp.StatusCode, Is.EqualTo(HttpStatusCode.Forbidden));
+}
+
 }
