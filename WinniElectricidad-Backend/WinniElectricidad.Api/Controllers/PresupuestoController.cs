@@ -1,7 +1,9 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using WinniElectricidad.Compartido.DTOs.Pago;
 using WinniElectricidad.Compartido.DTOs.Presupuesto;
+using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Pago;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Presupuesto;
 
 namespace WinniElectricidad.Api.Controllers;
@@ -15,13 +17,13 @@ public class PresupuestoController : ControllerBase
 {
     private readonly ICrearPresupuesto _crearPresupuesto;
     private readonly IObtenerPresupuesto _obtenerPresupuesto;
-    private readonly IActualizarMontoPagadoPresupuesto _actualizarMontoPagadoPresupuesto;
+    private readonly IRegistrarPagoPresupuesto _registrarPagoPresupuesto;
 
-    public PresupuestoController(ICrearPresupuesto crearPresupuesto, IObtenerPresupuesto obtenerPresupuesto, IActualizarMontoPagadoPresupuesto actualizarMontoPagado)
+    public PresupuestoController(ICrearPresupuesto crearPresupuesto, IObtenerPresupuesto obtenerPresupuesto,IRegistrarPagoPresupuesto registrarPagoPresupuesto)
     {
         _crearPresupuesto = crearPresupuesto;
         _obtenerPresupuesto = obtenerPresupuesto;
-        _actualizarMontoPagadoPresupuesto = actualizarMontoPagado;
+        _registrarPagoPresupuesto = registrarPagoPresupuesto;
     }
 
     /// <summary>
@@ -120,45 +122,50 @@ public class PresupuestoController : ControllerBase
     }
     
     /// <summary>
-    /// Actualiza el monto pagado de un presupuesto asociado a una reserva (solo administradores).
+    /// Registra un pago asociado a una reserva existente.
     /// </summary>
     /// <remarks>
-    /// <para>
-    /// Actualiza el campo <c>MontoPagado</c> del presupuesto vinculado a la reserva indicada.
-    /// </para>
+    /// Este endpoint permite al administrador registrar un pago realizado por un cliente.
+    /// Cada pago se guarda de forma independiente, incluyendo el monto y la fecha,
+    /// permitiendo mantener un historial completo de pagos asociados a la reserva.
     ///
-    /// <para><b>Reglas:</b></para>
-    /// <list type="bullet">
-    ///   <item><description>El <c>idReserva</c> debe ser mayor a 0.</description></item>
-    ///   <item><description>El body es requerido.</description></item>
-    ///   <item><description><c>MontoPagado</c> no puede ser negativo.</description></item>
-    ///   <item><description><c>MontoPagado</c> no puede superar el monto total del presupuesto.</description></item>
-    /// </list>
-    ///
-    /// <para><b>Requiere autenticación:</b> Rol <c>Administrador</c>.</para>
-    ///
-    /// <para><b>Códigos de respuesta:</b></para>
-    /// <list type="bullet">
-    ///   <item><description><c>200 OK</c> Monto pagado actualizado correctamente.</description></item>
-    ///   <item><description><c>400 Bad Request</c> Datos inválidos o violación de reglas.</description></item>
-    ///   <item><description><c>404 Not Found</c> No existe presupuesto para esa reserva.</description></item>
-    ///   <item><description><c>500 Internal Server Error</c> Error inesperado.</description></item>
-    /// </list>
+    /// El pago se asocia al presupuesto vinculado a la reserva indicada.
     /// </remarks>
-    /// <param name="idReserva">Identificador de la reserva a la que pertenece el presupuesto.</param>
-    /// <param name="dto">DTO con el monto pagado a actualizar.</param>
-    /// <param name="ct">Token de cancelación.</param>
+    /// <param name="idReserva">
+    /// Identificador de la reserva a la cual se desea registrar el pago.
+    /// </param>
+    /// <param name="dto">
+    /// Datos del pago a registrar, incluyendo el monto abonado y la fecha del pago.
+    /// </param>
+    /// <param name="ct">
+    /// Token de cancelación para finalizar la operación si la solicitud es cancelada.
+    /// </param>
+    /// <returns>
+    /// Retorna el presupuesto actualizado con el historial de pagos registrado.
+    /// </returns>
+    /// <response code="200">
+    /// El pago fue registrado correctamente y el presupuesto fue actualizado.
+    /// </response>
+    /// <response code="400">
+    /// Los datos enviados son inválidos o incompletos.
+    /// </response>
+    /// <response code="404">
+    /// No se encontró la reserva o el presupuesto asociado.
+    /// </response>
+    /// <response code="500">
+    /// Ocurrió un error inesperado al registrar el pago.
+    /// </response>
+    [HttpPost("reserva/{idReserva:int}/pagos")]
+    [Authorize(Roles = "Administrador")]
     [ProducesResponseType(typeof(PresupuestoDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [HttpPatch("reserva/{idReserva:int}/monto-pagado")]
-    [Authorize(Roles = "Administrador")]
-    public async Task<IActionResult> ActualizarMontoPagado([FromRoute] int idReserva, [FromBody] PresupuestoMontoPagadoActualizarDto dto, CancellationToken ct)
+    public async Task<IActionResult> RegistrarPago([FromRoute] int idReserva, [FromBody] PagoCrearDto dto, CancellationToken ct)
     {
         try
         {
-            var actualizado = await _actualizarMontoPagadoPresupuesto.Actualizar(idReserva, dto, ct);
+            var actualizado = await _registrarPagoPresupuesto.Registrar(idReserva, dto, ct);
             return Ok(actualizado);
         }
         catch (ArgumentNullException ex)
@@ -176,8 +183,7 @@ public class PresupuestoController : ControllerBase
         catch (Exception)
         {
             return StatusCode(StatusCodes.Status500InternalServerError,
-                new { message = "Ocurrió un error inesperado al actualizar el monto pagado del presupuesto." });
+                new { message = "Ocurrió un error inesperado al registrar el pago." });
         }
     }
-
 }

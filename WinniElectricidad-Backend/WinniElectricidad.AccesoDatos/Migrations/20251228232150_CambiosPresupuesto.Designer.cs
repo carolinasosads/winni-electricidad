@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WinniElectricidad.AccesoDatos.Repositorios.EF;
 
@@ -11,9 +12,11 @@ using WinniElectricidad.AccesoDatos.Repositorios.EF;
 namespace WinniElectricidad.AccesoDatos.Migrations
 {
     [DbContext(typeof(WinniElectricidadContext))]
-    partial class WinniElectricidadContextModelSnapshot : ModelSnapshot
+    [Migration("20251228232150_CambiosPresupuesto")]
+    partial class CambiosPresupuesto
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -142,24 +145,18 @@ namespace WinniElectricidad.AccesoDatos.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdPago"));
 
-                    b.Property<DateTime>("FechaHoraRealizado")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("IdPresupuesto")
-                        .HasColumnType("int");
-
                     b.Property<int>("IdUsuario")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("Monto")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<double>("Monto")
+                        .HasColumnType("float");
+
+                    b.Property<int>("UsuarioIdUsuario")
+                        .HasColumnType("int");
 
                     b.HasKey("IdPago");
 
-                    b.HasIndex("IdPresupuesto");
-
-                    b.HasIndex("IdUsuario");
+                    b.HasIndex("UsuarioIdUsuario");
 
                     b.ToTable("Pagos");
                 });
@@ -241,8 +238,7 @@ namespace WinniElectricidad.AccesoDatos.Migrations
                     b.HasKey("IdReserva");
 
                     b.HasIndex("FechaReserva")
-                        .IsUnique()
-                        .HasFilter("[EstadoReserva] <> 2");
+                        .IsUnique();
 
                     b.HasIndex("IdDireccion");
 
@@ -507,19 +503,11 @@ namespace WinniElectricidad.AccesoDatos.Migrations
 
             modelBuilder.Entity("WinniElectricidad.LogicaNegocio.Entidades.Pago", b =>
                 {
-                    b.HasOne("WinniElectricidad.LogicaNegocio.Entidades.Presupuesto", "Presupuesto")
-                        .WithMany("Pagos")
-                        .HasForeignKey("IdPresupuesto")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("WinniElectricidad.LogicaNegocio.Entidades.UsuarioCliente", "Usuario")
                         .WithMany("Pagos")
-                        .HasForeignKey("IdUsuario")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasForeignKey("UsuarioIdUsuario")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Presupuesto");
 
                     b.Navigation("Usuario");
                 });
@@ -571,11 +559,6 @@ namespace WinniElectricidad.AccesoDatos.Migrations
                         .HasForeignKey("IdUsuario")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("WinniElectricidad.LogicaNegocio.Entidades.Presupuesto", b =>
-                {
-                    b.Navigation("Pagos");
                 });
 
             modelBuilder.Entity("WinniElectricidad.LogicaNegocio.Entidades.Reserva", b =>

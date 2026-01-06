@@ -7,9 +7,10 @@ namespace WinniElectricidad.LogicaAplicacion.Servicios.Reserva;
 
 public class ModificarReserva : IModificarReserva
 {
-    private IEnviarEmail _enviarEmail;
+    private readonly IEnviarEmail _enviarEmail;
     private readonly IRepositorioReserva _repositorioReserva;
     private readonly IRepositorioUsuario _repositorioUsuario;
+
     public ModificarReserva(IRepositorioReserva repositorioReserva, IEnviarEmail enviarEmail, IRepositorioUsuario repositorioUsuario)
     {
         _repositorioReserva = repositorioReserva;
@@ -17,7 +18,7 @@ public class ModificarReserva : IModificarReserva
         _repositorioUsuario = repositorioUsuario;
     }
 
-    public async Task Ejecutar(ReservaAModificarDto dto, CancellationToken cancellationToken = default)
+    public async Task Ejecutar(ReservaAModificarDto dto, bool esAdmin, CancellationToken cancellationToken = default)
     {
         var reserva = await _repositorioReserva.ObtenerReservaPorId(dto.IdReserva, cancellationToken);
 
@@ -31,19 +32,45 @@ public class ModificarReserva : IModificarReserva
 
         var reservasEnRango = await _repositorioReserva
             .FindAllBetweenDates(desde, hasta, cancellationToken);
-        reserva.Reprogramar(dto.NuevaFecha, reservasEnRango);
+
+        if (esAdmin)
+        {
+            reserva.MarcarPendientePorCambioDeAdmin(dto.NuevaFecha, reservasEnRango);
+        }
+        else
+        {
+            reserva.RequiereConfirmacionCliente = false;
+            reserva.Reprogramar(dto.NuevaFecha, reservasEnRango);
+        }
 
         await _repositorioReserva.Update(reserva, cancellationToken);
-        var cliente = reserva.UsuarioCliente 
+
+        var cliente = reserva.UsuarioCliente
                       ?? throw new InvalidOperationException("El cliente asociado a la reserva no existe.");
 
         var fechaAnteriorString = fechaAnterior.ToString("dd/MM/yyyy HH:mm");
         var fechaNuevaString = reserva.FechaReserva.ToString("dd/MM/yyyy HH:mm");
 
-       var direccion = reserva.Direccion?.ToString() ?? "Sin dirección registrada";
+        var direccion = reserva.Direccion?.ToString() ?? "Sin dirección registrada";
         var comentario = string.IsNullOrWhiteSpace(reserva.Comentario)
             ? "Sin comentarios adicionales." : reserva.Comentario;
         var tipoServicio = reserva.TipoServicioReserva.ToString();
+
+        var bloqueEstadoCliente = (esAdmin && reserva.RequiereConfirmacionCliente)
+            ? @"
+                <p>
+                    Esta nueva fecha es una <strong>sugerida</strong> y quedará pendiente de tu confirmación.
+                </p>
+                <p>
+                    Tu reserva volverá a estado <strong>Pendiente</strong> hasta que confirmemos juntos la nueva fecha.
+                </p>
+                <p>
+                    Ante cualquier duda o ajuste que quieras realizar, podés responder desde tu panel de reservas.
+                </p>"
+            : @"
+                <p>
+                    La reserva quedó <strong>Pendiente</strong> para su revisión.
+                </p>";
 
         var cuerpoCliente = $@"
             <div style='font-family: Arial, sans-serif; color: #333;'>
@@ -56,19 +83,13 @@ public class ModificarReserva : IModificarReserva
                 <p><strong>Fecha anterior:</strong> {fechaAnteriorString}</p>
                 <p><strong>Nueva fecha sugerida:</strong> {fechaNuevaString}</p>
 
-                <p>Esta nueva fecha es una <strong>propuesta</strong> y nos estaremos comunicando contigo a la brevedad
-                para confirmar si te queda bien o coordinar otro horario en caso de ser necesario.</p>
-
-                <p>Tu reserva volverá a estado <strong>Pendiente</strong> hasta que confirmemos juntos la nueva fecha.</p>
-
-                <p>Ante cualquier duda o ajuste que quieras realizar, no dudes en responder este correo.</p>
+                {bloqueEstadoCliente}
 
                 <p>¡Gracias por confiar en Winni Electricidad!</p>
             </div>";
 
         await _enviarEmail.Ejecutar(cliente.Email, "Winni Electricidad - Reserva reprogramada", cuerpoCliente, cancellationToken);
 
- 
         var admin = await _repositorioUsuario.ObtenerAdministrador(cancellationToken);
 
         var cuerpoAdmin = $@"

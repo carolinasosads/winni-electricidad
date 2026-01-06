@@ -12,6 +12,8 @@ public class Presupuesto
     public string? DescripcionTrabajo { get; set; } 
     public string? Notas { get; set; }
     public DateTime FechaPresupuesto { get; set; }
+    public ICollection<Pago> Pagos { get; set; } = new List<Pago>();
+
     #endregion
 
     public Presupuesto()

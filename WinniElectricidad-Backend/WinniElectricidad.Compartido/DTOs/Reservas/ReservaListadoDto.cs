@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using WinniElectricidad.Compartido.DTOs.Direcciones;
 
 namespace WinniElectricidad.Compartido.DTOs.Usuarios.Reserva;
 
@@ -15,13 +16,20 @@ public class ReservaListadoDto
 
     [Required]
     public string NombreServicio { get; set; } = string.Empty;
-
-    [Required]
-    public string DireccionDescripcion { get; set; } = string.Empty;
-
+    
     [Range(0, double.MaxValue)]
     public decimal MontoPresupuestado { get; set; } = 0;
 
     [Required]
     public bool TienePresupuesto { get; set; } = false;
+    
+    public DireccionDto? Direccion { get; set; }
+    
+    [Required]
+    public List<string> Servicios { get; set; } = new();
+    
+    public bool RequiereConfirmacionCliente { get; set; } = false;
+
+    [MaxLength(500, ErrorMessage = "El comentario no puede superar los 500 caracteres.")]
+    public string? Comentario { get; set; }
 }

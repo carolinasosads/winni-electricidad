@@ -1,9 +1,30 @@
 import { useState } from "react";
-import {  Box,  Paper,  Typography,  Drawer,  IconButton,  Divider,  Alert,  List,  ListItemText,  Button,  Dialog,
-  DialogTitle,  DialogContent,  DialogActions,  Chip,  TextField,  CircularProgress,} from "@mui/material";
+import {
+  Box,
+  Paper,
+  Typography,
+  Drawer,
+  IconButton,
+  Divider,
+  Alert,
+  List,
+  ListItemText,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Chip,
+  TextField,
+  CircularProgress,
+} from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
-import {  crearPresupuestoParaReserva,  obtenerPresupuestoSegunReserva,  actualizarMontoPagadoPresupuesto,} from "../../../services/presupuestoService";
+import {
+  crearPresupuestoParaReserva,
+  obtenerPresupuestoSegunReserva,
+  registrarPagoPresupuesto,
+} from "../../../services/presupuestoService";
 
 import ApiError from "../../../services/ApiError";
 
@@ -31,9 +52,7 @@ function getReservaId(r) {
   return r?.idReserva ?? r?.IdReserva ?? r?.id ?? r?.Id ?? null;
 }
 function getReservaFecha(r) {
-  return (
-    r?.fechaHora ?? r?.FechaHora ?? r?.fechaReserva ?? r?.FechaReserva ?? "-"
-  );
+  return r?.fechaHora ?? r?.FechaHora ?? r?.fechaReserva ?? r?.FechaReserva ?? "-";
 }
 function getReservaEstado(r) {
   return r?.estado ?? r?.Estado ?? "-";
@@ -87,8 +106,19 @@ function parseApiErrorMessage(err, fallback) {
   return err?.message || fallback;
 }
 
-export default function DetalleClientes({  open,  onClose,  clienteSel,  detalle,  loadingDetalle,  errorDetalle,  mostrarReservas,
-  onToggleReservas,  reservas,  loadingReservas,  errorReservas,}) {
+export default function DetalleClientes({
+  open,
+  onClose,
+  clienteSel,
+  detalle,
+  loadingDetalle,
+  errorDetalle,
+  mostrarReservas,
+  onToggleReservas,
+  reservas,
+  loadingReservas,
+  errorReservas,
+}) {
   const direcciones = detalle?.direcciones ?? detalle?.Direcciones ?? [];
 
   const [openPresu, setOpenPresu] = useState(false);
@@ -100,13 +130,12 @@ export default function DetalleClientes({  open,  onClose,  clienteSel,  detalle
   const [presuSel, setPresuSel] = useState(null);
   const [reservaSel, setReservaSel] = useState(null);
 
-  const [montoPagadoEdit, setMontoPagadoEdit] = useState("");
-  const [montoPagadoOriginal, setMontoPagadoOriginal] = useState("");
+  const [pagoMonto, setPagoMonto] = useState("");
 
   const [montoTotalNuevo, setMontoTotalNuevo] = useState("");
   const [detalleTrabajoNuevo, setDetalleTrabajoNuevo] = useState("");
   const [notasInternasNuevo, setNotasInternasNuevo] = useState("");
-  const [montoPagadoNuevo, setMontoPagadoNuevo] = useState("");
+  const [pagoInicialNuevo, setPagoInicialNuevo] = useState("");
 
   const resetPresuUi = () => {
     setLoadingPresu(false);
@@ -117,13 +146,12 @@ export default function DetalleClientes({  open,  onClose,  clienteSel,  detalle
     setPresuSel(null);
     setReservaSel(null);
 
-    setMontoPagadoEdit("");
-    setMontoPagadoOriginal("");
+    setPagoMonto("");
 
     setMontoTotalNuevo("");
     setDetalleTrabajoNuevo("");
     setNotasInternasNuevo("");
-    setMontoPagadoNuevo("");
+    setPagoInicialNuevo("");
   };
 
   const handleClosePresu = () => {
@@ -141,11 +169,12 @@ export default function DetalleClientes({  open,  onClose,  clienteSel,  detalle
     setSuccessPresu(null);
     setPresuSel(null);
 
-    // reset creación
+    setPagoMonto("");
+
     setMontoTotalNuevo("");
     setDetalleTrabajoNuevo("");
     setNotasInternasNuevo("");
-    setMontoPagadoNuevo("");
+    setPagoInicialNuevo("");
 
     const idReserva = getReservaId(r);
     if (!idReserva) {
@@ -156,85 +185,72 @@ export default function DetalleClientes({  open,  onClose,  clienteSel,  detalle
 
     const tienePresupuesto = getTienePresupuesto(r);
     if (!tienePresupuesto) {
-      setPresuSel(null); 
+      setPresuSel(null);
       setLoadingPresu(false);
       return;
     }
 
     try {
       const data = await obtenerPresupuestoSegunReserva(idReserva);
-
       setPresuSel(data);
-
-      if (data) {
-        const mp = String(getPresuMontoPagado(data) ?? 0);
-        setMontoPagadoEdit(mp);
-        setMontoPagadoOriginal(mp);
-      } else {
-        setMontoPagadoEdit("");
-        setMontoPagadoOriginal("");
-      }
     } catch (err) {
-      if (err?.status >= 500) {
+      if (err instanceof ApiError && err.status === 404) {
         setPresuSel(null);
+        setErrorPresu(null);
+      } else {
+        if (err?.status >= 500) {
+          setPresuSel(null);
+        }
+        setErrorPresu(parseApiErrorMessage(err, "Error al obtener el presupuesto."));
       }
-      setErrorPresu(
-        parseApiErrorMessage(err, "Error al obtener el presupuesto.")
-      );
     } finally {
       setLoadingPresu(false);
     }
   };
 
-  // ---------- VALIDACIONES ----------
-  const montoPagadoNumero = Number(montoPagadoEdit);
-  const montoPagadoValido =
-    montoPagadoEdit !== "" &&
-    !Number.isNaN(montoPagadoNumero) &&
-    montoPagadoNumero >= 0;
-
-  const hayCambiosMontoPagado = montoPagadoEdit !== montoPagadoOriginal;
-
   const montoTotalNumero = Number(montoTotalNuevo);
   const montoTotalValido =
-    montoTotalNuevo !== "" &&
-    !Number.isNaN(montoTotalNumero) &&
-    montoTotalNumero > 0;
-
-  const montoPagadoNuevoNumero =
-    montoPagadoNuevo === "" ? 0 : Number(montoPagadoNuevo);
-  const montoPagadoNuevoValido =
-    montoPagadoNuevo === "" ||
-    (!Number.isNaN(montoPagadoNuevoNumero) && montoPagadoNuevoNumero >= 0);
+    montoTotalNuevo !== "" && !Number.isNaN(montoTotalNumero) && montoTotalNumero > 0;
 
   const detalleTrabajoValido = detalleTrabajoNuevo.trim().length >= 3;
 
-  const montoPagadoNoSuperaTotal =
-    montoPagadoNuevo === "" || montoPagadoNuevoNumero <= montoTotalNumero;
+  const pagoInicialNumero = pagoInicialNuevo === "" ? 0 : Number(pagoInicialNuevo);
+  const pagoInicialValido =
+    pagoInicialNuevo === "" || (!Number.isNaN(pagoInicialNumero) && pagoInicialNumero >= 0);
 
-  const puedeCrearPresupuesto =
-    !!reservaSel &&
-    montoTotalValido &&
-    detalleTrabajoValido &&
-    montoPagadoNuevoValido &&
-    montoPagadoNoSuperaTotal;
+  const pagoInicialNoSuperaTotal =
+    pagoInicialNuevo === "" || pagoInicialNumero <= montoTotalNumero;
 
-  // ---------- ACCIONES ----------
-  const handleCancelarEdicionMontoPagado = () => {
-    setMontoPagadoEdit(montoPagadoOriginal);
-    setSuccessPresu(null);
-    setErrorPresu(null);
-  };
+ const puedeCrearPresupuesto =
+  !!reservaSel &&
+  montoTotalValido &&
+  pagoInicialValido &&
+  pagoInicialNoSuperaTotal;
 
-  const handleGuardarMontoPagado = async () => {
+
+  const pagoMontoNumero = Number(pagoMonto);
+  const pagoMontoValido =
+    pagoMonto !== "" && !Number.isNaN(pagoMontoNumero) && pagoMontoNumero > 0;
+
+  const handleRegistrarPago = async () => {
     if (!reservaSel) return;
+
     const idReserva = getReservaId(reservaSel);
     if (!idReserva) {
       setErrorPresu("No se pudo determinar el ID de la reserva.");
       return;
     }
-    if (!montoPagadoValido) {
-      setErrorPresu("Ingresá un monto pagado válido (>= 0).");
+
+    if (!pagoMontoValido) {
+      setErrorPresu("Ingresá un monto de pago válido (> 0).");
+      return;
+    }
+
+    const total = Number(getPresuMontoTotal(presuSel) ?? 0);
+    const pagado = Number(getPresuMontoPagado(presuSel) ?? 0);
+
+    if (total > 0 && pagado + pagoMontoNumero > total) {
+      setErrorPresu("Ese pago supera el monto total del presupuesto.");
       return;
     }
 
@@ -243,22 +259,13 @@ export default function DetalleClientes({  open,  onClose,  clienteSel,  detalle
     setSuccessPresu(null);
 
     try {
-      const actualizado = await actualizarMontoPagadoPresupuesto(
-        idReserva,
-        montoPagadoNumero
-      );
-
+      const actualizado = await registrarPagoPresupuesto(idReserva, pagoMontoNumero);
       setPresuSel(actualizado);
 
-      const mp = String(getPresuMontoPagado(actualizado) ?? montoPagadoNumero);
-      setMontoPagadoEdit(mp);
-      setMontoPagadoOriginal(mp);
-
-      setSuccessPresu("Monto pagado actualizado");
+      setPagoMonto("");
+      setSuccessPresu("Pago registrado");
     } catch (err) {
-      setErrorPresu(
-        parseApiErrorMessage(err, "Error al actualizar el monto pagado.")
-      );
+      setErrorPresu(parseApiErrorMessage(err, "Error al registrar el pago."));
     } finally {
       setSavingPresu(false);
     }
@@ -274,9 +281,7 @@ export default function DetalleClientes({  open,  onClose,  clienteSel,  detalle
     }
 
     if (!puedeCrearPresupuesto) {
-      setErrorPresu(
-        "Completá el monto total, el detalle del trabajo y revisá el monto pagado."
-      );
+      setErrorPresu("Completá el monto total y el detalle del trabajo (y revisá el pago).");
       return;
     }
 
@@ -287,19 +292,19 @@ export default function DetalleClientes({  open,  onClose,  clienteSel,  detalle
     try {
       const dto = {
         montoTotal: Number(montoTotalNumero),
-        montoPagado: Number(montoPagadoNuevoNumero || 0),
         descripcionTrabajo: detalleTrabajoNuevo.trim(),
         notasInternas: (notasInternasNuevo || "").trim(),
       };
 
       const creado = await crearPresupuestoParaReserva(idReserva, dto);
 
-      setPresuSel(creado);
+      let finalPresu = creado;
+      if (pagoInicialNuevo !== "" && pagoInicialNumero > 0) {
+        finalPresu = await registrarPagoPresupuesto(idReserva, pagoInicialNumero);
+      }
 
-      const mp = String(getPresuMontoPagado(creado) ?? dto.montoPagado ?? 0);
-      setMontoPagadoEdit(mp);
-      setMontoPagadoOriginal(mp);
-
+      setPresuSel(finalPresu);
+      setPagoInicialNuevo("");
       setSuccessPresu("Presupuesto creado correctamente ");
     } catch (err) {
       setErrorPresu(parseApiErrorMessage(err, "Error al crear el presupuesto."));
@@ -321,7 +326,6 @@ export default function DetalleClientes({  open,  onClose,  clienteSel,  detalle
             <Typography variant="h6" fontWeight={700}>
               Detalle del cliente
             </Typography>
-
           </Box>
           <IconButton onClick={onClose}>
             <CloseIcon />
@@ -358,9 +362,7 @@ export default function DetalleClientes({  open,  onClose,  clienteSel,  detalle
               {errorDetalle && <Alert severity="error">{errorDetalle}</Alert>}
 
               <Paper sx={{ p: 2, mb: 2 }}>
-                <Typography fontWeight={700}>
-                  Direcciones ({direcciones.length})
-                </Typography>
+                <Typography fontWeight={700}>Direcciones ({direcciones.length})</Typography>
 
                 {direcciones.length === 0 ? (
                   <Alert severity="info" sx={{ mt: 1 }}>
@@ -420,7 +422,6 @@ export default function DetalleClientes({  open,  onClose,  clienteSel,  detalle
 
                           return (
                             <Paper key={idR} variant="outlined" sx={{ p: 1.5, mb: 1.2 }}>
-
                               <Typography variant="body2">
                                 <b>Fecha:</b> {fecha}
                               </Typography>
@@ -432,17 +433,12 @@ export default function DetalleClientes({  open,  onClose,  clienteSel,  detalle
                               <Chip
                                 size="small"
                                 sx={{ mb: 1 }}
-                                label={
-                                  tiene ? `Presupuesto: $ ${monto}` : "Sin presupuesto"
-                                }
+                                label={tiene ? `Presupuesto: $ ${monto}` : "Sin presupuesto"}
                                 color={tiene ? "success" : "default"}
                               />
 
                               <Box sx={{ display: "flex", gap: 1 }}>
-                                <Button
-                                  variant="outlined"
-                                  onClick={() => handleVerPresupuesto(r)}
-                                >
+                                <Button variant="outlined" onClick={() => handleVerPresupuesto(r)}>
                                   {tiene ? "Ver presupuesto" : "Agregar presupuesto"}
                                 </Button>
                               </Box>
@@ -460,10 +456,7 @@ export default function DetalleClientes({  open,  onClose,  clienteSel,  detalle
       </Drawer>
 
       <Dialog open={openPresu} onClose={handleClosePresu} fullWidth>
-        <DialogTitle>
-          Presupuesto{" "}
-
-        </DialogTitle>
+        <DialogTitle>Presupuesto</DialogTitle>
 
         <DialogContent dividers>
           {loadingPresu && (
@@ -484,7 +477,6 @@ export default function DetalleClientes({  open,  onClose,  clienteSel,  detalle
             </Alert>
           )}
 
-          {/* CREAR */}
           {!loadingPresu && presuSel === null && (
             <Box sx={{ display: "grid", gap: 1 }}>
               <TextField
@@ -526,7 +518,6 @@ export default function DetalleClientes({  open,  onClose,  clienteSel,  detalle
                 }
               />
 
-
               <TextField
                 label="Notas internas"
                 value={notasInternasNuevo}
@@ -540,23 +531,23 @@ export default function DetalleClientes({  open,  onClose,  clienteSel,  detalle
               />
 
               <TextField
-                label="Monto pagado (opcional)"
+                label="Pago (opcional)"
                 type="number"
-                value={montoPagadoNuevo}
+                value={pagoInicialNuevo}
                 onChange={(e) => {
-                  setMontoPagadoNuevo(e.target.value);
+                  setPagoInicialNuevo(e.target.value);
                   setSuccessPresu(null);
                   setErrorPresu(null);
                 }}
                 inputProps={{ min: 0, step: "0.01" }}
                 error={
-                  (montoPagadoNuevo !== "" && !montoPagadoNuevoValido) ||
-                  (montoPagadoNuevo !== "" && !montoPagadoNoSuperaTotal)
+                  (pagoInicialNuevo !== "" && !pagoInicialValido) ||
+                  (pagoInicialNuevo !== "" && !pagoInicialNoSuperaTotal)
                 }
                 helperText={
-                  montoPagadoNuevo !== "" && !montoPagadoNuevoValido
+                  pagoInicialNuevo !== "" && !pagoInicialValido
                     ? "Debe ser >= 0"
-                    : montoPagadoNuevo !== "" && !montoPagadoNoSuperaTotal
+                    : pagoInicialNuevo !== "" && !pagoInicialNoSuperaTotal
                       ? "No puede ser mayor al monto total"
                       : ""
                 }
@@ -564,11 +555,14 @@ export default function DetalleClientes({  open,  onClose,  clienteSel,  detalle
             </Box>
           )}
 
-          {/* VER/EDITAR */}
           {!loadingPresu && presuSel && (
             <Box sx={{ display: "grid", gap: 1 }}>
               <Typography>
                 <b>Monto total:</b> {getPresuMontoTotal(presuSel)}
+              </Typography>
+
+              <Typography>
+                <b>Total pagado:</b> {getPresuMontoPagado(presuSel)}
               </Typography>
 
               <Typography>
@@ -586,16 +580,23 @@ export default function DetalleClientes({  open,  onClose,  clienteSel,  detalle
               <Divider sx={{ my: 1 }} />
 
               <TextField
-                label="Monto pagado"
+                label="Monto del nuevo pago"
                 type="number"
-                value={montoPagadoEdit}
+                value={pagoMonto}
                 onChange={(e) => {
-                  setMontoPagadoEdit(e.target.value);
+                  setPagoMonto(e.target.value);
                   setSuccessPresu(null);
                   setErrorPresu(null);
                 }}
                 inputProps={{ min: 0, step: "0.01" }}
-                error={montoPagadoEdit !== "" && !montoPagadoValido}
+                error={pagoMonto !== "" && !pagoMontoValido}
+                helperText={
+                  pagoMonto === ""
+                    ? "Ingresá un monto para registrar un pago"
+                    : !pagoMontoValido
+                      ? "Debe ser mayor a 0"
+                      : ""
+                }
               />
             </Box>
           )}
@@ -617,28 +618,13 @@ export default function DetalleClientes({  open,  onClose,  clienteSel,  detalle
           )}
 
           {!loadingPresu && presuSel && (
-            <>
-              <Button
-                variant="outlined"
-                onClick={handleCancelarEdicionMontoPagado}
-                disabled={savingPresu || !hayCambiosMontoPagado}
-              >
-                Cancelar cambios
-              </Button>
-
-              <Button
-                variant="contained"
-                onClick={handleGuardarMontoPagado}
-                disabled={
-                  savingPresu ||
-                  loadingPresu ||
-                  !hayCambiosMontoPagado ||
-                  !montoPagadoValido
-                }
-              >
-                {savingPresu ? "Guardando…" : "Guardar cambios"}
-              </Button>
-            </>
+            <Button
+              variant="contained"
+              onClick={handleRegistrarPago}
+              disabled={savingPresu || loadingPresu || !pagoMontoValido}
+            >
+              {savingPresu ? "Registrando…" : "Registrar pago"}
+            </Button>
           )}
         </DialogActions>
       </Dialog>

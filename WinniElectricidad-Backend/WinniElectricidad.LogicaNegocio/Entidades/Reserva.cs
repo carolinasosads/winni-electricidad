@@ -17,6 +17,7 @@ public class Reserva
     public Direccion Direccion { get; set; } = null!;
     public Presupuesto? Presupuesto { get; set; }
     public ICollection<Servicio> Servicios { get; set; } = new List<Servicio>();
+    public bool RequiereConfirmacionCliente { get; set; }
 
     #endregion
 
@@ -33,16 +34,12 @@ public class Reserva
         IdDireccion = idDireccion;
         Servicios = servicios;
         Comentario = comentario;
+        RequiereConfirmacionCliente = false;
+
         Validar();
     }
     
-    public static Reserva CrearHistoricaAdmin(
-        DateTime fechaReserva,
-        TipoServicioReserva tipo,
-        int idUsuarioCliente,
-        int idDireccion,
-        ICollection<Servicio> servicios,
-        string? comentario)
+    public static Reserva CrearHistoricaAdmin(DateTime fechaReserva, TipoServicioReserva tipo, int idUsuarioCliente, int idDireccion, ICollection<Servicio> servicios, string? comentario)
     {
         var r = new Reserva
         {
@@ -52,7 +49,9 @@ public class Reserva
             IdUsuarioCliente = idUsuarioCliente,
             IdDireccion = idDireccion,
             Servicios = servicios,
-            Comentario = comentario
+            Comentario = comentario,
+            RequiereConfirmacionCliente = false
+
         };
 
         ValidarTipoServicioReserva(r.TipoServicioReserva);
@@ -121,10 +120,20 @@ public class Reserva
         ValidarNoExpirada();
         if (EstadoReserva != EstadoReserva.Pendiente)
             throw new InvalidOperationException("Solo se pueden aprobar reservas pendientes.");
+        if (!RequiereConfirmacionCliente)
+            throw new InvalidOperationException("Esta reserva todavía está pendiente de revisión del administrador. No podés aprobarla.");
+        RequiereConfirmacionCliente = false;
 
         EstadoReserva = EstadoReserva.Confirmada;
     }
 
+    public void MarcarPendientePorCambioDeAdmin(DateTime nuevaFecha, IEnumerable<Reserva> reservasEnRango)
+    {
+        Reprogramar(nuevaFecha, reservasEnRango);
+
+        RequiereConfirmacionCliente = true;
+        EstadoReserva = EstadoReserva.Pendiente;
+    }
     public void Cancelar()
     {
         ValidarNoExpirada();
@@ -134,6 +143,8 @@ public class Reserva
             throw new InvalidOperationException(
                 "Solo se pueden cancelar reservas pendientes o confirmadas.");
         }
+
+        RequiereConfirmacionCliente = false;
 
         EstadoReserva = EstadoReserva.Cancelada;
     }
@@ -160,6 +171,7 @@ public class Reserva
         }
 
         ValidarNoExpirada();
+        ValidarFechaReserva(nuevaFecha);
 
         var hayConflicto = reservasEnRango.Any(r =>
             r.IdReserva != IdReserva &&              

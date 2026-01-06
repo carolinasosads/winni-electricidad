@@ -54,7 +54,7 @@ function Sidebar({
 
     setIsFullyExpanded(false);
 
-    return () => {};
+    return () => { };
   }, [expanded, theme.transitions.duration.enteringScreen]);
 
   React.useEffect(() => {
@@ -68,7 +68,7 @@ function Sidebar({
 
     setIsFullyCollapsed(false);
 
-    return () => {};
+    return () => { };
   }, [expanded, theme.transitions.duration.leavingScreen]);
 
   const mini = !disableCollapsibleSidebar && !expanded;
@@ -162,6 +162,14 @@ function Sidebar({
                     icon={<RateReviewIcon />}
                     href="/cliente/resenas/crear"
                     selected={pathname.startsWith("/cliente/resenas/crear")}
+                  />
+
+                  <SidebarPageItem
+                    id="panel-reservas-cliente"
+                    title="Mis reservas"
+                    icon={<ViewAgendaIcon />}
+                    href="/cliente/mis-reservas"
+                    selected={pathname.startsWith("/cliente/mis-reservas")}
                   />
                 </>
               )}

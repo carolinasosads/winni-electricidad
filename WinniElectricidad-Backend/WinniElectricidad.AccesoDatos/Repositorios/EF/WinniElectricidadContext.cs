@@ -142,9 +142,9 @@ public class WinniElectricidadContext : DbContext
                         j.HasKey("IdReserva", "IdServicio");
                         j.ToTable("ReservaServicio");
                     });
-//Índice unico para que no haya dos reservas en el mismo horario 
-            entity.HasIndex(r => new { r.FechaReserva})
-                .IsUnique(); 
+            entity.HasIndex(r => r.FechaReserva)
+                .IsUnique()
+                .HasFilter($"[EstadoReserva] <> {(int)EstadoReserva.Cancelada}");
         });
 
         modelBuilder.Entity<Settings>().HasData(
@@ -184,6 +184,29 @@ public class WinniElectricidadContext : DbContext
             entity.HasOne(p => p.Reserva)
                 .WithOne(r => r.Presupuesto)
                 .HasForeignKey<Presupuesto>(p => p.IdReserva)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // -------------------- PAGOS --------------------
+        modelBuilder.Entity<Pago>(entity =>
+        {
+            entity.HasKey(p => p.IdPago);
+
+            entity.Property(p => p.Monto)
+                .HasPrecision(18, 2)
+                .IsRequired();
+
+            entity.Property(p => p.FechaHoraRealizado)
+                .IsRequired();
+
+            entity.HasOne(p => p.Usuario)
+                .WithMany(u => u.Pagos)
+                .HasForeignKey(p => p.IdUsuario)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(p => p.Presupuesto)
+                .WithMany(x => x.Pagos)
+                .HasForeignKey(p => p.IdPresupuesto)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 

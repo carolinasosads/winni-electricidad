@@ -1,17 +1,53 @@
 import { useEffect, useState } from "react";
-import { crearUsuarioComoAdmin, buscarUsuariosAdmin, getDireccionesUsuarioAdmin } from "../../../services/authService";
+import {
+  crearUsuarioComoAdmin,
+  buscarUsuariosAdmin,
+  getDireccionesUsuarioAdmin,
+} from "../../../services/authService";
 import { getServiciosActivos } from "../../../services/servicioService";
 
 import {
-  crearReservaAdmin,  crearReservaHistoricaAdmin,  getReservasPorClienteAdmin,} from "../../../services/reservaService";
+  crearReservaAdmin,
+  crearReservaHistoricaAdmin,
+  getReservasPorClienteAdmin,
+} from "../../../services/reservaService";
 
 import {
-  crearPresupuestoParaReserva,  obtenerPresupuestoSegunReserva,  actualizarMontoPagadoPresupuesto,} from "../../../services/presupuestoService";
+  crearPresupuestoParaReserva,
+  obtenerPresupuestoSegunReserva,
+  registrarPagoPresupuesto,
+} from "../../../services/presupuestoService";
 
-import {  Box,  Paper,  Typography,  Grid,  RadioGroup,  FormControlLabel,  Radio,  TextField,  Button,  Divider,  Alert,  FormControl,
-  InputLabel,  Select,  MenuItem,  FormHelperText,  Chip,  Dialog,  DialogTitle,  DialogContent,  DialogActions,} from "@mui/material";
+import {
+  Box,
+  Paper,
+  Typography,
+  Grid,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  TextField,
+  Button,
+  Divider,
+  Alert,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  FormHelperText,
+  Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} from "@mui/material";
 
 import ApiError from "../../../services/ApiError";
+
+function normalizarTelefono(t) {
+  const limpio = (t ?? "").toString().replace(/\D/g, "");
+  return limpio.length > 0 ? limpio.slice(0, 15) : null;
+}
 
 export default function AdminCrearReservaPage() {
   const [modoCliente, setModoCliente] = useState("existente"); // "existente" | "nuevo"
@@ -38,11 +74,14 @@ export default function AdminCrearReservaPage() {
   const [direccionesCliente, setDireccionesCliente] = useState([]);
   const [loadingDirecciones, setLoadingDirecciones] = useState(false);
 
+  const HORAS_DISPONIBLES = ["09:00", "10:30", "12:00", "13:30", "15:00", "16:30"];
+
   // Reserva
   const [modoReserva, setModoReserva] = useState("nueva"); // "nueva" | "existente"
   const [reserva, setReserva] = useState({
     servicios: [],
-    fechaHora: "",
+    fecha: "",
+    hora: "09:00",
     comentarios: "",
     tipoTrabajo: "instalacion", // "instalacion" | "mantenimiento"
     idDireccion: "",
@@ -56,23 +95,20 @@ export default function AdminCrearReservaPage() {
   const [reservaParaPresupuesto, setReservaParaPresupuesto] = useState(null);
   const [presupuesto, setPresupuesto] = useState({
     montoTotal: "",
-    montoPagado: "",
+    pagoInicial: "",
     descripcionTrabajo: "",
     notasInternas: "",
   });
   const [loadingPresupuesto, setLoadingPresupuesto] = useState(false);
 
-  // Modal de detalle presupuesto
   const [openDetallePresupuesto, setOpenDetallePresupuesto] = useState(false);
   const [detallePresupuesto, setDetallePresupuesto] = useState(null);
-  const [loadingDetallePresupuesto, setLoadingDetallePresupuesto] =
-    useState(false);
+  const [loadingDetallePresupuesto, setLoadingDetallePresupuesto] = useState(false);
 
-  //para editar el monto pagado 
-  const [editMontoPagado, setEditMontoPagado] = useState("");
-  const [loadingEditMontoPagado, setLoadingEditMontoPagado] = useState(false);
-  const [errorEditMontoPagado, setErrorEditMontoPagado] = useState("");
-  const [successEditMontoPagado, setSuccessEditMontoPagado] = useState("");
+  const [nuevoPagoMonto, setNuevoPagoMonto] = useState("");
+  const [loadingRegistrarPago, setLoadingRegistrarPago] = useState(false);
+  const [errorRegistrarPago, setErrorRegistrarPago] = useState("");
+  const [successRegistrarPago, setSuccessRegistrarPago] = useState("");
 
   const [serviciosOpts, setServiciosOpts] = useState([]);
   const [loadingServicios, setLoadingServicios] = useState(false);
@@ -82,20 +118,23 @@ export default function AdminCrearReservaPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  function buildFechaReservaLocal(fecha /* YYYY-MM-DD */, hora /* HH:mm */) {
+    if (!fecha || !hora) return null;
+    if (!HORAS_DISPONIBLES.includes(hora)) return null;
+    return `${fecha}T${hora}:00`;
+  }
+
   const resetPresupuesto = () => {
     setPresupuesto({
       montoTotal: "",
-      montoPagado: "",
+      pagoInicial: "",
       descripcionTrabajo: "",
       notasInternas: "",
     });
   };
 
-  const getMontoPresupuestado = (r) =>
-    r?.montoPresupuestado ?? r?.MontoPresupuestado ?? 0;
-
-  const getTienePresupuesto = (r) =>
-    r?.tienePresupuesto ?? r?.TienePresupuesto ?? false;
+  const getMontoPresupuestado = (r) => r?.montoPresupuestado ?? r?.MontoPresupuestado ?? 0;
+  const getTienePresupuesto = (r) => r?.tienePresupuesto ?? r?.TienePresupuesto ?? false;
 
   const parseApiErrorMessage = (e, fallback) => {
     let msg = fallback;
@@ -194,7 +233,8 @@ export default function AdminCrearReservaPage() {
 
     setReserva({
       servicios: [],
-      fechaHora: "",
+      fecha: "",
+      hora: "09:00",
       comentarios: "",
       tipoTrabajo: "instalacion",
       idDireccion: "",
@@ -209,7 +249,6 @@ export default function AdminCrearReservaPage() {
     const nextMode = event.target.value;
     setModoReserva(nextMode);
 
-    // reseteos
     setReservaSeleccionada(null);
     setReservaParaPresupuesto(null);
     resetPresupuesto();
@@ -245,14 +284,11 @@ export default function AdminCrearReservaPage() {
       setReservasCliente([]);
 
       const data = await getReservasPorClienteAdmin(clienteId);
-
       const list = normalizeToArray(data);
       setReservasCliente(list);
     } catch (err) {
       console.error(err);
-      setError(
-        parseApiErrorMessage(err, "Error al cargar las reservas del cliente.")
-      );
+      setError(parseApiErrorMessage(err, "Error al cargar las reservas del cliente."));
     } finally {
       setLoadingReservasCliente(false);
     }
@@ -267,9 +303,7 @@ export default function AdminCrearReservaPage() {
       setDireccionesCliente(Array.isArray(dirs) ? dirs : []);
     } catch (err) {
       console.error(err);
-      setError(
-        parseApiErrorMessage(err, "Error al cargar direcciones del cliente.")
-      );
+      setError(parseApiErrorMessage(err, "Error al cargar direcciones del cliente."));
     } finally {
       setLoadingDirecciones(false);
     }
@@ -301,10 +335,7 @@ export default function AdminCrearReservaPage() {
     setReserva((prev) => ({ ...prev, idDireccion: "" }));
     setDireccionesCliente([]);
 
-    await Promise.all([
-      cargarReservasDeCliente(clienteId),
-      cargarDireccionesDeCliente(clienteId),
-    ]);
+    await Promise.all([cargarReservasDeCliente(clienteId), cargarDireccionesDeCliente(clienteId)]);
   };
 
   // Nuevo cliente
@@ -335,7 +366,7 @@ export default function AdminCrearReservaPage() {
       const dto = {
         nombreCompleto: nuevoCliente.nombreCompleto,
         email: nuevoCliente.email,
-        telefono: nuevoCliente.telefono,
+        telefono: normalizarTelefono(nuevoCliente.telefono),
         direcciones: [
           {
             calle: nuevoCliente.calle.trim(),
@@ -345,6 +376,7 @@ export default function AdminCrearReservaPage() {
           },
         ],
       };
+
 
       const data = await crearUsuarioComoAdmin(dto);
 
@@ -368,10 +400,7 @@ export default function AdminCrearReservaPage() {
       resetPresupuesto();
 
       if (cliente.id) {
-        await Promise.all([
-          cargarReservasDeCliente(cliente.id),
-          cargarDireccionesDeCliente(cliente.id),
-        ]);
+        await Promise.all([cargarReservasDeCliente(cliente.id), cargarDireccionesDeCliente(cliente.id)]);
       }
     } catch (err) {
       console.error(err);
@@ -394,8 +423,7 @@ export default function AdminCrearReservaPage() {
     const next = Array.isArray(value) ? value : String(value).split(",");
     setReserva((prev) => ({ ...prev, servicios: next }));
 
-    if (next.length === 0)
-      setErrorServiciosSelect("Tenés que elegir al menos un servicio.");
+    if (next.length === 0) setErrorServiciosSelect("Tenés que elegir al menos un servicio.");
     else setErrorServiciosSelect("");
   };
 
@@ -421,7 +449,7 @@ export default function AdminCrearReservaPage() {
         setPresupuesto((prev) => ({
           ...prev,
           montoTotal: String(montoP),
-          montoPagado: "",
+          pagoInicial: "",
           descripcionTrabajo: "",
           notasInternas: "",
         }));
@@ -433,14 +461,20 @@ export default function AdminCrearReservaPage() {
       return;
     }
 
+    // Validaciones
     if (!reserva.servicios || reserva.servicios.length === 0) {
       setErrorServiciosSelect("Tenés que elegir al menos un servicio.");
       setError("Servicio(s) son obligatorios.");
       return;
     }
 
-    if (!reserva.fechaHora) {
-      setError("Fecha/hora es obligatoria.");
+    if (!reserva.fecha) {
+      setError("La fecha es obligatoria.");
+      return;
+    }
+
+    if (!reserva.hora) {
+      setError("La hora es obligatoria.");
       return;
     }
 
@@ -449,18 +483,26 @@ export default function AdminCrearReservaPage() {
       return;
     }
 
+    const fechaLocalString = buildFechaReservaLocal(reserva.fecha, reserva.hora);
+    if (!fechaLocalString) {
+      setError(
+        "La hora elegida no es válida. Elegí un horario permitido: 09:00, 10:30, 12:00, 13:30, 15:00 o 16:30."
+      );
+      return;
+    }
+
     try {
       setLoadingReserva(true);
 
       const reservaDto = {
-        fechaReserva: reserva.fechaHora,
+        fechaReserva: fechaLocalString,
         comentario: reserva.comentarios?.trim() || null,
         idDireccion: Number(reserva.idDireccion),
         idServicios: reserva.servicios.map(Number),
         tipoServicio: reserva.tipoTrabajo === "instalacion" ? 1 : 2,
       };
 
-      const fechaSeleccionada = new Date(reservaDto.fechaReserva);
+      const fechaSeleccionada = new Date(fechaLocalString);
       const ahora = new Date();
       const esHistorica = fechaSeleccionada <= ahora;
 
@@ -471,7 +513,8 @@ export default function AdminCrearReservaPage() {
       setSuccess("Reserva creada correctamente.");
       setReserva((prev) => ({
         ...prev,
-        fechaHora: "",
+        fecha: "",
+        hora: "09:00",
         comentarios: "",
       }));
 
@@ -513,17 +556,38 @@ export default function AdminCrearReservaPage() {
       return;
     }
 
+    const montoTotal = Number(presupuesto.montoTotal || 0);
+    const pagoInicial = presupuesto.pagoInicial ? Number(presupuesto.pagoInicial) : 0;
+
+    if (Number.isNaN(montoTotal) || montoTotal <= 0) {
+      setError("El monto total debe ser un número mayor a 0.");
+      return;
+    }
+
+    if (Number.isNaN(pagoInicial) || pagoInicial < 0) {
+      setError("El pago inicial debe ser un número válido (>= 0).");
+      return;
+    }
+
+    if (pagoInicial > 0 && pagoInicial > montoTotal) {
+      setError("El pago inicial no puede ser mayor al monto total.");
+      return;
+    }
+
     try {
       setLoadingPresupuesto(true);
 
       const dto = {
-        montoTotal: Number(presupuesto.montoTotal),
-        montoPagado: presupuesto.montoPagado ? Number(presupuesto.montoPagado) : 0,
+        montoTotal,
         descripcionTrabajo: presupuesto.descripcionTrabajo,
         notasInternas: presupuesto.notasInternas,
       };
 
       await crearPresupuestoParaReserva(reservaParaPresupuesto.idReserva, dto);
+
+      if (pagoInicial > 0) {
+        await registrarPagoPresupuesto(reservaParaPresupuesto.idReserva, pagoInicial);
+      }
 
       setSuccess("Presupuesto creado correctamente.");
       resetPresupuesto();
@@ -546,98 +610,72 @@ export default function AdminCrearReservaPage() {
     try {
       setLoadingDetallePresupuesto(true);
       setDetallePresupuesto(null);
-      setErrorEditMontoPagado("");
-      setSuccessEditMontoPagado("");
+      setErrorRegistrarPago("");
+      setSuccessRegistrarPago("");
+      setNuevoPagoMonto("");
 
-      const token = localStorage.getItem("token");
-
-      const data = await obtenerPresupuestoSegunReserva(res.idReserva, token);
-
+      const data = await obtenerPresupuestoSegunReserva(res.idReserva);
       setDetallePresupuesto(data);
-
-      const mp = data?.montoPagado ?? data?.MontoPagado ?? 0;
-      setEditMontoPagado(String(mp));
 
       setOpenDetallePresupuesto(true);
     } catch (err) {
       console.error(err);
-      setError(
-        parseApiErrorMessage(err, "Error al obtener el detalle del presupuesto.")
-      );
+      setError(parseApiErrorMessage(err, "Error al obtener el detalle del presupuesto."));
     } finally {
       setLoadingDetallePresupuesto(false);
     }
   };
 
-  const handleGuardarMontoPagado = async () => {
-    setErrorEditMontoPagado("");
-    setSuccessEditMontoPagado("");
+  const handleRegistrarPagoDetalle = async () => {
+    setErrorRegistrarPago("");
+    setSuccessRegistrarPago("");
 
     if (!detallePresupuesto) {
-      setErrorEditMontoPagado("No hay detalle de presupuesto cargado.");
+      setErrorRegistrarPago("No hay detalle de presupuesto cargado.");
       return;
     }
 
-    const idReserva =
-      detallePresupuesto?.idReserva ?? detallePresupuesto?.IdReserva ?? null;
-
+    const idReserva = detallePresupuesto?.idReserva ?? detallePresupuesto?.IdReserva ?? null;
     if (!idReserva) {
-      setErrorEditMontoPagado(
-        "No se pudo determinar el idReserva del presupuesto."
-      );
+      setErrorRegistrarPago("No se pudo determinar el idReserva del presupuesto.");
       return;
     }
 
-    const monto = Number(editMontoPagado);
-
-    if (Number.isNaN(monto)) {
-      setErrorEditMontoPagado("El monto pagado debe ser un número.");
+    const monto = Number(nuevoPagoMonto);
+    if (Number.isNaN(monto) || monto <= 0) {
+      setErrorRegistrarPago("Ingresá un monto válido (> 0).");
       return;
     }
 
-    if (monto < 0) {
-      setErrorEditMontoPagado("El monto pagado no puede ser negativo.");
-      return;
-    }
+    const montoTotal = Number(detallePresupuesto?.montoTotal ?? detallePresupuesto?.MontoTotal ?? 0);
+    const montoPagado = Number(detallePresupuesto?.montoPagado ?? detallePresupuesto?.MontoPagado ?? 0);
 
-    const montoTotal = Number(
-      detallePresupuesto?.montoTotal ?? detallePresupuesto?.MontoTotal ?? 0
-    );
-
-    if (montoTotal > 0 && monto > montoTotal) {
-      setErrorEditMontoPagado(
-        "El monto pagado no puede ser mayor al monto total."
-      );
+    if (montoTotal > 0 && montoPagado + monto > montoTotal) {
+      setErrorRegistrarPago("Ese pago supera el monto total del presupuesto.");
       return;
     }
 
     try {
-      setLoadingEditMontoPagado(true);
+      setLoadingRegistrarPago(true);
 
-      const token = localStorage.getItem("token");
-      const updated = await actualizarMontoPagadoPresupuesto(
-        idReserva,
-        monto,
-        token
-      );
+      const updated = await registrarPagoPresupuesto(idReserva, monto);
 
       setDetallePresupuesto((prev) => ({
         ...(prev || {}),
         ...updated,
       }));
 
-      setSuccessEditMontoPagado("Monto pagado actualizado.");
+      setNuevoPagoMonto("");
+      setSuccessRegistrarPago("Pago registrado ");
 
       if (clienteSeleccionado?.id) {
         await cargarReservasDeCliente(clienteSeleccionado.id);
       }
     } catch (err) {
       console.error(err);
-      setErrorEditMontoPagado(
-        parseApiErrorMessage(err, "Error al actualizar el monto pagado.")
-      );
+      setErrorRegistrarPago(parseApiErrorMessage(err, "Error al registrar el pago."));
     } finally {
-      setLoadingEditMontoPagado(false);
+      setLoadingRegistrarPago(false);
     }
   };
 
@@ -657,8 +695,7 @@ export default function AdminCrearReservaPage() {
     )
       return 2;
 
-    if (m.includes("cliente") || m.includes("buscar") || m.includes("búsq"))
-      return 1;
+    if (m.includes("cliente") || m.includes("buscar") || m.includes("búsq")) return 1;
 
     if (reservaParaPresupuesto) return 3;
     if (clienteSeleccionado) return 2;
@@ -698,22 +735,9 @@ export default function AdminCrearReservaPage() {
 
         <RenderAlertsForStep step={1} />
 
-        <RadioGroup
-          row
-          value={modoCliente}
-          onChange={handleChangeModoCliente}
-          sx={{ mb: 2 }}
-        >
-          <FormControlLabel
-            value="existente"
-            control={<Radio />}
-            label="Cliente existente"
-          />
-          <FormControlLabel
-            value="nuevo"
-            control={<Radio />}
-            label="Nuevo cliente"
-          />
+        <RadioGroup row value={modoCliente} onChange={handleChangeModoCliente} sx={{ mb: 2 }}>
+          <FormControlLabel value="existente" control={<Radio />} label="Cliente existente" />
+          <FormControlLabel value="nuevo" control={<Radio />} label="Nuevo cliente" />
         </RadioGroup>
 
         {modoCliente === "existente" && (
@@ -728,11 +752,7 @@ export default function AdminCrearReservaPage() {
                 />
               </Grid>
               <Grid item xs={12} md="auto">
-                <Button
-                  variant="contained"
-                  onClick={handleBuscarClientes}
-                  disabled={loadingBusqueda}
-                >
+                <Button variant="contained" onClick={handleBuscarClientes} disabled={loadingBusqueda}>
                   {loadingBusqueda ? "Buscando..." : "Buscar"}
                 </Button>
               </Grid>
@@ -757,24 +777,15 @@ export default function AdminCrearReservaPage() {
                       justifyContent: "space-between",
                       alignItems: "center",
                     }}
-                    variant={
-                      clienteSeleccionado?.id === id ? "outlined" : "elevation"
-                    }
+                    variant={clienteSeleccionado?.id === id ? "outlined" : "elevation"}
                   >
                     <Box>
-                      <Typography variant="subtitle1">
-                        {cliente.nombreCompleto || "Sin nombre"}
-                      </Typography>
+                      <Typography variant="subtitle1">{cliente.nombreCompleto || "Sin nombre"}</Typography>
                       <Typography variant="body2" color="text.secondary">
-                        {cliente.email}{" "}
-                        {cliente.telefono && `• ${cliente.telefono}`}
+                        {cliente.email} {cliente.telefono && `• ${cliente.telefono}`}
                       </Typography>
                     </Box>
-                    <Button
-                      size="small"
-                      variant="text"
-                      onClick={() => handleSeleccionarCliente(cliente)}
-                    >
+                    <Button size="small" variant="text" onClick={() => handleSeleccionarCliente(cliente)}>
                       SELECCIONAR CLIENTE
                     </Button>
                   </Paper>
@@ -835,7 +846,7 @@ export default function AdminCrearReservaPage() {
               <Grid item xs={12} md={3}>
                 <TextField
                   fullWidth
-                  label="Número (opcional)"
+                  label="Número"
                   value={nuevoCliente.numero}
                   onChange={handleChangeNuevoCliente("numero")}
                 />
@@ -843,7 +854,7 @@ export default function AdminCrearReservaPage() {
               <Grid item xs={12} md={3}>
                 <TextField
                   fullWidth
-                  label="Piso / Apto (opcional)"
+                  label="Piso / Apto "
                   value={nuevoCliente.apto}
                   onChange={handleChangeNuevoCliente("apto")}
                 />
@@ -851,11 +862,7 @@ export default function AdminCrearReservaPage() {
             </Grid>
 
             <Box sx={{ mt: 2 }}>
-              <Button
-                variant="contained"
-                onClick={handleCrearNuevoCliente}
-                disabled={loadingNuevoCliente}
-              >
+              <Button variant="contained" onClick={handleCrearNuevoCliente} disabled={loadingNuevoCliente}>
                 {loadingNuevoCliente ? "Creando..." : "Crear cliente y usarlo"}
               </Button>
             </Box>
@@ -866,10 +873,7 @@ export default function AdminCrearReservaPage() {
           <>
             <Divider sx={{ my: 2 }} />
             <Typography variant="body2" color="text.secondary">
-              Cliente actual:{" "}
-              <strong>
-                {clienteSeleccionado.nombreCompleto || clienteSeleccionado.email}
-              </strong>
+              Cliente actual: <strong>{clienteSeleccionado.nombreCompleto || clienteSeleccionado.email}</strong>
             </Typography>
           </>
         )}
@@ -891,22 +895,9 @@ export default function AdminCrearReservaPage() {
 
         {clienteSeleccionado && (
           <>
-            <RadioGroup
-              row
-              value={modoReserva}
-              onChange={handleChangeModoReserva}
-              sx={{ mb: 2 }}
-            >
-              <FormControlLabel
-                value="nueva"
-                control={<Radio />}
-                label="Crear nueva reserva"
-              />
-              <FormControlLabel
-                value="existente"
-                control={<Radio />}
-                label="Usar reserva existente"
-              />
+            <RadioGroup row value={modoReserva} onChange={handleChangeModoReserva} sx={{ mb: 2 }}>
+              <FormControlLabel value="nueva" control={<Radio />} label="Crear nueva reserva" />
+              <FormControlLabel value="existente" control={<Radio />} label="Usar reserva existente" />
             </RadioGroup>
 
             {/* Nueva Reserva */}
@@ -929,11 +920,7 @@ export default function AdminCrearReservaPage() {
                         renderValue={(selected) => (
                           <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
                             {selected.map((idStr) => (
-                              <Chip
-                                key={idStr}
-                                label={labelById(idStr)}
-                                size="small"
-                              />
+                              <Chip key={idStr} label={labelById(idStr)} size="small" />
                             ))}
                           </Box>
                         )}
@@ -945,38 +932,49 @@ export default function AdminCrearReservaPage() {
                         ))}
                       </Select>
 
-                      {!!errorServiciosSelect && (
-                        <FormHelperText>{errorServiciosSelect}</FormHelperText>
-                      )}
-                      {!errorServiciosSelect && !!errorServicios && (
-                        <FormHelperText>{errorServicios}</FormHelperText>
-                      )}
+                      {!!errorServiciosSelect && <FormHelperText>{errorServiciosSelect}</FormHelperText>}
+                      {!errorServiciosSelect && !!errorServicios && <FormHelperText>{errorServicios}</FormHelperText>}
                       {!errorServiciosSelect && !errorServicios && (
-                        <FormHelperText>
-                          Elegí uno o más servicios (mínimo 1).
-                        </FormHelperText>
+                        <FormHelperText>Elegí uno o más servicios (mínimo 1).</FormHelperText>
                       )}
                     </FormControl>
                   </Grid>
 
-                  <Grid item xs={12} md={6}>
+                  <Grid item xs={12} md={3}>
                     <TextField
                       fullWidth
-                      type="datetime-local"
-                      label="Fecha y hora"
-                      value={reserva.fechaHora}
-                      onChange={handleChangeReserva("fechaHora")}
+                      type="date"
+                      label="Fecha"
+                      value={reserva.fecha}
+                      onChange={(e) => setReserva((prev) => ({ ...prev, fecha: e.target.value }))}
                       InputLabelProps={{ shrink: true }}
                     />
+                  </Grid>
+
+                  <Grid item xs={12} md={3}>
+                    <FormControl fullWidth>
+                      <InputLabel id="hora-label">Hora</InputLabel>
+                      <Select
+                        labelId="hora-label"
+                        label="Hora"
+                        value={reserva.hora}
+                        onChange={(e) => setReserva((prev) => ({ ...prev, hora: e.target.value }))}
+                      >
+                        {HORAS_DISPONIBLES.map((h) => (
+                          <MenuItem key={h} value={h}>
+                            {h}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                      <FormHelperText>Elegí un horario válido.</FormHelperText>
+                    </FormControl>
                   </Grid>
                 </Grid>
 
                 <Grid container spacing={2} sx={{ mb: 2 }}>
                   <Grid item xs={12} md={6}>
                     <FormControl fullWidth>
-                      <InputLabel id="tipo-trabajo-label">
-                        Tipo de trabajo
-                      </InputLabel>
+                      <InputLabel id="tipo-trabajo-label">Tipo de trabajo</InputLabel>
                       <Select
                         labelId="tipo-trabajo-label"
                         label="Tipo de trabajo"
@@ -1000,12 +998,7 @@ export default function AdminCrearReservaPage() {
                         labelId="direccion-label"
                         label="Dirección"
                         value={reserva.idDireccion}
-                        onChange={(e) =>
-                          setReserva((prev) => ({
-                            ...prev,
-                            idDireccion: e.target.value,
-                          }))
-                        }
+                        onChange={(e) => setReserva((prev) => ({ ...prev, idDireccion: e.target.value }))}
                       >
                         {direccionesCliente.map((d) => (
                           <MenuItem key={d.id} value={String(d.id)}>
@@ -1018,8 +1011,8 @@ export default function AdminCrearReservaPage() {
                         {loadingDirecciones
                           ? "Cargando direcciones..."
                           : direccionesCliente.length === 0
-                          ? "El cliente no tiene direcciones cargadas."
-                          : "Seleccioná una dirección existente del cliente."}
+                            ? "El cliente no tiene direcciones cargadas."
+                            : "Seleccioná una dirección existente del cliente."}
                       </FormHelperText>
                     </FormControl>
                   </Grid>
@@ -1040,7 +1033,6 @@ export default function AdminCrearReservaPage() {
               </>
             )}
 
-            {/* Reserva existente */}
             {modoReserva === "existente" && (
               <Box sx={{ mt: 1 }}>
                 {loadingReservasCliente && (
@@ -1076,9 +1068,7 @@ export default function AdminCrearReservaPage() {
                         }}
                       >
                         <Box>
-                          <Typography variant="subtitle2">
-                            {res.nombreServicio || "Servicio"}
-                          </Typography>
+                          <Typography variant="subtitle2">{res.nombreServicio || "Servicio"}</Typography>
 
                           <Typography variant="body2" color="text.secondary">
                             {res.fechaReserva &&
@@ -1104,9 +1094,7 @@ export default function AdminCrearReservaPage() {
                           <Chip
                             size="small"
                             sx={{ mt: 1 }}
-                            label={
-                              tieneP ? `Presupuesto: $ ${montoP}` : "Sin presupuesto"
-                            }
+                            label={tieneP ? `Presupuesto: $ ${montoP}` : "Sin presupuesto"}
                             color={tieneP ? "success" : "default"}
                           />
                         </Box>
@@ -1125,9 +1113,7 @@ export default function AdminCrearReservaPage() {
                               handleVerDetallePresupuesto(res);
                             } else {
                               resetPresupuesto();
-                              setSuccess(
-                                "Reserva seleccionada. Ahora podés cargar el presupuesto."
-                              );
+                              setSuccess("Reserva seleccionada. Ahora podés cargar el presupuesto.");
                             }
                           }}
                         >
@@ -1140,18 +1126,14 @@ export default function AdminCrearReservaPage() {
             )}
 
             <Box sx={{ mt: 2 }}>
-              <Button
-                variant="contained"
-                onClick={handleCrearReserva}
-                disabled={loadingReserva}
-              >
+              <Button variant="contained" onClick={handleCrearReserva} disabled={loadingReserva}>
                 {loadingReserva
                   ? modoReserva === "nueva"
                     ? "Creando reserva..."
                     : "Confirmando..."
                   : modoReserva === "nueva"
-                  ? "Crear reserva"
-                  : "Confirmar selección"}
+                    ? "Crear reserva"
+                    : "Confirmar selección"}
               </Button>
             </Box>
           </>
@@ -1193,8 +1175,8 @@ export default function AdminCrearReservaPage() {
                 size="small"
                 label="Monto pagado (opcional)"
                 type="number"
-                value={presupuesto.montoPagado}
-                onChange={handleChangePresupuesto("montoPagado")}
+                value={presupuesto.pagoInicial}
+                onChange={handleChangePresupuesto("pagoInicial")}
                 inputProps={{ min: 0 }}
                 disabled={reservaYaTienePresupuesto}
               />
@@ -1229,11 +1211,7 @@ export default function AdminCrearReservaPage() {
 
           {!reservaYaTienePresupuesto && (
             <Box sx={{ mt: 2 }}>
-              <Button
-                variant="contained"
-                onClick={handleCrearPresupuesto}
-                disabled={loadingPresupuesto}
-              >
+              <Button variant="contained" onClick={handleCrearPresupuesto} disabled={loadingPresupuesto}>
                 {loadingPresupuesto ? "Creando presupuesto..." : "Crear presupuesto"}
               </Button>
             </Box>
@@ -1246,8 +1224,9 @@ export default function AdminCrearReservaPage() {
         open={openDetallePresupuesto}
         onClose={() => {
           setOpenDetallePresupuesto(false);
-          setErrorEditMontoPagado("");
-          setSuccessEditMontoPagado("");
+          setErrorRegistrarPago("");
+          setSuccessRegistrarPago("");
+          setNuevoPagoMonto("");
         }}
         fullWidth
         maxWidth="sm"
@@ -1262,9 +1241,7 @@ export default function AdminCrearReservaPage() {
           )}
 
           {!loadingDetallePresupuesto && !detallePresupuesto && (
-            <Alert severity="warning">
-              No se pudo cargar el detalle del presupuesto.
-            </Alert>
+            <Alert severity="warning">No se pudo cargar el detalle del presupuesto.</Alert>
           )}
 
           {!loadingDetallePresupuesto && detallePresupuesto && (
@@ -1274,55 +1251,37 @@ export default function AdminCrearReservaPage() {
                 {detallePresupuesto?.montoTotal ?? detallePresupuesto?.MontoTotal}
               </Typography>
 
+              <Typography>
+                <strong>Total pagado:</strong> ${" "}
+                {detallePresupuesto?.montoPagado ?? detallePresupuesto?.MontoPagado ?? 0}
+              </Typography>
+
+              <Divider sx={{ my: 1 }} />
+
               <TextField
                 fullWidth
                 size="small"
-                label="Monto pagado"
+                label="Monto del nuevo pago"
                 type="number"
-                value={editMontoPagado}
-                onChange={(e) => setEditMontoPagado(e.target.value)}
+                value={nuevoPagoMonto}
+                onChange={(e) => {
+                  setNuevoPagoMonto(e.target.value);
+                  setErrorRegistrarPago("");
+                  setSuccessRegistrarPago("");
+                }}
                 inputProps={{ min: 0 }}
                 sx={{ mt: 1 }}
               />
 
-              {errorEditMontoPagado && (
+              {errorRegistrarPago && (
                 <Box sx={{ mt: 1 }}>
-                  <Alert severity="error">{errorEditMontoPagado}</Alert>
+                  <Alert severity="error">{errorRegistrarPago}</Alert>
                 </Box>
               )}
 
-              {successEditMontoPagado && (
+              {successRegistrarPago && (
                 <Box sx={{ mt: 1 }}>
-                  <Alert severity="success">{successEditMontoPagado}</Alert>
-                </Box>
-              )}
-
-              {!!(detallePresupuesto?.descripcionTrabajo ?? detallePresupuesto?.DescripcionTrabajo) && (
-                <Box sx={{ mt: 1 }}>
-                  <Typography variant="subtitle2">Descripción del trabajo</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {detallePresupuesto?.descripcionTrabajo ??
-                      detallePresupuesto?.DescripcionTrabajo}
-                  </Typography>
-                </Box>
-              )}
-
-              {!!(detallePresupuesto?.notasInternas ?? detallePresupuesto?.NotasInternas) && (
-                <Box sx={{ mt: 1 }}>
-                  <Typography variant="subtitle2">Notas internas</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {detallePresupuesto?.notasInternas ??
-                      detallePresupuesto?.NotasInternas}
-                  </Typography>
-                </Box>
-              )}
-
-              {!!(detallePresupuesto?.notas ?? detallePresupuesto?.Notas) && (
-                <Box sx={{ mt: 1 }}>
-                  <Typography variant="subtitle2">Notas</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {detallePresupuesto?.notas ?? detallePresupuesto?.Notas}
-                  </Typography>
+                  <Alert severity="success">{successRegistrarPago}</Alert>
                 </Box>
               )}
             </Box>
@@ -1333,8 +1292,9 @@ export default function AdminCrearReservaPage() {
           <Button
             onClick={() => {
               setOpenDetallePresupuesto(false);
-              setErrorEditMontoPagado("");
-              setSuccessEditMontoPagado("");
+              setErrorRegistrarPago("");
+              setSuccessRegistrarPago("");
+              setNuevoPagoMonto("");
             }}
           >
             Cerrar
@@ -1342,14 +1302,10 @@ export default function AdminCrearReservaPage() {
 
           <Button
             variant="contained"
-            onClick={handleGuardarMontoPagado}
-            disabled={
-              loadingEditMontoPagado ||
-              loadingDetallePresupuesto ||
-              !detallePresupuesto
-            }
+            onClick={handleRegistrarPagoDetalle}
+            disabled={loadingRegistrarPago || loadingDetallePresupuesto || !detallePresupuesto}
           >
-            {loadingEditMontoPagado ? "Guardando..." : "Guardar monto pagado"}
+            {loadingRegistrarPago ? "Registrando..." : "Registrar pago"}
           </Button>
         </DialogActions>
       </Dialog>

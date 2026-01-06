@@ -23,6 +23,8 @@ import FichaClientes from "../../pages/Admin/FichaClientes/FichaClientes.jsx"
 
 import PaginaPrincipal from "../../pages/Public/Principal/Principal.jsx"
 import ServiciosPage from "../../pages/Public/Servicio/ServiciosPage.jsx";
+import PanelReservasCliente from "../../pages/User/PanelReservas/PanelReservasCliente.jsx";
+
 
 export default function App() {
   return (
@@ -51,6 +53,7 @@ export default function App() {
         <Route path="resenas" element={<ResenaPage />} />
         <Route path="resenas/crear" element={<CrearResena />} />
         <Route path="servicios" element={<ServiciosPage />} /> 
+        <Route path="mis-reservas" element={<PanelReservasCliente />} />
       </Route>
 
       {/* Usuario Administrador */}

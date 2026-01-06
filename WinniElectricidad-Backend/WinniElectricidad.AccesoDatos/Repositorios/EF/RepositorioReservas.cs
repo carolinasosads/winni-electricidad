@@ -155,4 +155,16 @@ public class RepositorioReservas : IRepositorioReserva
             .AsNoTracking()
             .ToListAsync(ct);
     }
+    
+    public async Task<IEnumerable<Reserva>> ObtenerReservasClienteConDetalle(int idCliente, CancellationToken ct = default)
+    {
+        return await _db.Reservas
+            .AsNoTracking()
+            .Include(r => r.Servicios)
+            .Include(r => r.Direccion)
+            .Include(r => r.Presupuesto)
+            .Where(r => r.IdUsuarioCliente == idCliente)
+            .OrderByDescending(r => r.FechaReserva)
+            .ToListAsync(ct);
+    }
 }
