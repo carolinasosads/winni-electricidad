@@ -90,6 +90,40 @@ export async function activarServicio(idServicio) {
     return await resp.json();
 }
 
+// -- POSTs --
+
+export async function crearServicio(servicio, signal) {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    throw new ApiError("Usuario no autenticado.", 401);
+  }
+
+  const resp = await fetch(`${urlAPIServicio}`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(servicio),
+    signal,
+  });
+
+  if (resp.status === 401) {
+    const data = await handleJsonOrText(resp);
+    throw new ApiError(data?.message || "Token inválido o expirado.", 401);
+  }
+
+  if (!resp.ok) {
+    const data = await handleJsonOrText(resp);
+    throw new ApiError(
+      data?.message || "Error al crear el servicio.",
+      resp.status
+    );
+  }
+
+  return await resp.json();
+}
+
+// -- OTROS --
+
 async function handleJsonOrText(resp) {
     const ct = resp.headers.get("content-type") || "";
     if (ct.includes("application/json")) {

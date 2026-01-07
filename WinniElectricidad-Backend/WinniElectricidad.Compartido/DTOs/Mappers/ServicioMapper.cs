@@ -42,7 +42,7 @@ public static class ServicioMapper
             .ToList();
     }
 
-    public static ServicioActivoDto MapearServicioADto(Servicio servicio)
+    public static ServicioActivoDto MapearServicioAActivoDto(Servicio servicio)
     {
         return new ServicioActivoDto
         {
@@ -55,6 +55,28 @@ public static class ServicioMapper
                     EsPrincipal = i.EsPrincipal,
                 })
                 .ToList(),
+        };
+    }
+    
+    public static ServicioDto MapearServicioADto(Servicio servicio)
+    {
+        return new ServicioDto
+        {
+            Id = servicio.Id,
+            Titulo = servicio.Titulo,
+            Descripcion = servicio.Descripcion,
+            ImagenUrl = servicio.ImagenUrl,
+            Activo = servicio.Activo
+        };
+    }
+    
+    public static Servicio MapearServicioDtoAEntidad(ServicioDto servicio)
+    {
+        return new Servicio
+        {
+            Titulo = servicio.Titulo,
+            Descripcion = servicio.Descripcion,
+            ImagenUrl = servicio.ImagenUrl
         };
     }
 }

@@ -13,9 +13,12 @@ public class RepositorioServicios : IRepositorioServicio
         _db = db;
     }
     
-    public Task<Servicio?> Add(Servicio obj, CancellationToken ct = default)
+    public async Task<Servicio?> Add(Servicio obj, CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        await _db.Servicios.AddAsync(obj, ct);
+        await _db.SaveChangesAsync(ct);
+
+        return obj;
     }
 
     public async Task<Servicio?> FindById(int id, CancellationToken ct = default)

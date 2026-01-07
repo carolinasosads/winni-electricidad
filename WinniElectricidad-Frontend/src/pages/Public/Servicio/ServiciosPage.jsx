@@ -7,13 +7,15 @@ import AppHeader from "../../../components/Header/Header.jsx";
 import { SitemarkIcon } from "../../../components/CustomIcons/CustomIcons.jsx";
 
 import ServiciosCard from "./ServiciosCard";
+import ServicioCreateCard from "./ServicioCreateCard";
 import ServiciosHeader from "./ServiciosHeader";
 
 import {
   getServiciosActivos,
   getServicios,
   desactivarServicio,
-  activarServicio
+  activarServicio,
+  crearServicio
 } from "../../../services/servicioService";
 
 export default function ServiciosPage() {
@@ -160,6 +162,15 @@ export default function ServiciosPage() {
           }
         }}
       >
+        {rol === "Administrador" && (
+          <ServicioCreateCard
+            onCrear={async (nuevoServicio) => {
+              await crearServicio(nuevoServicio);
+              await reloadServicios();
+              setSuccessMsg("¡Servicio creado con éxito!");
+            }}
+          />
+        )}
         {serviciosNormalizados.map(servicio => (
           <ServiciosCard
             key={servicio.id}

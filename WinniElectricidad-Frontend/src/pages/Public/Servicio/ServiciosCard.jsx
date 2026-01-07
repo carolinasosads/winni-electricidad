@@ -33,10 +33,7 @@ export default function ServicioCard({
     Otro: <BuildOutlinedIcon />
   };
 
-  // ✅ Imagen servida desde /public (funciona igual en local y prod)
   const imageUrl = servicio.imagenUrl;
-
-  console.log("[ServicioCard imagen]", imageUrl);
 
   return (
     <Card
@@ -100,7 +97,6 @@ export default function ServicioCard({
           borderTopRightRadius: 12
         }}
         onError={(e) => {
-          console.error("❌ Error cargando imagen:", imageUrl);
           e.currentTarget.src = "/servicios/servicio-default.jpg";
         }}
       />

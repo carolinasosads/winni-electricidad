@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using WinniElectricidad.Compartido.DTOs.Servicios;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Servicio;
+using WinniElectricidad.LogicaNegocio.ExcepcionesPersonalizadas.Servicios;
 
 namespace WinniElectricidad.Api.Controllers;
 
@@ -15,20 +16,22 @@ public class ServicioController : ControllerBase
     private readonly IObtenerServiciosSegunEstado _obtenerServiciosSegunEstado;
     private readonly IDesactivarServicio _desactivarServicio;
     private readonly IActivarServicio _activarServicio;
+    private readonly ICrearServicio _crearServicio;
 
-    
+
     /// <summary>
     /// Inicializa una nueva instancia del <see cref="ServicioController"/> con las dependencias necesarias.
     /// </summary>
     /// <param name="obtenerServiciosSegunEstado">Servicio para obtener los servicios activos.</param>
     /// <param name="desactivarServicio">Servicio para desactivar un servicio activo.</param>
     /// <param name="activarServicio">Servicio para activar un servicio desactivado.</param>
-
-    public ServicioController(IObtenerServiciosSegunEstado obtenerServiciosSegunEstado, IDesactivarServicio desactivarServicio, IActivarServicio activarServicio)
+    /// <param name="crearServicio">Servicio para crear un nuevo servicio ofrecido por la empresa.</param>
+    public ServicioController(IObtenerServiciosSegunEstado obtenerServiciosSegunEstado, IDesactivarServicio desactivarServicio, IActivarServicio activarServicio, ICrearServicio crearServicio)
     {
         _obtenerServiciosSegunEstado = obtenerServiciosSegunEstado;
         _desactivarServicio = desactivarServicio;
         _activarServicio = activarServicio;
+        _crearServicio = crearServicio;
     }
     
     /// <summary>
@@ -214,6 +217,35 @@ public class ServicioController : ControllerBase
         catch (InvalidOperationException ex)
         {
             return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "Error inesperado." });
+        }
+    }
+    
+    [HttpPost]
+    [ProducesResponseType(typeof(ServicioDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> CrearNuevoServicio([FromBody] ServicioDto nuevoServicio, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var servicioCreado = await _crearServicio.Ejecutar(nuevoServicio, cancellationToken);
+            
+            return Ok(servicioCreado);
+        } catch (ServicioException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Forbid(ex.Message);
         }
         catch (Exception)
         {

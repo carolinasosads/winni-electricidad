@@ -34,7 +34,7 @@ public class ReseñaMapper
                 Telefono = usuario.Telefono
             },
 
-            Servicio = ServicioMapper.MapearServicioADto(servicio),
+            Servicio = ServicioMapper.MapearServicioAActivoDto(servicio),
             
             ImagenUrl = reseña.ImagenUrl
         };

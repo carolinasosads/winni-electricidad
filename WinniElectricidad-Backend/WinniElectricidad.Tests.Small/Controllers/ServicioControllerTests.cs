@@ -12,7 +12,7 @@ public class ServicioControllerTests
     private Mock<IObtenerServiciosSegunEstado> _mockServicio;
     private Mock<IActivarServicio> _mockServicioActivar;
     private Mock<IDesactivarServicio> _mockServicioDesactivar;
-
+    private Mock<ICrearServicio> _mockServicioCrear;
 
     private ServicioController _controller;
 
@@ -22,7 +22,8 @@ public class ServicioControllerTests
         _mockServicio = new Mock<IObtenerServiciosSegunEstado>();
         _mockServicioDesactivar = new Mock<IDesactivarServicio>();
         _mockServicioActivar = new Mock<IActivarServicio>();
-        _controller = new ServicioController(_mockServicio.Object,  _mockServicioDesactivar.Object, _mockServicioActivar.Object);
+        _mockServicioCrear = new Mock<ICrearServicio>();
+        _controller = new ServicioController(_mockServicio.Object,  _mockServicioDesactivar.Object, _mockServicioActivar.Object, _mockServicioCrear.Object);
     }
 
     [Test]

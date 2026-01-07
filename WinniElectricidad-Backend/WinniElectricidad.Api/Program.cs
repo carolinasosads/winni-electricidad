@@ -171,6 +171,7 @@ builder.Services.AddScoped<IServicioOneTimeToken, ServicioOneTimeToken>();
 builder.Services.AddScoped<IObtenerServiciosSegunEstado, ObtenerServiciosSegunEstado>();
 builder.Services.AddScoped<IDesactivarServicio, DesactivarServicio>();
 builder.Services.AddScoped<IActivarServicio, ActivarServicio>();
+builder.Services.AddScoped<ICrearServicio, CrearServicio>();
 // - Direccion -
 builder.Services.AddScoped<IObtenerDirecciones, ObtenerDirecciones>();
 // - Reserva -

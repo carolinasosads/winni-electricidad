@@ -22,7 +22,7 @@ public class Reseña
         IdUsuario = idUsuario;
         IdServicio = idServicio;
         ImagenUrl = imagen;
-        Estado = EstadoReseña.Aprobada; //TODO: cambiar a pendiente cuando este la moderacion mediante IA
+        Estado = EstadoReseña.Aprobada;
         Validar();
     }
 
