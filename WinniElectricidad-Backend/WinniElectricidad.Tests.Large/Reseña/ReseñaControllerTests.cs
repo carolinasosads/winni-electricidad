@@ -5,6 +5,7 @@ using System.Text;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using WinniElectricidad.Compartido.DTOs.Reseñas;
+using WinniElectricidad.LogicaNegocio.Entidades;
 using WinniElectricidad.Tests.Large.Infraestructura;
 
 namespace WinniElectricidad.Tests.Large.Reseña;
@@ -38,7 +39,7 @@ public class ReseñaControllerTests : LargeTestBase
             var servicio = new LogicaNegocio.Entidades.Servicio(
                 "Electricidad E2E",
                 "Servicio eléctrico E2E",
-                null)
+                new List<ServicioImagen>())
             { Activo = true };
 
             db.Servicios.Add(servicio);
@@ -81,7 +82,7 @@ public class ReseñaControllerTests : LargeTestBase
             if (conImagen)
             {
                 Assert.That(dto.ImagenUrl, Is.Not.Null);
-                Assert.That(dto.ImagenUrl, Does.StartWith("/resenias/"));
+                Assert.That(dto.ImagenUrl, Does.Contain("/resenias/"));
             }
             else
             {
@@ -106,23 +107,6 @@ public class ReseñaControllerTests : LargeTestBase
                 Assert.That(reseñaEnDb.ImagenUrl, Is.EqualTo(dto.ImagenUrl));
             else
                 Assert.That(reseñaEnDb.ImagenUrl, Is.Null);
-        }
-
-        // Assert solo con imagen
-        if (conImagen)
-        {
-            using var scope = Factory.Services.CreateScope();
-            var env = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
-
-            var relative = dto!.ImagenUrl!.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
-            var path = Path.Combine(
-                Directory.GetCurrentDirectory(),
-                "wwwroot",
-                relative
-            );
-
-            Assert.That(File.Exists(path), Is.True,
-                $"Se esperaba que el archivo exista en: {path}");
         }
     }
 }

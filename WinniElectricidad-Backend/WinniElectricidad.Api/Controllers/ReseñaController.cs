@@ -92,7 +92,7 @@ public class ReseñaController : ControllerBase
             string? imagenUrl = null;
 
             if (imagen != null)
-                imagenUrl = await _servicioImagenes.GuardarAsync(imagen);
+                imagenUrl = await _servicioImagenes.GuardarAsync(imagen, "resenias");
             
             var reseñaCreada = await _agregarReseña.Ejecutar(nuevaReseña, idUsuario, imagenUrl, cancellationToken);
             

@@ -1,4 +1,7 @@
-﻿namespace WinniElectricidad.Api.Servicios;
+﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+
+namespace WinniElectricidad.Api.Servicios;
 
 /// <summary>
 /// Servicio encargado de gestionar el almacenamiento de imágenes en el servidor.
@@ -19,6 +22,18 @@ public class ServicioImagenes : IServicioImagenes
 {
     private static readonly string[] FormatosPermitidos = { ".jpg", ".jpeg", ".png" };
     private const long TamanioMaximo = 5 * 1024 * 1024;
+    
+    private readonly BlobServiceClient _blobServiceClient;
+    private const string ContainerName = "imagenes";
+    
+    /// <summary>
+    /// Constructor que recibe el cliente de Azure Blob Storage por inyección de dependencias.
+    /// </summary>
+    /// <param name="blobServiceClient">Cliente de Azure Blob Storage inyectado mediante dependencias.</param>
+    public ServicioImagenes(BlobServiceClient blobServiceClient)
+    {
+        _blobServiceClient = blobServiceClient;
+    }
 
     /// <summary>
     /// Guarda una imagen en el servidor realizando validaciones de formato y tamaño.
@@ -27,19 +42,20 @@ public class ServicioImagenes : IServicioImagenes
     /// Valida que el archivo tenga un tamaño máximo de 5 MB y que su extensión sea JPG o PNG.
     /// Si la validación es correcta, el archivo se almacena en <c>wwwroot/resenias</c> con un nombre único
     /// y se devuelve la URL relativa para su posterior uso por el frontend.
-    ///
+    /// 
     /// **Formatos permitidos:** .jpg, .jpeg, .png  
     /// **Tamaño máximo:** 5 MB
-    ///
+    /// 
     /// **Excepciones:**
     /// - <see cref="ArgumentException"/>: cuando el archivo supera el tamaño permitido o su formato no es válido.
     /// </remarks>
     /// <param name="archivo">Archivo de imagen recibido como <see cref="IFormFile"/>.</param>
+    /// <param name="carpeta">Carpeta donde se guardan las imágenes en Azure blob</param>
     /// <returns>URL relativa de la imagen almacenada (por ejemplo: <c>/resenias/imagen.jpg</c>).</returns>
     /// <exception cref="ArgumentException">
     /// Se lanza si el archivo es demasiado grande o no tiene un formato permitido.
     /// </exception>
-    public async Task<string> GuardarAsync(IFormFile archivo)
+    public async Task<string> GuardarAsync(IFormFile archivo, string carpeta)
     {
         if (archivo == null || archivo.Length == 0)
             throw new ArgumentException("Para ser procesado, el archivo de imagen es obligatorio y no puede estar vacío.");
@@ -53,15 +69,18 @@ public class ServicioImagenes : IServicioImagenes
         if (!FormatosPermitidos.Contains(extension))
             throw new ArgumentException("Formato de imagen no permitido. Solo se aceptan JPG y PNG.");
 
-        var carpeta = Path.Combine("wwwroot", "resenias");
-        Directory.CreateDirectory(carpeta);
-
         var nombre = $"{Guid.NewGuid()}{extension}";
-        var ruta = Path.Combine(carpeta, nombre);
+        var blobPath = $"{carpeta}/{nombre}";
 
-        await using var stream = new FileStream(ruta, FileMode.Create);
-        await archivo.CopyToAsync(stream);
+        var container = _blobServiceClient.GetBlobContainerClient(ContainerName);
+        var blob = container.GetBlobClient(blobPath);
 
-        return $"/resenias/{nombre}";
+        await using var stream = archivo.OpenReadStream();
+        await blob.UploadAsync(stream, new BlobHttpHeaders
+        {
+            ContentType = archivo.ContentType
+        });
+
+        return blob.Uri.ToString();
     }
 }

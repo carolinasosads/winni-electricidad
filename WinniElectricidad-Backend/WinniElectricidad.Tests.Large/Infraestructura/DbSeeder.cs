@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using WinniElectricidad.AccesoDatos.Repositorios.EF;
 using Direccion = WinniElectricidad.LogicaNegocio.Entidades.Direccion;
+using ServicioImagen = WinniElectricidad.LogicaNegocio.Entidades.ServicioImagen;
 using TipoServicioReserva = WinniElectricidad.LogicaNegocio.Entidades.TipoServicioReserva;
 using UsuarioCliente = WinniElectricidad.LogicaNegocio.Entidades.UsuarioCliente;
 
@@ -91,7 +92,7 @@ public static class DbSeeder
         var db = scope.ServiceProvider.GetRequiredService<WinniElectricidadContext>();
 
         await SeedServiciosAsync(factory, [
-            new LogicaNegocio.Entidades.Servicio { Titulo = "Electricidad", Descripcion = "Descripción de prueba.", ImagenUrl = null, Activo = true }
+            new LogicaNegocio.Entidades.Servicio { Titulo = "Electricidad", Descripcion = "Descripción de prueba.", Imagenes = new List<ServicioImagen>(), Activo = true }
         ]);
         var servicio = await db.Servicios.FirstAsync();
         

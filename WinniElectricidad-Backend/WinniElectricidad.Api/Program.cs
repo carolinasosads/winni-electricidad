@@ -1,4 +1,5 @@
 using System.Text;
+using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -40,6 +41,17 @@ builder.Services.AddCors(o =>
             .AllowAnyHeader()
             .AllowAnyMethod());
 });
+
+// --- Azure Blob Storage ---
+var blobConnectionString =
+    builder.Configuration.GetConnectionString("AzureBlobStorage");
+
+if (!string.IsNullOrWhiteSpace(blobConnectionString))
+{
+    builder.Services.AddSingleton(
+        new BlobServiceClient(blobConnectionString)
+    );
+}
 
 // --- Resend ---
 builder.Configuration

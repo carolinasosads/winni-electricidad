@@ -6,18 +6,19 @@ public class Servicio
     public int Id { get; set; }
     public string Titulo { get; set; }
     public string? Descripcion { get; set; }
-    public string? ImagenUrl { get; set; }
     public bool Activo { get; set; } = true;
+    
+    public ICollection<ServicioImagen> Imagenes { get; set; } = new List<ServicioImagen>();
     public ICollection<Reseña>  Reseñas { get; set; } = new List<Reseña>();
     #endregion  
 
     public Servicio() {}
     
-    public Servicio(string titulo, string? descripcion, string? imagenUrl)
+    public Servicio(string titulo, string? descripcion, ICollection<ServicioImagen> imagenes)
     {
         Titulo = titulo;
         Descripcion = descripcion;
-        ImagenUrl = imagenUrl;
+        Imagenes = imagenes;
         Reseñas = new List<Reseña>();
         Validar();
     }

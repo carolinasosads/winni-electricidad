@@ -14,6 +14,7 @@ public class WinniElectricidadContext : DbContext
     public DbSet<Pago>  Pagos { get; set; }
     public DbSet<Notificacion>  Notificaciones { get; set; }
     public DbSet<Servicio>  Servicios { get; set; }
+    public DbSet<ServicioImagen> ServicioImagenes { get; set; }
     public DbSet<Reseña>  Resenias { get; set; }
     public DbSet<OneTimeToken> OneTimeTokens { get; set; }
     public DbSet<Settings> Settings { get; set; }
@@ -82,9 +83,6 @@ public class WinniElectricidadContext : DbContext
             entity.Property(s => s.Descripcion)
                 .HasMaxLength(300);
 
-            entity.Property(s => s.ImagenUrl)
-                .HasMaxLength(500);
-
             entity.Property(s => s.Activo)
                 .HasDefaultValue(true);
             
@@ -92,6 +90,24 @@ public class WinniElectricidadContext : DbContext
                 .WithOne()
                 .HasForeignKey(r => r.IdServicio)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+        
+        // -------------------- SERVICIO IMAGENES --------------------
+        modelBuilder.Entity<ServicioImagen>(entity =>
+        {
+            entity.HasKey(i => i.Id);
+
+            entity.Property(i => i.Url)
+                .IsRequired()
+                .HasMaxLength(500);
+
+            entity.Property(i => i.EsPrincipal)
+                .IsRequired();
+
+            entity.HasOne(i => i.Servicio)
+                .WithMany(s => s.Imagenes)
+                .HasForeignKey(i => i.ServicioId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         // -------------------- RESERVAS --------------------
@@ -216,7 +232,6 @@ public class WinniElectricidadContext : DbContext
                     Id = 1,
                     Titulo = "Electricidad",
                     Descripcion = "Instalaciones, reparaciones y mantenimiento eléctrico en hogares y comercios.",
-                    ImagenUrl = "/servicios/electricidad.jpeg",
                     Activo = true
                 },
                 new Servicio
@@ -224,7 +239,6 @@ public class WinniElectricidadContext : DbContext
                     Id = 2,
                     Titulo = "Sanitaria",
                     Descripcion = "Instalación y reparación de cañerías, griferías y artefactos sanitarios.",
-                    ImagenUrl = "/servicios/sanitaria.jpeg",
                     Activo = true
                 },
                 new Servicio
@@ -232,7 +246,6 @@ public class WinniElectricidadContext : DbContext
                     Id = 3,
                     Titulo = "Climatización",
                     Descripcion = "Instalación y mantenimiento de sistemas de aire acondicionado y calefacción.",
-                    ImagenUrl = "/servicios/climatizacion.jpeg",
                     Activo = true
                 },
                 new Servicio
@@ -240,7 +253,6 @@ public class WinniElectricidadContext : DbContext
                     Id = 4,
                     Titulo = "Riego",
                     Descripcion = "Instalación y mantenimiento de sistemas de riego para jardines.",
-                    ImagenUrl = "/servicios/riego.jpg",
                     Activo = true
                 },
                 new Servicio
@@ -248,10 +260,46 @@ public class WinniElectricidadContext : DbContext
                     Id = 5,
                     Titulo = "Otro",
                     Descripcion = "Servicios técnicos generales sujetos a evaluación previa.",
-                    ImagenUrl = "/servicios/otros.jpeg",
                     Activo = true
                 }
         );
 
+        modelBuilder.Entity<ServicioImagen>().HasData(
+            new
+            {
+                Id = 1,
+                Url = "https://winnielectricidadstorage.blob.core.windows.net/imagenes/servicios/electricidad.jpg",
+                EsPrincipal = true,
+                ServicioId = 1
+            },
+            new
+            {
+                Id = 2,
+                Url = "https://winnielectricidadstorage.blob.core.windows.net/imagenes/servicios/sanitaria.jpg",
+                EsPrincipal = true,
+                ServicioId = 2
+            },
+            new
+            {
+                Id = 3,
+                Url = "https://winnielectricidadstorage.blob.core.windows.net/imagenes/servicios/climatizacion.jpg",
+                EsPrincipal = true,
+                ServicioId = 3
+            },
+            new
+            {
+                Id = 4,
+                Url = "https://winnielectricidadstorage.blob.core.windows.net/imagenes/servicios/riego.jpg",
+                EsPrincipal = true,
+                ServicioId = 4
+            },
+            new
+            {
+                Id = 5,
+                Url = "https://winnielectricidadstorage.blob.core.windows.net/imagenes/servicios/otros.jpg",
+                EsPrincipal = true,
+                ServicioId = 5
+            }
+        );
     }
 }
