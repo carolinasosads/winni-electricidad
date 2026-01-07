@@ -37,9 +37,19 @@ public class ConsultasController : ControllerBase
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
-
-        await _crearConsulta.Ejecutar(dto, ct);
-
-        return Ok(new { message = "Consulta enviada correctamente." });
+        try
+        {
+            await _crearConsulta.Ejecutar(dto, ct);
+            return Ok(new { message = "Consulta enviada correctamente." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, new { message = ex.Message });
+        }
+        catch (Exception)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Ocurrió un error inesperado al procesar la consulta." });
+        }
     }
+
 }
