@@ -43,9 +43,15 @@ builder.Services.AddCors(o =>
 });
 
 // --- Azure Blob Storage ---
-builder.Services.AddSingleton(new BlobServiceClient(
-    builder.Configuration.GetConnectionString("AzureBlobStorage")
-));
+var blobConnectionString =
+    builder.Configuration.GetConnectionString("AzureBlobStorage");
+
+if (!string.IsNullOrWhiteSpace(blobConnectionString))
+{
+    builder.Services.AddSingleton(
+        new BlobServiceClient(blobConnectionString)
+    );
+}
 
 // --- Resend ---
 builder.Configuration
