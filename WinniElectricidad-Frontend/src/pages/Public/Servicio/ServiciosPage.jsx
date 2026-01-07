@@ -28,6 +28,17 @@ export default function ServiciosPage() {
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
 
+  const serviciosNormalizados = servicios.map(s => {
+    const imagenPrincipal =
+      Array.isArray(s.imagenes) &&
+      s.imagenes.find(i => i.esPrincipal)?.url;
+
+    return {
+      ...s,
+      imagenUrl: imagenPrincipal || "/servicios/servicio-default.jpg"
+    };
+  });
+
   const loadServicios = async (signal) => {
     try {
       const data =
@@ -149,7 +160,7 @@ export default function ServiciosPage() {
           }
         }}
       >
-        {servicios.map(servicio => (
+        {serviciosNormalizados.map(servicio => (
           <ServiciosCard
             key={servicio.id}
             servicio={servicio}

@@ -27,7 +27,7 @@ export default function ResenaModal({ resena, onClose }) {
         {resena.imagenUrl && (
           <Box
             component="img"
-            src={`${import.meta.env.VITE_API_URL}${resena.imagenUrl}`}
+            src={`${resena.imagenUrl}`}
             alt="Trabajo realizado"
             sx={{
               width: "100%",

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WinniElectricidad.AccesoDatos.Repositorios.EF;
 
@@ -11,9 +12,11 @@ using WinniElectricidad.AccesoDatos.Repositorios.EF;
 namespace WinniElectricidad.AccesoDatos.Migrations
 {
     [DbContext(typeof(WinniElectricidadContext))]
-    partial class WinniElectricidadContextModelSnapshot : ModelSnapshot
+    [Migration("20260107013436_Servicio_con_varias_imagenes")]
+    partial class Servicio_con_varias_imagenes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

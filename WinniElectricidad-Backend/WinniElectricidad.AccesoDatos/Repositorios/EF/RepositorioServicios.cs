@@ -20,7 +20,10 @@ public class RepositorioServicios : IRepositorioServicio
 
     public async Task<Servicio?> FindById(int id, CancellationToken ct = default)
     {
-        var servicio = await _db.Servicios.Where(x => x.Id == id).FirstOrDefaultAsync(ct);
+        var servicio = await _db.Servicios
+            .Include(s => s.Imagenes)
+            .Where(x => x.Id == id)
+            .FirstOrDefaultAsync(ct);
         return servicio;
     }
 
@@ -37,7 +40,9 @@ public class RepositorioServicios : IRepositorioServicio
 
     public async Task<IReadOnlyList<Servicio>> FindAll(CancellationToken ct = default)
     {
-        return await _db.Servicios.ToListAsync(ct);
+        return await _db.Servicios
+            .Include(s => s.Imagenes)
+            .ToListAsync(ct);
     }
     
     public async Task<IReadOnlyList<Servicio>> FindAllSegunEstado(bool activo, CancellationToken ct = default)
@@ -49,7 +54,9 @@ public class RepositorioServicios : IRepositorioServicio
             query = query.Where(s => s.Activo);
         }
         
-        return await query.ToListAsync(ct);
+        return await query
+            .Include(s => s.Imagenes)
+            .ToListAsync(ct);
     }
 
     public async Task<IReadOnlyList<Servicio>> FindByIds(List<int> ids, CancellationToken ct = default)

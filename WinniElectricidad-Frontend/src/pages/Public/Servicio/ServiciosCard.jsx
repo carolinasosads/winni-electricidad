@@ -94,7 +94,7 @@ export default function ServicioCard({
         alt={servicio.titulo}
         sx={{
           width: "100%",
-          height: 260,
+          height: 350,
           objectFit: "cover",
           borderTopLeftRadius: 12,
           borderTopRightRadius: 12
@@ -108,7 +108,7 @@ export default function ServicioCard({
       <Box
         sx={{
           position: "absolute",
-          top: 260 - 28,
+          top: 350 - 28,
           left: "50%",
           transform: "translateX(-50%)",
           width: 56,

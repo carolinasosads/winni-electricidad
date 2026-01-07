@@ -12,7 +12,7 @@ public class ServicioMapperTests
         // Arrange
         var servicios = new List<Servicio>
         {
-            new Servicio("Electricidad", "Instalaciones eléctricas completas", null) { Id = 1, Activo = true }
+            new Servicio("Electricidad", "Instalaciones eléctricas completas", new List<ServicioImagen>()) { Id = 1, Activo = true }
         };
 
         // Act
@@ -33,7 +33,7 @@ public class ServicioMapperTests
         // Arrange
         var servicios = new List<Servicio>
         {
-            new Servicio("Electricidad", "Instalaciones eléctricas completas", null) { Id = 1, Activo = true }
+            new Servicio("Electricidad", "Instalaciones eléctricas completas", new List<ServicioImagen>()) { Id = 1, Activo = true }
         };
 
         // Act

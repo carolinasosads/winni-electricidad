@@ -64,42 +64,17 @@ export default function PaginaPrincipal() {
   const servicios = useMemo(() => {
     const arr = Array.isArray(serviciosRaw) ? serviciosRaw : [];
 
-    const imagenesPorServicio = {
-      electricidad: "/servicios/electricidad.jpeg",
-      sanitaria: "/servicios/sanitaria.jpeg",
-      climatizacion: "/servicios/climatizacion.jpeg",
-      "climatización": "/servicios/climatizacion.jpeg",
-      riego: "/servicios/riego.jpg",
-      otro: "/servicios/otros.jpeg",
-      otros: "/servicios/otros.jpeg",
-    };
-
     return arr
       .map((s) => {
         const idServicio = s?.id ?? s?.Id;
         const nombre = s?.titulo ?? s?.Titulo;
         const descripcion = s?.descripcion ?? s?.Descripcion;
 
-        let imagenUrl = s?.imagenUrl ?? s?.ImagenUrl ?? null;
+        const imagenPrincipal =
+          Array.isArray(s.imagenes) &&
+          s.imagenes.find(i => i.esPrincipal)?.url;
 
-        if (!imagenUrl && typeof nombre === "string") {
-          const key = nombre.trim().toLowerCase();
-          imagenUrl = imagenesPorServicio[key] ?? null;
-        }
-
-        if (typeof imagenUrl === "string") {
-          imagenUrl = imagenUrl.trim();
-
-          if (
-            imagenUrl &&
-            !imagenUrl.startsWith("http") &&
-            !imagenUrl.startsWith("/")
-          ) {
-            imagenUrl = `/${imagenUrl}`;
-          }
-        }
-
-        if (!imagenUrl) imagenUrl = "/servicio-default.jpg";
+        const imagenUrl = imagenPrincipal || "/servicios/servicio-default.jpg";
 
         return { idServicio, nombre, descripcion, imagenUrl };
       })
@@ -379,9 +354,12 @@ export default function PaginaPrincipal() {
                           >
                               <CardMedia
                                   component="img"
-                                  image={s.imagenUrl || "/servicio-default.jpg"}
+                                  image={s.imagenUrl || "/servicios/servicio-default.jpg"}
                                   alt={s.nombre || "Servicio"}
-                                  sx={{ width: "100%", height: 170, objectFit: "cover" }}
+                                  sx={{ width: "100%", height: 260, objectFit: "cover" }}
+                                  onError={(e) => {
+                                    e.target.src = "/servicios/servicio-default.jpg";
+                                  }}
                               />
 
                               <CardContent

@@ -15,7 +15,12 @@ public static class ServicioMapper
                     Id = servicio.Id,
                     Titulo = servicio.Titulo,
                     Descripcion = servicio.Descripcion,
-                    ImagenUrl = servicio.ImagenUrl
+                    Imagenes = servicio.Imagenes
+                        .Select(i => new ServicioImagenDto {
+                            Url = i.Url,
+                            EsPrincipal = i.EsPrincipal,
+                        })
+                        .ToList()
                 })
                 .ToList();
         }
@@ -26,7 +31,12 @@ public static class ServicioMapper
                 Id = servicio.Id,
                 Titulo = servicio.Titulo,
                 Descripcion = servicio.Descripcion,
-                ImagenUrl = servicio.ImagenUrl,
+                Imagenes = servicio.Imagenes
+                    .Select(i => new ServicioImagenDto {
+                        Url = i.Url,
+                        EsPrincipal = i.EsPrincipal,
+                    })
+                    .ToList(),
                 Activo = servicio.Activo
             })
             .ToList();
@@ -39,7 +49,12 @@ public static class ServicioMapper
             Id = servicio.Id,
             Titulo = servicio.Titulo,
             Descripcion = servicio.Descripcion,
-            ImagenUrl = servicio.ImagenUrl
+            Imagenes = servicio.Imagenes
+                .Select(i => new ServicioImagenDto {
+                    Url = i.Url,
+                    EsPrincipal = i.EsPrincipal,
+                })
+                .ToList(),
         };
     }
 }

@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using WinniElectricidad.Compartido.DTOs.Servicios;
+using WinniElectricidad.LogicaNegocio.Entidades;
 using WinniElectricidad.Tests.Large.Infraestructura;
 
 namespace WinniElectricidad.Tests.Large.Servicio;
@@ -20,9 +21,9 @@ public class ServicioControllerTests : LargeTestBase
         await DbSeeder.CleanDatabaseAsync(Factory);
         await DbSeeder.SeedServiciosAsync(Factory, new[]
         {
-            new LogicaNegocio.Entidades.Servicio { Titulo = "Electricidad", Descripcion = "Descripción de prueba.", ImagenUrl = null, Activo = true },
-            new LogicaNegocio.Entidades.Servicio { Titulo = "Sanitaria",   Descripcion = "Descripción de prueba.", ImagenUrl = null, Activo = true },
-            new LogicaNegocio.Entidades.Servicio { Titulo = "Riego",       Descripcion = "Descripción de prueba.", ImagenUrl = null, Activo = false },
+            new LogicaNegocio.Entidades.Servicio { Titulo = "Electricidad", Descripcion = "Descripción de prueba.", Imagenes = new List<ServicioImagen>(), Activo = true },
+            new LogicaNegocio.Entidades.Servicio { Titulo = "Sanitaria",   Descripcion = "Descripción de prueba.", Imagenes = new List<ServicioImagen>(), Activo = true },
+            new LogicaNegocio.Entidades.Servicio { Titulo = "Riego",       Descripcion = "Descripción de prueba.", Imagenes = new List<ServicioImagen>(), Activo = false },
         });
 
         // Act
@@ -53,9 +54,9 @@ public class ServicioControllerTests : LargeTestBase
         await DbSeeder.CleanDatabaseAsync(Factory);
         await DbSeeder.SeedServiciosAsync(Factory, new[]
         {
-            new LogicaNegocio.Entidades.Servicio { Titulo = "Electricidad", Descripcion = "Descripción de prueba.", ImagenUrl = null, Activo = true },
-            new LogicaNegocio.Entidades.Servicio { Titulo = "Sanitaria",   Descripcion = "Descripción de prueba.", ImagenUrl = null, Activo = true },
-            new LogicaNegocio.Entidades.Servicio { Titulo = "Riego",       Descripcion = "Descripción de prueba.", ImagenUrl = null, Activo = false },
+            new LogicaNegocio.Entidades.Servicio { Titulo = "Electricidad", Descripcion = "Descripción de prueba.", Imagenes = new List<ServicioImagen>(), Activo = true },
+            new LogicaNegocio.Entidades.Servicio { Titulo = "Sanitaria",   Descripcion = "Descripción de prueba.", Imagenes = new List<ServicioImagen>(), Activo = true },
+            new LogicaNegocio.Entidades.Servicio { Titulo = "Riego",       Descripcion = "Descripción de prueba.", Imagenes = new List<ServicioImagen>(), Activo = false },
         });
 
         // Act

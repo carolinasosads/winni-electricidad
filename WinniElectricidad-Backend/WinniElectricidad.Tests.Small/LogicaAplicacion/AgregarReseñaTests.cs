@@ -115,7 +115,7 @@ public class AgregarReseñaSmallTests
             IdUsuario = 10
         };
 
-        var servicio = new Servicio("Electricidad", "Instalaciones de electricidad", null)
+        var servicio = new Servicio("Electricidad", "Instalaciones de electricidad", new List<ServicioImagen>())
         {
             Id = 1
         };
