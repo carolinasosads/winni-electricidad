@@ -9,7 +9,7 @@ using WinniElectricidad.LogicaNegocio.InterfacesRepositorios;
 namespace WinniElectricidad.Tests.Small.LogicaAplicacion;
 
 [TestFixture]
-public class CrearConsultaSmallTests
+public class CrearConsultaTests
 {
     private Mock<IEnviarEmail> _mockEnviarEmail;
     private Mock<IRepositorioUsuario> _mockRepoUsuario;

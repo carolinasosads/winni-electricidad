@@ -8,7 +8,7 @@ using WinniElectricidad.LogicaNegocio.InterfacesRepositorios;
 namespace WinniElectricidad.Tests.Medium.LogicaAplicacion;
 
 [TestFixture]
-public class CrearConsultaMediumTests
+public class CrearConsultaTests
 {
     [Test]
     public async Task Ejecutar_AdminExiste_EnviaEmailAlAdministrador()

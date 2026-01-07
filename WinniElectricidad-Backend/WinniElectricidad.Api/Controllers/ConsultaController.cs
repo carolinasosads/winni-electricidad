@@ -32,7 +32,6 @@ public class ConsultasController : ControllerBase
     /// <response code="200">La consulta fue enviada correctamente.</response>
     /// <response code="400">El body es inválido o faltan campos requeridos.</response>
     [HttpPost("crear")]
-    [AllowAnonymous]
     public async Task<IActionResult> Crear([FromBody] ConsultaCrearDto dto, CancellationToken ct)
     {
         if (!ModelState.IsValid)

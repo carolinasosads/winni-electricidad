@@ -206,7 +206,7 @@ builder.Services.AddScoped<IObtenerPresupuestoPorReserva, ObtenerPresupuestoPorR
 builder.Services.AddScoped<IObtenerPresupuesto, ObtenerPresupuesto>();
 builder.Services.AddScoped<IRegistrarPagoPresupuesto, RegistrarPagoPresupuesto>();
 
-//--formulario 
+// - Publico - 
 builder.Services.AddScoped<ICrearConsulta, CrearConsulta>();
 
 // -- Repositorios --
