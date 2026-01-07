@@ -27,9 +27,9 @@ public class ServicioImagenes : IServicioImagenes
     private const string ContainerName = "imagenes";
     
     /// <summary>
-    /// Controlador que inyecta el cliente de Azure blob
+    /// Constructor que recibe el cliente de Azure Blob Storage por inyección de dependencias.
     /// </summary>
-    /// <param name="blobServiceClient"></param>
+    /// <param name="blobServiceClient">Cliente de Azure Blob Storage inyectado mediante dependencias.</param>
     public ServicioImagenes(BlobServiceClient blobServiceClient)
     {
         _blobServiceClient = blobServiceClient;
