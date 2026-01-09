@@ -4,20 +4,19 @@ namespace WinniElectricidad.Compartido.DTOs.Consulta;
 
 public class ConsultaCrearDto
 {
-    [Required]
-    [MaxLength(120)]
-    public string Nombre { get; set; } = null!;
+    public int? IdCliente { get; set; }
 
-    [Required]
+    [MaxLength(120)]
+    public string? Nombre { get; set; }
+
     [EmailAddress]
     [MaxLength(160)]
-    public string Email { get; set; } = null!;
+    public string? Email { get; set; }
 
-    [Required]
     [MaxLength(30)]
-    public string Telefono { get; set; } = null!;
+    public string? Telefono { get; set; }
 
     [Required]
     [MaxLength(2000)]
-    public string Mensaje { get; set; } = null!;
+    public string Mensaje { get; set; } = "";
 }

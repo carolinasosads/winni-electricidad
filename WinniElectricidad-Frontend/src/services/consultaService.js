@@ -10,6 +10,20 @@ async function readJsonSafe(resp) {
   }
 }
 
+function buildErrorMessage(data, fallback) {
+  if (data?.errors && typeof data.errors === "object") {
+    const msgs = Object.entries(data.errors)
+      .flatMap(([campo, arr]) =>
+        Array.isArray(arr) ? arr.map((m) => `${campo}: ${m}`) : [`${campo}: ${arr}`]
+      )
+      .filter(Boolean);
+
+    if (msgs.length > 0) return msgs.join(" | ");
+  }
+
+  return data?.message || data?.title || fallback;
+}
+
 export async function crearConsulta(dto, signal) {
   try {
     const resp = await fetch(`${urlAPIConsulta}crear`, {
@@ -24,17 +38,19 @@ export async function crearConsulta(dto, signal) {
 
     if (!resp.ok) {
       const data = await readJsonSafe(resp);
-      const msg =
-        data?.message ||
-        data?.title ||
-        "No se pudo enviar la consulta. Intente nuevamente.";
+      const msg = buildErrorMessage(
+        data,
+        "No se pudo enviar la consulta. Intente nuevamente."
+      );
+
       throw new ApiError(msg, resp.status);
     }
 
-    return await resp.json();
+    const okData = await resp.json();
+    return okData;
   } catch (err) {
     if (err?.name === "AbortError") return;
-
+    
     if (err instanceof ApiError) throw err;
 
     throw new ApiError(
