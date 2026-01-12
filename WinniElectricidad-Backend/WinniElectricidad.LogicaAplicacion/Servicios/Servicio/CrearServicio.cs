@@ -14,9 +14,9 @@ public class CrearServicio : ICrearServicio
         _repositorioServicio = repositorioServicio;
     }
     
-    public async Task<ServicioDto> Ejecutar(ServicioDto nuevoServicio, CancellationToken ct = default)
+    public async Task<ServicioDto> Ejecutar(CrearServicioDto nuevoServicio, ICollection<string> imagenesUrl, CancellationToken ct = default)
     {
-        var servicio = ServicioMapper.MapearServicioDtoAEntidad(nuevoServicio);
+        var servicio = ServicioMapper.MapearServicioDtoAEntidad(nuevoServicio, imagenesUrl);
         await _repositorioServicio.Add(servicio, ct);
 
         var dto = ServicioMapper.MapearServicioADto(servicio);

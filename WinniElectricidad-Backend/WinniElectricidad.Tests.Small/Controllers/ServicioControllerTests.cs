@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Moq;
 using WinniElectricidad.Api.Controllers;
+using WinniElectricidad.Api.Servicios;
 using WinniElectricidad.Compartido.DTOs.Servicios;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Servicio;
 
@@ -13,6 +14,9 @@ public class ServicioControllerTests
     private Mock<IActivarServicio> _mockServicioActivar;
     private Mock<IDesactivarServicio> _mockServicioDesactivar;
     private Mock<ICrearServicio> _mockServicioCrear;
+    private Mock<IEditarServicio> _mockServicioEditar;
+
+    private Mock<IServicioImagenes> _mockServicioImagenes;
 
     private ServicioController _controller;
 
@@ -23,7 +27,10 @@ public class ServicioControllerTests
         _mockServicioDesactivar = new Mock<IDesactivarServicio>();
         _mockServicioActivar = new Mock<IActivarServicio>();
         _mockServicioCrear = new Mock<ICrearServicio>();
-        _controller = new ServicioController(_mockServicio.Object,  _mockServicioDesactivar.Object, _mockServicioActivar.Object, _mockServicioCrear.Object);
+        _mockServicioEditar = new Mock<IEditarServicio>();
+
+        _mockServicioImagenes = new Mock<IServicioImagenes>();
+        _controller = new ServicioController(_mockServicio.Object,  _mockServicioDesactivar.Object, _mockServicioActivar.Object, _mockServicioCrear.Object,  _mockServicioEditar.Object, _mockServicioImagenes.Object);
     }
 
     [Test]

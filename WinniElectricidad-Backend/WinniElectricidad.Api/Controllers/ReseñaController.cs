@@ -82,6 +82,8 @@ public class ReseñaController : ControllerBase
     [Authorize(Roles = "Cliente")]
     public async Task<IActionResult> Reseñar([FromForm] ReseñaACrearDto nuevaReseña, IFormFile? imagen, CancellationToken cancellationToken)
     {
+        string? imagenUrl = null;
+
         try
         {
             var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -89,20 +91,20 @@ public class ReseñaController : ControllerBase
 
             var idUsuario = int.Parse(idClaim);
             
-            string? imagenUrl = null;
-
             if (imagen != null)
-                imagenUrl = await _servicioImagenes.GuardarAsync(imagen, "resenias");
+                imagenUrl = await _servicioImagenes.GuardarImagenAsync(imagen, "resenias");
             
             var reseñaCreada = await _agregarReseña.Ejecutar(nuevaReseña, idUsuario, imagenUrl, cancellationToken);
             
             return Ok(reseñaCreada);
         } catch (ReseñaException ex)
         {
+            await EliminarImagen(imagenUrl);
             return Conflict(new { message = ex.Message });
         }
         catch (ArgumentException ex)
         {
+            await EliminarImagen(imagenUrl);
             return BadRequest(new { message = ex.Message });
         }
         catch (UnauthorizedAccessException ex)
@@ -111,14 +113,17 @@ public class ReseñaController : ControllerBase
         }
         catch (ReseñaOfensivaException ex)
         {
+            await EliminarImagen(imagenUrl);
             return BadRequest(new { message = ex.Message });
         } 
         catch (ModeracionIaNoDisponibleException )
         {
+            await EliminarImagen(imagenUrl);
             return StatusCode(503, new { message = "No se pudo validar la reseña en este momento. Intentalo de nuevo más tarde." });
         }
         catch (Exception)
         {
+            await EliminarImagen(imagenUrl);
             return StatusCode(500, new { message = "Error inesperado." });
         }
     }
@@ -186,6 +191,14 @@ public class ReseñaController : ControllerBase
         catch (Exception)
         {
             return StatusCode(500, new { message = "Error inesperado." });
+        }
+    }
+
+    private async Task EliminarImagen(string? url)
+    {
+        if (!string.IsNullOrWhiteSpace(url))
+        {
+            await _servicioImagenes.EliminarImagenesAsync([url]);
         }
     }
 }

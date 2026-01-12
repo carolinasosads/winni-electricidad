@@ -92,7 +92,7 @@ export async function activarServicio(idServicio) {
 
 // -- POSTs --
 
-export async function crearServicio(servicio, signal) {
+export async function crearServicio(formData, signal) {
   const token = localStorage.getItem("token");
 
   if (!token) {
@@ -101,8 +101,11 @@ export async function crearServicio(servicio, signal) {
 
   const resp = await fetch(`${urlAPIServicio}`, {
     method: "POST",
-    headers: getAuthHeaders(),
-    body: JSON.stringify(servicio),
+    headers: {
+      Accept: "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
     signal,
   });
 
@@ -115,6 +118,38 @@ export async function crearServicio(servicio, signal) {
     const data = await handleJsonOrText(resp);
     throw new ApiError(
       data?.message || "Error al crear el servicio.",
+      resp.status
+    );
+  }
+
+  return await resp.json();
+}
+
+// -- PUTs --
+
+export async function editarServicio(idServicio, formData) {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    throw new ApiError("Usuario no autenticado.", 401);
+  }
+
+  const resp = await fetch(
+    `${urlAPIServicio}${idServicio}`,
+    {
+      method: "PUT",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: formData
+    }
+  );
+
+  if (!resp.ok) {
+    const data = await handleJsonOrText(resp);
+    throw new ApiError(
+      data?.message || "Error al editar el servicio",
       resp.status
     );
   }

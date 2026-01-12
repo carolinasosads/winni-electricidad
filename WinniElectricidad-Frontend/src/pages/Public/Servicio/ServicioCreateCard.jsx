@@ -6,9 +6,10 @@ import {
   TextField,
   Button,
   Box,
-  MenuItem
+  MenuItem,
+  CircularProgress
 } from "@mui/material";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
 
 import BoltOutlinedIcon from "@mui/icons-material/BoltOutlined";
@@ -36,31 +37,55 @@ export default function ServicioCreateCard({ onCrear }) {
   const [descripcion, setDescripcion] = useState("");
   const [icono, setIcono] = useState("Otro");
 
-  const [imagenFile, setImagenFile] = useState(null);
-  const [preview, setPreview] = useState(null);
+  const [imagenes, setImagenes] = useState([]);
+  const [imagenActiva, setImagenActiva] = useState(0);
+  const [previews, setPreviews] = useState([]);
+
+  const [creando, setCreando] = useState(false);
 
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    return () => previews.forEach(URL.revokeObjectURL);
+  }, [previews]);
 
   const handleImageClick = () => {
     fileInputRef.current?.click();
   };
 
   const handleImageChange = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
 
-    setImagenFile(file);
-    setPreview(URL.createObjectURL(file));
+    setImagenes(files);
+    setPreviews(files.map(f => URL.createObjectURL(f)));
+    setImagenActiva(0);
   };
 
-  const handleSubmit = () => {
-    onCrear({
-      titulo,
-      descripcion,
-      icono,
-      imagen: imagenFile,
-      activo: true
-    });
+  const handleSubmit = async () => {
+    try{
+      setCreando(true);
+      await onCrear({
+        titulo,
+        descripcion,
+        icono,
+        imagenes,
+        activo: true
+      });
+
+      setTitulo("");
+      setDescripcion("");
+      setIcono("Otro");
+      setImagenes([]);
+      setPreviews([]);
+      setImagenActiva(0);
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    } finally {
+      setCreando(false);
+    }
   };
 
   return (
@@ -86,7 +111,7 @@ export default function ServicioCreateCard({ onCrear }) {
         onClick={handleImageClick}
         sx={{
           width: "100%",
-          height: 150,
+          height: 180,
           cursor: "pointer",
           bgcolor: "grey.100",
           display: "flex",
@@ -98,20 +123,16 @@ export default function ServicioCreateCard({ onCrear }) {
           position: "relative"
         }}
       >
-        {preview ? (
+        {previews.length > 0 ? (
           <Box
             component="img"
-            src={preview}
-            alt="Preview"
-            sx={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover"
-            }}
+            src={previews[imagenActiva]}
+            alt="Preview principal"
+            sx={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
         ) : (
           <Typography color="text.secondary">
-            Click para subir imagen
+            Click para subir imágenes
           </Typography>
         )}
 
@@ -119,15 +140,45 @@ export default function ServicioCreateCard({ onCrear }) {
           ref={fileInputRef}
           type="file"
           accept="image/*"
+          multiple
           hidden
           onChange={handleImageChange}
         />
       </Box>
 
+      {previews.length > 1 && (
+          <Stack
+            direction="row"
+            spacing={1}
+            justifyContent="center"
+            sx={{ px: 2, pt: 1, pb: 0 }}
+          >
+            {previews.map((src, i) => (
+              <Box
+                key={i}
+                component="img"
+                src={src}
+                onClick={() => setImagenActiva(i)}
+                sx={{
+                  width: 44,
+                  height: 44,
+                  objectFit: "cover",
+                  borderRadius: 1,
+                  cursor: "pointer",
+                  border: i === imagenActiva ? "2px solid" : "1px solid",
+                  borderColor: i === imagenActiva ? "primary.main" : "divider",
+                  opacity: i === imagenActiva ? 1 : 0.6,
+                  transition: "all .2s"
+                }}
+              />
+            ))}
+          </Stack>
+        )}
+
       <Box
         sx={{
           position: "absolute",
-          top: 150 - 28,
+          top: 180 - 28,
           left: "50%",
           transform: "translateX(-50%)",
           width: 56,
@@ -148,12 +199,20 @@ export default function ServicioCreateCard({ onCrear }) {
       <CardContent
         sx={{
           px: 3,
-          pt: 5,
+          pt: 4,
           pb: 4,
           flexGrow: 1
         }}
       >
         <Stack spacing={2} sx={{ height: "100%", width: "100%" }}>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            textAlign="center"
+            mt={1}
+          >
+            La primera imagen será la imagen principal del servicio
+          </Typography>
           <TextField
             label="Título del servicio"
             value={titulo}
@@ -193,10 +252,10 @@ export default function ServicioCreateCard({ onCrear }) {
           <Button
             variant="contained"
             onClick={handleSubmit}
-            disabled={!titulo || !descripcion || !imagenFile}
+            disabled={creando || !titulo || !descripcion || imagenes.length === 0}
             sx={{ fontWeight: 600 }}
           >
-            Agregar servicio
+            {creando ? <CircularProgress size={24} /> : "Crear"}
           </Button>
         </Stack>
       </CardContent>

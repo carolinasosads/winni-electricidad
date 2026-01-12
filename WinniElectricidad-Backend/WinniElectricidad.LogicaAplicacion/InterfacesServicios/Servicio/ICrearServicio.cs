@@ -4,5 +4,5 @@ namespace WinniElectricidad.LogicaAplicacion.InterfacesServicios.Servicio;
 
 public interface ICrearServicio
 {
-    Task<ServicioDto> Ejecutar(ServicioDto nuevoServicio, CancellationToken ct = default);
+    Task<ServicioDto> Ejecutar(CrearServicioDto nuevoServicio, ICollection<string> imagenesUrl, CancellationToken ct = default);
 }

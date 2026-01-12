@@ -18,5 +18,18 @@ public interface IServicioImagenes
     /// <exception cref="ArgumentException">
     /// Se lanza si el archivo supera el tamaño permitido o no tiene un formato válido.
     /// </exception>
-    Task<string> GuardarAsync(IFormFile archivo, string carpeta);
+    Task<string> GuardarImagenAsync(IFormFile archivo, string carpeta);
+    /// <summary>
+    /// Guarda una coleccion de imagenes realizando validaciones de formato y tamaño.
+    /// </summary>
+    /// <param name="archivos">Imagenes recibidas como <see cref="IFormFile"/>.</param>
+    /// <param name="carpeta">Carpeta donde se guardan las imágenes en Azure blob</param>
+    /// <param name="nombreServicio">Nombre con el que se guardarán las imagenes</param>
+    /// <returns>URLs de las imagenes almacenadas.</returns>
+    Task<ICollection<string>> GuardarImagenesAsync(ICollection<IFormFile> archivos, string nombreServicio, string carpeta);
+    /// <summary>
+    /// Elimina una coleccion de urls a imagenes.
+    /// </summary>
+    /// <param name="urls">Urls a eliminar.</param>
+    Task EliminarImagenesAsync(IEnumerable<string> urls);
 }

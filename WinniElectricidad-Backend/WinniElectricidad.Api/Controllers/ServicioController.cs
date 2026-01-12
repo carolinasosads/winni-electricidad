@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using WinniElectricidad.Api.Servicios;
 using WinniElectricidad.Compartido.DTOs.Servicios;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Servicio;
 using WinniElectricidad.LogicaNegocio.ExcepcionesPersonalizadas.Servicios;
@@ -17,7 +18,9 @@ public class ServicioController : ControllerBase
     private readonly IDesactivarServicio _desactivarServicio;
     private readonly IActivarServicio _activarServicio;
     private readonly ICrearServicio _crearServicio;
+    private readonly IEditarServicio _editarServicio;
 
+    private readonly IServicioImagenes _servicioImagenes;
 
     /// <summary>
     /// Inicializa una nueva instancia del <see cref="ServicioController"/> con las dependencias necesarias.
@@ -26,12 +29,16 @@ public class ServicioController : ControllerBase
     /// <param name="desactivarServicio">Servicio para desactivar un servicio activo.</param>
     /// <param name="activarServicio">Servicio para activar un servicio desactivado.</param>
     /// <param name="crearServicio">Servicio para crear un nuevo servicio ofrecido por la empresa.</param>
-    public ServicioController(IObtenerServiciosSegunEstado obtenerServiciosSegunEstado, IDesactivarServicio desactivarServicio, IActivarServicio activarServicio, ICrearServicio crearServicio)
+    /// <param name="editarServicio">Servicio para editar un servicio existente.</param>
+    /// <param name="servicioImagenes">Servicio para guardar o remover imagenes en Azure blob.</param>
+    public ServicioController(IObtenerServiciosSegunEstado obtenerServiciosSegunEstado, IDesactivarServicio desactivarServicio, IActivarServicio activarServicio, ICrearServicio crearServicio, IEditarServicio editarServicio, IServicioImagenes servicioImagenes)
     {
         _obtenerServiciosSegunEstado = obtenerServiciosSegunEstado;
         _desactivarServicio = desactivarServicio;
         _activarServicio = activarServicio;
         _crearServicio = crearServicio;
+        _editarServicio = editarServicio;
+        _servicioImagenes = servicioImagenes;
     }
     
     /// <summary>
@@ -226,30 +233,85 @@ public class ServicioController : ControllerBase
     
     [HttpPost]
     [ProducesResponseType(typeof(ServicioDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize(Roles = "Administrador")]
-    public async Task<IActionResult> CrearNuevoServicio([FromBody] ServicioDto nuevoServicio, CancellationToken cancellationToken)
+    public async Task<IActionResult> CrearNuevoServicio([FromForm] CrearServicioDto nuevoServicio, ICollection<IFormFile> imagenes, CancellationToken cancellationToken)
     {
+        ICollection<string>? imagenesUrl = null;
+        
         try
         {
-            var servicioCreado = await _crearServicio.Ejecutar(nuevoServicio, cancellationToken);
+            imagenesUrl = await _servicioImagenes.GuardarImagenesAsync(imagenes, nuevoServicio.Titulo , "servicios");
+            
+            var servicioCreado = await _crearServicio.Ejecutar(nuevoServicio, imagenesUrl, cancellationToken);
             
             return Ok(servicioCreado);
         } catch (ServicioException ex)
         {
+            await EliminarImagenes(imagenesUrl);
             return Conflict(new { message = ex.Message });
         }
         catch (ArgumentException ex)
         {
+            await EliminarImagenes(imagenesUrl);
             return BadRequest(new { message = ex.Message });
         }
         catch (UnauthorizedAccessException ex)
         {
+            await EliminarImagenes(imagenesUrl);
             return Forbid(ex.Message);
         }
         catch (Exception)
         {
+            await EliminarImagenes(imagenesUrl);
             return StatusCode(500, new { message = "Error inesperado." });
+        }
+    }
+
+    [HttpPut("{idServicio}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> Editar(int idServicio, [FromForm] EditarServicioDto servicio, [FromForm(Name = "imagenes")] List<IFormFile>? imagenesNuevas, CancellationToken cancellationToken)
+    {
+        ICollection<string>? imagenesUrl = null;
+        
+        try
+        {
+            if (imagenesNuevas is { Count: > 0 })
+                imagenesUrl = await _servicioImagenes.GuardarImagenesAsync(imagenesNuevas, servicio.Titulo , "servicios");
+            
+            var servicioEditado = await _editarServicio.Ejecutar(idServicio, servicio, imagenesUrl, cancellationToken);
+            
+            return Ok(servicioEditado);
+        } catch (ServicioException ex)
+        {
+            await EliminarImagenes(imagenesUrl);
+            return Conflict(new { message = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            await EliminarImagenes(imagenesUrl);
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            await EliminarImagenes(imagenesUrl);
+            return Forbid(ex.Message);
+        }
+        catch (Exception)
+        {
+            await EliminarImagenes(imagenesUrl);
+            return StatusCode(500, new { message = "Error inesperado." });
+        }
+    }
+    private async Task EliminarImagenes(ICollection<string>? urls)
+    {
+        if (urls is { Count: > 0 })
+        {
+            await _servicioImagenes.EliminarImagenesAsync(urls);
         }
     }
 }

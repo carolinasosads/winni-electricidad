@@ -12,8 +12,8 @@ using WinniElectricidad.AccesoDatos.Repositorios.EF;
 namespace WinniElectricidad.AccesoDatos.Migrations
 {
     [DbContext(typeof(WinniElectricidadContext))]
-    [Migration("20260107013436_Servicio_con_varias_imagenes")]
-    partial class Servicio_con_varias_imagenes
+    [Migration("20260111193659_Seed_ServicioImagenes")]
+    partial class Seed_ServicioImagenes
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -396,30 +396,135 @@ namespace WinniElectricidad.AccesoDatos.Migrations
                         new
                         {
                             Id = 2,
+                            EsPrincipal = false,
+                            ServicioId = 1,
+                            Url = "https://winnielectricidadstorage.blob.core.windows.net/imagenes/servicios/electricidad2.jpg"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            EsPrincipal = false,
+                            ServicioId = 1,
+                            Url = "https://winnielectricidadstorage.blob.core.windows.net/imagenes/servicios/electricidad3.jpg"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            EsPrincipal = false,
+                            ServicioId = 1,
+                            Url = "https://winnielectricidadstorage.blob.core.windows.net/imagenes/servicios/electricidad4.jpg"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            EsPrincipal = false,
+                            ServicioId = 1,
+                            Url = "https://winnielectricidadstorage.blob.core.windows.net/imagenes/servicios/electricidad5.jpg"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            EsPrincipal = false,
+                            ServicioId = 1,
+                            Url = "https://winnielectricidadstorage.blob.core.windows.net/imagenes/servicios/electricidad6.jpg"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            EsPrincipal = false,
+                            ServicioId = 1,
+                            Url = "https://winnielectricidadstorage.blob.core.windows.net/imagenes/servicios/electricidad7.jpg"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            EsPrincipal = false,
+                            ServicioId = 1,
+                            Url = "https://winnielectricidadstorage.blob.core.windows.net/imagenes/servicios/electricidad8.jpg"
+                        },
+                        new
+                        {
+                            Id = 9,
                             EsPrincipal = true,
                             ServicioId = 2,
                             Url = "https://winnielectricidadstorage.blob.core.windows.net/imagenes/servicios/sanitaria.jpg"
                         },
                         new
                         {
-                            Id = 3,
+                            Id = 10,
+                            EsPrincipal = false,
+                            ServicioId = 2,
+                            Url = "https://winnielectricidadstorage.blob.core.windows.net/imagenes/servicios/sanitaria2.jpg"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            EsPrincipal = false,
+                            ServicioId = 2,
+                            Url = "https://winnielectricidadstorage.blob.core.windows.net/imagenes/servicios/sanitaria3.jpg"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            EsPrincipal = false,
+                            ServicioId = 2,
+                            Url = "https://winnielectricidadstorage.blob.core.windows.net/imagenes/servicios/sanitaria4.jpg"
+                        },
+                        new
+                        {
+                            Id = 13,
+                            EsPrincipal = false,
+                            ServicioId = 2,
+                            Url = "https://winnielectricidadstorage.blob.core.windows.net/imagenes/servicios/sanitaria5.jpg"
+                        },
+                        new
+                        {
+                            Id = 14,
                             EsPrincipal = true,
                             ServicioId = 3,
                             Url = "https://winnielectricidadstorage.blob.core.windows.net/imagenes/servicios/climatizacion.jpg"
                         },
                         new
                         {
-                            Id = 4,
+                            Id = 15,
+                            EsPrincipal = false,
+                            ServicioId = 3,
+                            Url = "https://winnielectricidadstorage.blob.core.windows.net/imagenes/servicios/climatizacion2.jpg"
+                        },
+                        new
+                        {
+                            Id = 16,
+                            EsPrincipal = false,
+                            ServicioId = 3,
+                            Url = "https://winnielectricidadstorage.blob.core.windows.net/imagenes/servicios/climatizacion3.jpg"
+                        },
+                        new
+                        {
+                            Id = 17,
                             EsPrincipal = true,
                             ServicioId = 4,
                             Url = "https://winnielectricidadstorage.blob.core.windows.net/imagenes/servicios/riego.jpg"
                         },
                         new
                         {
-                            Id = 5,
+                            Id = 18,
+                            EsPrincipal = false,
+                            ServicioId = 4,
+                            Url = "https://winnielectricidadstorage.blob.core.windows.net/imagenes/servicios/riego2.jpg"
+                        },
+                        new
+                        {
+                            Id = 19,
                             EsPrincipal = true,
                             ServicioId = 5,
                             Url = "https://winnielectricidadstorage.blob.core.windows.net/imagenes/servicios/otros.jpg"
+                        },
+                        new
+                        {
+                            Id = 20,
+                            EsPrincipal = false,
+                            ServicioId = 5,
+                            Url = "https://winnielectricidadstorage.blob.core.windows.net/imagenes/servicios/otros2.jpg"
                         });
                 });
 
