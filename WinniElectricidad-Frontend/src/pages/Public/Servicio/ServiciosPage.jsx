@@ -1,4 +1,4 @@
-import { Box, Typography, Dialog, DialogTitle, DialogContent, DialogActions, Button, Alert, Toolbar, IconButton, Chip } from "@mui/material";
+import { CircularProgress, Box, Typography, Dialog, DialogTitle, DialogContent, DialogActions, Button, Alert, Toolbar, IconButton, Chip } from "@mui/material";
 import Divider from '@mui/material/Divider';
 import ChevronLeftRoundedIcon from "@mui/icons-material/ChevronLeftRounded";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
@@ -44,6 +44,8 @@ export default function ServiciosPage() {
 
   const [servicioEditando, setServicioEditando] = useState(null);
   const [imagenesEditando, setImagenesEditando] = useState([]);
+  const [editando, setEditando] = useState(false);
+  
 
   const serviciosNormalizados = servicios.map(s => {
     const imagenPrincipal =
@@ -475,6 +477,7 @@ export default function ServiciosPage() {
             variant="contained"
             onClick={async () => {
               try {
+                setEditando(true);
                 const formData = new FormData();
 
                 // datos básicos 
@@ -514,10 +517,13 @@ export default function ServiciosPage() {
                 await reloadServicios();
               } catch (err) {
                 setErrorEditar(err.message || "Error al editar el servicio");
+              } finally {
+                setEditando(false);
               }
             }}
+            sx={{ fontWeight: 600 }}
           >
-            Guardar cambios
+            {editando ? <CircularProgress size={24} color="inherit" /> : "Guardar cambios"}
           </Button>
         </DialogActions>
       </Dialog>
