@@ -89,7 +89,7 @@ public static class ServicioMapper
         return new Servicio(servicio.Titulo, servicio.Descripcion, imagenes);
     }
     
-    public static List<ServicioImagen> MappearImagenesUrlAImagen(ICollection<string> urls)
+    public static List<ServicioImagen> MapearImagenesUrlAImagen(ICollection<string> urls)
     {
         return urls
             .Select(url => new ServicioImagen(url, esPrincipal: false))

@@ -57,9 +57,13 @@ export default function ServicioCreateCard({ onCrear }) {
     const files = Array.from(e.target.files);
     if (!files.length) return;
 
-    setImagenes(files);
-    setPreviews(files.map(f => URL.createObjectURL(f)));
-    setImagenActiva(0);
+    setImagenes((prev) => [...prev, ...files]);
+    setPreviews((prev) => [
+      ...prev,
+      ...files.map((f) => URL.createObjectURL(f))
+    ]);
+
+    setImagenActiva((prev) => (prev === null ? 0 : prev));
   };
 
   const handleSubmit = async () => {

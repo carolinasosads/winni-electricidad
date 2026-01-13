@@ -90,6 +90,20 @@ public class ServicioImagenes : IServicioImagenes
         return blob.Uri.ToString();
     }
     
+    /// <summary>
+    /// Guarda múltiples imágenes asociadas a un servicio, generando
+    /// nombres secuenciales para evitar colisiones.
+    /// </summary>
+    /// <param name="archivos">Colección de archivos de imagen.</param>
+    /// <param name="nombreServicio">Nombre del servicio asociado.</param>
+    /// <param name="carpeta">Carpeta lógica dentro del contenedor.</param>
+    /// <returns>
+    /// Lista de URLs absolutas de las imágenes almacenadas.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// Se lanza si no se envían imágenes o si alguna no cumple
+    /// con las validaciones de tamaño o formato.
+    /// </exception>
     public async Task<ICollection<string>> GuardarImagenesAsync(
         ICollection<IFormFile> archivos,
         string nombreServicio,
@@ -97,6 +111,13 @@ public class ServicioImagenes : IServicioImagenes
     {
         if (archivos == null || archivos.Count == 0)
             throw new ArgumentException("Debe enviarse al menos una imagen.");
+        
+        var archivosValidos = archivos
+            .Where(a => a.Length > 0)
+            .ToList();
+
+        if (archivosValidos.Count == 0)
+            throw new ArgumentException("Debe enviarse al menos una imagen válida.");
 
         var container = _blobServiceClient.GetBlobContainerClient(ContainerName);
         var urls = new List<string>();
@@ -106,13 +127,15 @@ public class ServicioImagenes : IServicioImagenes
         var ultimoIndice = await ObtenerUltimoIndiceAsync(container, carpeta, nombreBase);
         var indice = ultimoIndice + 1;
 
-        foreach (var archivo in archivos)
+        foreach (var archivo in archivosValidos)
         {
-            if (archivo.Length == 0)
-                continue;
-
-            if (archivo.Length > TamanioMaximo)
-                throw new ArgumentException("Una de las imágenes supera el tamaño máximo permitido (5 MB).");
+            switch (archivo.Length)
+            {
+                case 0:
+                    continue;
+                case > TamanioMaximo:
+                    throw new ArgumentException("Una de las imágenes supera el tamaño máximo permitido (5 MB).");
+            }
 
             var extension = Path.GetExtension(archivo.FileName).ToLowerInvariant();
 
@@ -140,6 +163,17 @@ public class ServicioImagenes : IServicioImagenes
         return urls;
     }
     
+    /// <summary>
+    /// Elimina un conjunto de imágenes a partir de sus URLs.
+    /// </summary>
+    /// <remarks>
+    /// El proceso es tolerante a fallos parciales:
+    /// si una imagen no puede eliminarse, el error se registra
+    /// pero la operación continúa para el resto.
+    /// Esto evita que errores de infraestructura afecten
+    /// la operación principal del sistema.
+    /// </remarks>
+    /// <param name="urls">Colección de URLs de imágenes a eliminar.</param>
     public async Task EliminarImagenesAsync(IEnumerable<string> urls)
     {
         if (urls == null)
@@ -162,11 +196,20 @@ public class ServicioImagenes : IServicioImagenes
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error eliminando imagen {Url}", url);
-                throw;
             }
         }
     }
 
+    /// <summary>
+    /// Obtiene el índice más alto utilizado en los nombres de imágenes
+    /// de un servicio para evitar sobrescrituras.
+    /// </summary>
+    /// <param name="container">Contenedor de blobs.</param>
+    /// <param name="carpeta">Carpeta lógica.</param>
+    /// <param name="nombreBase">Nombre base normalizado.</param>
+    /// <returns>
+    /// Último índice encontrado o cero si no existen imágenes previas.
+    /// </returns>
     private async Task<int> ObtenerUltimoIndiceAsync(
         BlobContainerClient container,
         string carpeta,

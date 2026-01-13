@@ -215,6 +215,7 @@ export default function ServiciosPage() {
               setImgModalIndex(index);
             }}
             onEditar={(servicio) => {
+              setErrorEditar("");
               setServicioEditando(servicio);
               setImagenesEditando((servicio.imagenes || []).map(img => ({
                 ...img,

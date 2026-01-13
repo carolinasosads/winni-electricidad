@@ -28,7 +28,7 @@ public class EditarServicio : IEditarServicio
         List<ServicioImagen>? nuevasImagenes = null;
         if (imagenesUrl is { Count: > 0 })
         {
-            nuevasImagenes = ServicioMapper.MappearImagenesUrlAImagen(imagenesUrl);
+            nuevasImagenes = ServicioMapper.MapearImagenesUrlAImagen(imagenesUrl);
         }
         
         string? urlPrincipalFinal = null;

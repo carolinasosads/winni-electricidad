@@ -42,7 +42,6 @@ export default function ServicioCard({
   const tieneCarrusel = total > 1;
 
   const [index, setIndex] = useState(0);
-  const [dir, setDir] = useState(1);
   const [clicked, setClicked] = useState(null);
   const touchStartX = useRef(null);
 
@@ -55,12 +54,10 @@ export default function ServicioCard({
   };
 
   const goPrev = () => {
-    setDir(-1);
     setIndex((i) => (i - 1 + total) % total);
   };
 
   const goNext = () => {
-    setDir(1);
     setIndex((i) => (i + 1) % total);
   };
 
@@ -251,7 +248,6 @@ export default function ServicioCard({
                 key={i}
                 onClick={(e) => {
                   e.stopPropagation();
-                  setDir(i > index ? 1 : -1);
                   setIndex(i);
                 }}
                 sx={{
