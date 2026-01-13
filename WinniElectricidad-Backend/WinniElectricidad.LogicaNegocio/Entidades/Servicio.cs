@@ -89,7 +89,10 @@ public class Servicio
             }
         }
         
-        if (Imagenes.Count == 0) return;
+        if (Imagenes.Count == 0)
+        {
+            throw new InvalidOperationException("El servicio debe tener al menos una imagen.");
+        }
 
         ServicioImagen? principal = null;
 

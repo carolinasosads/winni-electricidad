@@ -22,6 +22,9 @@ public class EditarServicio : IEditarServicio
             throw new ArgumentException("El servicio no existe.");
         }
         
+        if (servicio.UrlPrincipalExistente != null && servicioAEditar.Imagenes.All(i => i.Url != servicio.UrlPrincipalExistente))
+            throw new ArgumentException("La imagen principal indicada no existe.");
+        
         List<ServicioImagen>? nuevasImagenes = null;
         if (imagenesUrl is { Count: > 0 })
         {

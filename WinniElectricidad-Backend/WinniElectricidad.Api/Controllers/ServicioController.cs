@@ -231,6 +231,49 @@ public class ServicioController : ControllerBase
         }
     }
     
+    /// <summary>
+    /// Crea un nuevo servicio técnico ofrecido por la empresa.
+    /// </summary>
+    /// <remarks>
+    /// Este endpoint permite al administrador registrar un nuevo servicio en el sistema,
+    /// incluyendo su información principal y un conjunto de imágenes asociadas.
+    ///
+    /// **Flujo:**
+    /// 1. Recibe los datos del servicio mediante <see cref="CrearServicioDto"/>.  
+    /// 2. Guarda las imágenes enviadas utilizando el servicio <see cref="_servicioImagenes"/>.  
+    /// 3. Ejecuta la lógica de creación mediante <see cref="_crearServicio"/>.  
+    /// 4. Devuelve la información del servicio creado.
+    ///
+    /// En caso de error durante la creación, las imágenes previamente almacenadas
+    /// son eliminadas para mantener la consistencia del sistema.
+    ///
+    /// **Requiere autenticación:**  
+    /// - Solo disponible para usuarios con el rol <c>Administrador</c>.
+    ///
+    /// **Códigos de respuesta:**
+    /// - `200 OK` → Servicio creado correctamente.  
+    /// - `400 Bad Request` → Los datos enviados no son válidos.  
+    /// - `403 Forbidden` → El usuario no tiene permisos para realizar la operación.  
+    /// - `409 Conflict` → El servicio no puede crearse debido a reglas de negocio.  
+    /// - `500 Internal Server Error` → Error inesperado del servidor.
+    /// </remarks>
+    /// <param name="nuevoServicio">
+    /// Datos del servicio a crear, como título, descripción y precio.
+    /// </param>
+    /// <param name="imagenes">
+    /// Conjunto de imágenes asociadas al servicio.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Token de cancelación para abortar la operación si es necesario.
+    /// </param>
+    /// <returns>
+    /// Una respuesta HTTP con los datos del servicio creado.
+    /// </returns>
+    /// <response code="200">Servicio creado correctamente.</response>
+    /// <response code="400">Los datos enviados no son válidos.</response>
+    /// <response code="403">Permisos insuficientes.</response>
+    /// <response code="409">Conflicto al crear el servicio.</response>
+    /// <response code="500">Error inesperado del servidor.</response>
     [HttpPost]
     [ProducesResponseType(typeof(ServicioDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -271,8 +314,58 @@ public class ServicioController : ControllerBase
         }
     }
 
-    [HttpPut("{idServicio}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    /// <summary>
+    /// Edita la información de un servicio existente.
+    /// </summary>
+    /// <remarks>
+    /// Este endpoint permite al administrador modificar los datos de un servicio previamente registrado,
+    /// incluyendo su información principal y, opcionalmente, un nuevo conjunto de imágenes.
+    ///
+    /// **Flujo:**
+    /// 1. Recibe el identificador del servicio y los nuevos datos mediante <see cref="EditarServicioDto"/>.  
+    /// 2. Si se envían imágenes nuevas, se almacenan utilizando <see cref="_servicioImagenes"/>.  
+    /// 3. Ejecuta la lógica de edición mediante <see cref="_editarServicio"/>.  
+    /// 4. Devuelve la información actualizada del servicio.
+    ///
+    /// En caso de error durante la edición, las imágenes cargadas son eliminadas
+    /// para evitar inconsistencias.
+    ///
+    /// **Requiere autenticación:**  
+    /// - Solo disponible para usuarios con el rol <c>Administrador</c>.
+    ///
+    /// **Códigos de respuesta:**
+    /// - `200 OK` → Servicio editado correctamente.  
+    /// - `400 Bad Request` → Los datos enviados no son válidos.  
+    /// - `403 Forbidden` → El usuario no tiene permisos para realizar la operación.  
+    /// - `409 Conflict` → El servicio no puede editarse debido a reglas de negocio.  
+    /// - `500 Internal Server Error` → Error inesperado del servidor.
+    /// </remarks>
+    /// <param name="idServicio">
+    /// Identificador único del servicio que se desea editar.
+    /// </param>
+    /// <param name="servicio">
+    /// Nuevos datos del servicio.
+    /// </param>
+    /// <param name="imagenesNuevas">
+    /// Nuevas imágenes asociadas al servicio (opcional).
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Token de cancelación para abortar la operación si es necesario.
+    /// </param>
+    /// <returns>
+    /// Una respuesta HTTP con los datos del servicio actualizado.
+    /// </returns>
+    /// <response code="200">Servicio editado correctamente.</response>
+    /// <response code="400">Los datos enviados no son válidos.</response>
+    /// <response code="403">Permisos insuficientes.</response>
+    /// <response code="409">Conflicto al editar el servicio.</response>
+    /// <response code="500">Error inesperado del servidor.</response>
+    [HttpPut("{idServicio:int}")]
+    [ProducesResponseType(typeof(ServicioActivoDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Authorize(Roles = "Administrador")]
     public async Task<IActionResult> Editar(int idServicio, [FromForm] EditarServicioDto servicio, [FromForm(Name = "imagenes")] List<IFormFile>? imagenesNuevas, CancellationToken cancellationToken)
     {
