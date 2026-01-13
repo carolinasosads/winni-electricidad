@@ -43,14 +43,20 @@ public class AgregarReseñaTests
             var repoReseñas = new RepositorioReseñas(context);
             var repoUsuarios = new RepositorioUsuarios(context);
             var repoServicios = new RepositorioServicios(context);
-            
+
             var moderacionMock = new Mock<IModeracionOpenAi>();
-            
+
+            var evaluarPuntajeMock = new Mock<IEvaluarPuntajeResenia>();
+            evaluarPuntajeMock
+                .Setup(p => p.CalcularPuntajeIa(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(70);
+
             var servicioAgregar = new AgregarReseña(
                 repositorioReseña: repoReseñas,
                 repositorioUsuario: repoUsuarios,
                 repositorioServicio: repoServicios,
-                moderacionMock.Object
+                moderacionOpenAi: moderacionMock.Object,
+                evaluarPuntajeResenia: evaluarPuntajeMock.Object
             );
 
             var dtoEntrada = new ReseñaACrearDto
@@ -89,6 +95,9 @@ public class AgregarReseñaTests
                 Assert.That(reseñaEnDb.IdUsuario, Is.EqualTo(5));
                 Assert.That(reseñaEnDb.IdServicio, Is.EqualTo(50));
                 Assert.That(reseñaEnDb.ImagenUrl, Is.EqualTo(imagenUrl));
+
+                // ✅ opcional: verificar que persistió el puntaje mockeado
+                Assert.That(reseñaEnDb.PuntajeReseniaIa, Is.EqualTo(70));
             });
         }
     }
@@ -115,12 +124,18 @@ public class AgregarReseñaTests
             var repoServicios = new RepositorioServicios(context);
 
             var moderacionMock = new Mock<IModeracionOpenAi>();
-            
+
+            var evaluarPuntajeMock = new Mock<IEvaluarPuntajeResenia>();
+            evaluarPuntajeMock
+                .Setup(p => p.CalcularPuntajeIa(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(70);
+
             var servicioAgregar = new AgregarReseña(
                 repositorioReseña: repoReseñas,
                 repositorioUsuario: repoUsuarios,
                 repositorioServicio: repoServicios,
-                moderacionMock.Object
+                moderacionOpenAi: moderacionMock.Object,
+                evaluarPuntajeResenia: evaluarPuntajeMock.Object
             );
 
             var dtoEntrada = new ReseñaACrearDto
@@ -166,14 +181,20 @@ public class AgregarReseñaTests
             var repoReseñas = new RepositorioReseñas(context);
             var repoUsuarios = new RepositorioUsuarios(context);
             var repoServicios = new RepositorioServicios(context);
-            
+
             var moderacionMock = new Mock<IModeracionOpenAi>();
+
+            var evaluarPuntajeMock = new Mock<IEvaluarPuntajeResenia>();
+            evaluarPuntajeMock
+                .Setup(p => p.CalcularPuntajeIa(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(70);
 
             var servicioAgregar = new AgregarReseña(
                 repositorioReseña: repoReseñas,
                 repositorioUsuario: repoUsuarios,
                 repositorioServicio: repoServicios,
-                moderacionMock.Object
+                moderacionOpenAi: moderacionMock.Object,
+                evaluarPuntajeResenia: evaluarPuntajeMock.Object
             );
 
             var dtoEntrada = new ReseñaACrearDto
@@ -194,7 +215,7 @@ public class AgregarReseñaTests
             Assert.That(context.Resenias.Count(), Is.EqualTo(0));
         }
     }
-    
+
     [Test]
     public async Task Ejecutar_ReseñaOfensiva_LanzaReseñaOfensivaExceptionYNoGuarda()
     {
@@ -232,11 +253,17 @@ public class AgregarReseñaTests
                 .Setup(m => m.EsOfensiva(It.IsAny<string>()))
                 .ReturnsAsync(true);
 
+            var evaluarPuntajeMock = new Mock<IEvaluarPuntajeResenia>();
+            evaluarPuntajeMock
+                .Setup(p => p.CalcularPuntajeIa(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(70);
+
             var servicioAgregar = new AgregarReseña(
                 repoReseñas,
                 repoUsuarios,
                 repoServicios,
-                moderacionMock.Object
+                moderacionMock.Object,
+                evaluarPuntajeMock.Object
             );
 
             var dtoEntrada = new ReseñaACrearDto

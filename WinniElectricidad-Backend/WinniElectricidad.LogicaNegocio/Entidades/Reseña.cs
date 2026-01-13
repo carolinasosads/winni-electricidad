@@ -11,6 +11,8 @@ public class Reseña
     public int IdUsuario { get; set; }
     public int IdServicio { get; set; }
     public EstadoReseña Estado { get; set; }
+    public int PuntajeReseniaIa { get; set; } = 0;
+
     #endregion
 
     public Reseña(){}
@@ -31,6 +33,7 @@ public class Reseña
         ValidarDescripcion(Descripcion);
         ValidarCalificacion(Calificacion);
         ValidarIds(IdServicio, IdUsuario);
+        ValidarPuntaje(PuntajeReseniaIa);
     }
     
     private static void ValidarDescripcion(string descripcion)
@@ -66,5 +69,11 @@ public class Reseña
         if (Estado == EstadoReseña.Desaprobada)
             throw new InvalidOperationException("La reseña ya está desaprobada.");
         Estado = EstadoReseña.Desaprobada;
+    }
+    
+    private static void ValidarPuntaje(int puntaje)
+    {
+        if (puntaje < 0 || puntaje > 100)
+            throw new ArgumentException("El puntaje debe estar entre 0 y 100.");
     }
 }

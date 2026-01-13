@@ -196,6 +196,7 @@ builder.Services.AddScoped<IServicioImagenes, ServicioImagenes>();
 builder.Services.AddScoped<IObtenerReseñasAprobadas, ObtenerReseñasAprobadas>();
 builder.Services.AddScoped<IDesaprobarReseña, DesaprobarReseña>();
 builder.Services.AddScoped<IModeracionOpenAi, ModeracionOpenAi>();
+builder.Services.AddScoped<IEvaluarPuntajeResenia, EvaluarPuntajeResenia>();
 // - Administrador -
 builder.Services.AddScoped<ICrearUsuarioDesdeAdmin, CrearUsuarioDesdeAdmin>();
 builder.Services.AddScoped<IBuscarUsuarios, BuscarUsuarios>();

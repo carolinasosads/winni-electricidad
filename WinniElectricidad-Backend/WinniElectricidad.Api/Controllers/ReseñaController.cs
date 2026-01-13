@@ -201,4 +201,27 @@ public class ReseñaController : ControllerBase
             await _servicioImagenes.EliminarImagenesAsync([url]);
         }
     }
+    
+    [HttpGet("destacadas")]
+    [ProducesResponseType(typeof(IEnumerable<ReseñaCreadaDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetReseñasDestacadas(CancellationToken ct)
+    {
+        try
+        {
+            var reseñasAprobadas = await _obtenerReseñasAprobadas.Ejecutar(ct);
+
+            var top3 = reseñasAprobadas.Take(3);
+
+            return Ok(top3);
+        }
+        catch (ReseñaException ex)
+        {
+            return StatusCode(500, new { message = ex.Message });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "Error inesperado." });
+        }
+    }
 }

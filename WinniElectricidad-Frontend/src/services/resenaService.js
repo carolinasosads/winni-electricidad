@@ -81,3 +81,17 @@ export async function desaprobarReseña(idReseña) {
 
   return await resp.json();
 }
+
+export async function getResenasDestacadas(signal) {
+  const resp = await fetch(`${urlAPIResena}destacadas`, {
+    method: "GET",
+    signal,
+  });
+
+  if (!resp.ok) {
+    const data = await handleJsonOrText(resp);
+    throw new ApiError(data?.message || "Error obteniendo reseñas destacadas", resp.status);
+  }
+
+  return await resp.json();
+}

@@ -15,6 +15,8 @@ public class AgregarReseñaSmallTests
     private Mock<IRepositorioUsuario> _mockRepoUsuario;
     private Mock<IRepositorioServicio> _mockRepoServicio;
     private Mock<IModeracionOpenAi> _mockServicioModeracion;
+    private Mock<IEvaluarPuntajeResenia> _mockEvaluarPuntaje;
+
     private AgregarReseña _servicio;
 
     [SetUp]
@@ -24,12 +26,19 @@ public class AgregarReseñaSmallTests
         _mockRepoUsuario = new Mock<IRepositorioUsuario>();
         _mockRepoServicio = new Mock<IRepositorioServicio>();
         _mockServicioModeracion = new Mock<IModeracionOpenAi>();
+        _mockEvaluarPuntaje = new Mock<IEvaluarPuntajeResenia>();
+
+        _mockEvaluarPuntaje
+            .Setup(p => p.CalcularPuntajeIa(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(80);
 
         _servicio = new AgregarReseña(
             _mockRepoReseña.Object,
             _mockRepoUsuario.Object,
             _mockRepoServicio.Object,
-            _mockServicioModeracion.Object);
+            _mockServicioModeracion.Object,
+            _mockEvaluarPuntaje.Object
+        );
     }
 
     [Test]
@@ -115,6 +124,7 @@ public class AgregarReseñaSmallTests
             IdUsuario = 10
         };
 
+        // Mantengo la firma del constructor tal como la tenías en el centro (con "icono")
         var servicio = new Servicio("Electricidad", "Instalaciones de electricidad", new List<ServicioImagen>(), "icono")
         {
             Id = 1
@@ -158,5 +168,58 @@ public class AgregarReseñaSmallTests
         _mockRepoReseña.Verify(
             r => r.Add(It.IsAny<Reseña>(), It.IsAny<CancellationToken>()),
             Times.Once);
+    }
+
+    [Test]
+    public async Task Ejecutar_DatosValidos_AsignaPuntajeIa()
+    {
+        // Arrange
+        var dto = new ReseñaACrearDto
+        {
+            IdServicio = 1,
+            Descripcion = "Muy buen servicio",
+            Calificacion = 5
+        };
+
+        var usuario = new UsuarioCliente(
+            "Cliente",
+            "pass",
+            "mail@test.com",
+            "0990990999",
+            new List<Direccion>())
+        {
+            IdUsuario = 10
+        };
+
+        var servicio = new Servicio(
+            "Electricidad",
+            "Instalaciones y reparaciones eléctricas para hogares y comercios, con garantía.",
+            new List<ServicioImagen>(),
+            "icono")
+        {
+            Id = 1
+        };
+
+
+        _mockRepoUsuario
+            .Setup(r => r.FindById(10, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(usuario);
+
+        _mockRepoServicio
+            .Setup(r => r.FindById(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(servicio);
+
+        Reseña reseñaGuardada = null!;
+        _mockRepoReseña
+            .Setup(r => r.Add(It.IsAny<Reseña>(), It.IsAny<CancellationToken>()))
+            .Callback<Reseña, CancellationToken>((r, _) => reseñaGuardada = r)
+            .ReturnsAsync((Reseña r, CancellationToken _) => r);
+
+        // Act
+        await _servicio.Ejecutar(dto, 10, null, CancellationToken.None);
+
+        // Assert
+        Assert.That(reseñaGuardada, Is.Not.Null);
+        Assert.That(reseñaGuardada.PuntajeReseniaIa, Is.EqualTo(80));
     }
 }
