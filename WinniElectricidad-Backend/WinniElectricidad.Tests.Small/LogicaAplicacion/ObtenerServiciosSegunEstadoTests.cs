@@ -23,7 +23,7 @@ public class ObtenerServiciosSegunEstadoTests
     {
         // Arrange
         var lista = new List<Servicio> {
-            new("Electricidad", "Instalaciones eléctricas completas", new List<ServicioImagen>())
+            new("Electricidad", "Instalaciones eléctricas completas", new List<ServicioImagen>(), "icono")
         };
         _mockRepo.Setup(r => r.FindAllSegunEstado(true, It.IsAny<CancellationToken>()))
             .ReturnsAsync(lista);

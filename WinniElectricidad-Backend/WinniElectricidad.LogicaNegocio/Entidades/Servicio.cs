@@ -7,6 +7,7 @@ public class Servicio
     public string Titulo { get; set; }
     public string? Descripcion { get; set; }
     public bool Activo { get; set; } = true;
+    public string Icono { get; set; } = "Otro";
     
     public ICollection<ServicioImagen> Imagenes { get; set; } = new List<ServicioImagen>();
     public ICollection<Reseña>  Reseñas { get; set; } = new List<Reseña>();
@@ -14,11 +15,12 @@ public class Servicio
 
     public Servicio() {}
     
-    public Servicio(string titulo, string? descripcion, ICollection<ServicioImagen> imagenes)
+    public Servicio(string titulo, string? descripcion, ICollection<ServicioImagen> imagenes, string icono)
     {
         Titulo = titulo;
         Descripcion = descripcion;
         Imagenes = imagenes;
+        Icono = icono;
         Reseñas = new List<Reseña>();
         Validar();
     }
@@ -32,14 +34,14 @@ public class Servicio
     private void ValidarTitulo(string titulo)
     {
         if (string.IsNullOrWhiteSpace(titulo)) {
-            throw new ArgumentException("Ingresa un título válido.", nameof(titulo));
+            throw new ArgumentException("Ingresa un título válido.");
         }
     }
 
     private void ValidarDescripcion(string? descripcion)
     {
         if (descripcion is not null && descripcion.Length <= 15) {
-            throw new ArgumentException("Ingresa una descripción más detallada.", nameof(descripcion));
+            throw new ArgumentException("Ingresa una descripción más detallada.");
         }
     }
     
@@ -55,5 +57,60 @@ public class Servicio
         if (Activo)
             throw new InvalidOperationException("El servicio ya está activo.");
         Activo = true;
+    }
+
+    public void Actualizar(string nuevoTitulo, string nuevaDescripcion, List<string> imagenesUrls, List<ServicioImagen>? nuevasImagenes, string? urlPrincipalFinal)
+    {
+        ValidarTitulo(nuevoTitulo);
+        ValidarDescripcion(nuevaDescripcion);
+        
+        if (nuevoTitulo != Titulo)
+        {
+            Titulo  = nuevoTitulo;
+        }
+        
+        if (nuevaDescripcion != Descripcion)
+        {
+            Descripcion  = nuevaDescripcion;
+        }
+
+        foreach (var imagen in Imagenes.ToList())
+        {
+            var imagenUrl = imagen.Url;
+            if (!imagenesUrls.Contains(imagenUrl))
+            {
+                Imagenes.Remove(imagen);
+            }
+        }
+
+        if (nuevasImagenes != null)
+        {
+            foreach (var imagen in nuevasImagenes)
+            {
+                Imagenes.Add(imagen);
+            }
+        }
+        
+        if (Imagenes.Count == 0)
+        {
+            throw new InvalidOperationException("El servicio debe tener al menos una imagen.");
+        }
+
+        ServicioImagen? principal = null;
+
+        if (!string.IsNullOrWhiteSpace(urlPrincipalFinal))
+        {
+            principal = Imagenes.FirstOrDefault(i => i.Url == urlPrincipalFinal);
+        }
+
+        principal ??= Imagenes.FirstOrDefault(i => i.EsPrincipal);
+
+        principal ??= Imagenes.First();
+
+        foreach (var img in Imagenes)
+        {
+            if (img == principal) img.MarcarComoPrincipal();
+            else img.DesmarcarPrincipal();
+        }
     }
 }

@@ -6,37 +6,103 @@ import {
   Button,
   IconButton,
   Tooltip,
-  Box
+  Box,
+  useMediaQuery
 } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
+import { useRef, useState, useEffect} from "react";
+
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import BoltOutlinedIcon from "@mui/icons-material/BoltOutlined";
 import PlumbingOutlinedIcon from "@mui/icons-material/PlumbingOutlined";
 import AcUnitOutlinedIcon from "@mui/icons-material/AcUnitOutlined";
 import WaterOutlinedIcon from "@mui/icons-material/WaterOutlined";
+import ConstructionOutlinedIcon from "@mui/icons-material/ConstructionOutlined";
+import HandymanOutlinedIcon from "@mui/icons-material/HandymanOutlined";
+import HomeRepairServiceOutlinedIcon from "@mui/icons-material/HomeRepairServiceOutlined";
 import BuildOutlinedIcon from "@mui/icons-material/BuildOutlined";
+import ChevronLeftRoundedIcon from "@mui/icons-material/ChevronLeftRounded";
+import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
+import EditIcon from '@mui/icons-material/Edit';
 
 export default function ServicioCard({
   servicio,
   rol,
   onToggleActivo,
-  onSolicitar
+  onSolicitar,
+  onOpenGaleria,
+  onEditar
 }) {
   const esAdmin = rol === "Administrador";
   const esCliente = rol === "Cliente";
+
+  const theme = useTheme();
+  const esMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+  const imagenes = servicio.imagenes ?? [];
+  const total = imagenes.length;
+  const tieneCarrusel = total > 1;
+
+  const [index, setIndex] = useState(0);
+  const [clicked, setClicked] = useState(null);
+  const touchStartX = useRef(null);
 
   const iconPorServicio = {
     Electricidad: <BoltOutlinedIcon />,
     Sanitaria: <PlumbingOutlinedIcon />,
     Climatización: <AcUnitOutlinedIcon />,
     Riego: <WaterOutlinedIcon />,
+    Mantenimiento: <HandymanOutlinedIcon />,
+    Construcción: <ConstructionOutlinedIcon />,
+    Reparaciones: <HomeRepairServiceOutlinedIcon />,
     Otro: <BuildOutlinedIcon />
   };
 
-  // ✅ Imagen servida desde /public (funciona igual en local y prod)
-  const imageUrl = servicio.imagenUrl;
+  const goPrev = () => {
+    setIndex((i) => (i - 1 + total) % total);
+  };
 
-  console.log("[ServicioCard imagen]", imageUrl);
+  const goNext = () => {
+    setIndex((i) => (i + 1) % total);
+  };
+
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e) => {
+    if (touchStartX.current === null) return;
+    const delta = e.changedTouches[0].clientX - touchStartX.current;
+    if (Math.abs(delta) > 50) delta > 0 ? goPrev() : goNext();
+    touchStartX.current = null;
+  };
+
+  const imageUrl =
+    imagenes[index]?.url ||
+    servicio.imagenUrl ||
+    "/servicios/servicio-default.jpg";
+
+  const arrowBaseStyles = {
+    position: "absolute",
+    top: "50%",
+    transform: "translateY(-50%)",
+    color: "white",
+    opacity: 0,
+    transition: "opacity .25s ease, transform .15s ease",
+    filter: "drop-shadow(0 4px 8px rgba(0,0,0,.6))",
+    "&:hover": {
+      transform: "translateY(-50%) scale(1.15)"
+    }
+  };
+
+  useEffect(() => {
+    if (!imagenes.length) return;
+
+    const principalIndex = imagenes.findIndex(i => i.esPrincipal);
+    setIndex(principalIndex >= 0 ? principalIndex : 0);
+    console.log(servicio)
+  }, [imagenes]);
 
   return (
     <Card
@@ -57,58 +123,161 @@ export default function ServicioCard({
       }}
     >
       {esAdmin && (
-        <Tooltip
-          title={servicio.activo ? "Desactivar servicio" : "Activar servicio"}
+        <Box
+          sx={{
+            position: "absolute",
+            top: 14,
+            right: 14,
+            zIndex: 3,
+            display: "flex",
+            flexDirection: "column",
+            gap: 1
+          }}
         >
-          <IconButton
-            size="small"
-            onClick={() => onToggleActivo(servicio)}
-            sx={{
-              position: "absolute",
-              top: 14,
-              right: 14,
-              zIndex: 3,
-              color: "grey.500",
-              bgcolor: "rgba(255,255,255,0.55)",
-              backdropFilter: "blur(6px)",
-              boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
-              transition: "all 0.2s ease",
-              "&:hover": {
-                color: servicio.activo ? "error.main" : "success.main",
-                bgcolor: "rgba(255,255,255,0.85)"
+          <Tooltip title={servicio.activo ? "Desactivar servicio" : "Activar servicio"}>
+            <IconButton
+              size="small"
+              onClick={() => onToggleActivo(servicio)}
+              sx={{
+                bgcolor: "rgba(255,255,255,0.7)",
+                backdropFilter: "blur(6px)"
+              }}
+            >
+              {servicio.activo
+                ? <VisibilityOffOutlinedIcon fontSize="small" />
+                : <VisibilityOutlinedIcon fontSize="small" />
               }
-            }}
-          >
-            {servicio.activo ? (
-              <VisibilityOffOutlinedIcon fontSize="small" />
-            ) : (
-              <VisibilityOutlinedIcon fontSize="small" />
-            )}
-          </IconButton>
-        </Tooltip>
+            </IconButton>
+          </Tooltip>
+
+          <Tooltip title="Editar servicio">
+            <IconButton
+              size="small"
+              onClick={() => onEditar(servicio)}
+              sx={{
+                bgcolor: "rgba(255,255,255,0.7)",
+                backdropFilter: "blur(6px)"
+              }}
+            >
+              <EditIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </Box>
       )}
 
       <Box
-        component="img"
-        src={imageUrl}
-        alt={servicio.titulo}
         sx={{
-          width: "100%",
+          position: "relative",
           height: 350,
-          objectFit: "cover",
+          overflow: "hidden",
           borderTopLeftRadius: 12,
-          borderTopRightRadius: 12
+          borderTopRightRadius: 12,
+          "&:hover .carousel-arrow": {
+            opacity: 1
+          }
         }}
-        onError={(e) => {
-          console.error("❌ Error cargando imagen:", imageUrl);
-          e.currentTarget.src = "/servicios/servicio-default.jpg";
-        }}
-      />
+        onTouchStart={tieneCarrusel && esMobile ? handleTouchStart : undefined}
+        onTouchEnd={tieneCarrusel && esMobile ? handleTouchEnd : undefined}
+        onClick={() => onOpenGaleria?.(index)}
+      >
+        <Box
+          key={index}
+          component="img"
+          src={imageUrl}
+          alt={servicio.titulo}
+          sx={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+          }}
+          onError={(e) => {
+            e.currentTarget.src = "/servicios/servicio-default.jpg";
+          }}
+        />
+
+        {tieneCarrusel && !esMobile && (
+          <>
+            <IconButton
+              className="carousel-arrow"
+              onClick={(e) => {
+                e.stopPropagation();
+                setClicked("prev");
+                goPrev();
+                setTimeout(() => setClicked(null), 150);
+              }}
+              sx={{
+                ...arrowBaseStyles,
+                left: 12,
+                transform:
+                  clicked === "prev"
+                    ? "translateY(-50%) scale(0.9)"
+                    : "translateY(-50%)"
+              }}
+            >
+              <ChevronLeftRoundedIcon sx={{ fontSize:30 }} />
+            </IconButton>
+
+            <IconButton
+              className="carousel-arrow"
+              onClick={(e) => {
+                e.stopPropagation();
+                setClicked("next");
+                goNext();
+                setTimeout(() => setClicked(null), 150);
+              }}
+              sx={{
+                ...arrowBaseStyles,
+                right: 12,
+                transform:
+                  clicked === "next"
+                    ? "translateY(-50%) scale(0.9)"
+                    : "translateY(-50%)"
+              }}
+            >
+              <ChevronRightRoundedIcon sx={{ fontSize: 30 }} />
+            </IconButton>
+          </>
+        )}
+
+        {tieneCarrusel && (
+          <Box
+            sx={{
+              position: "absolute",
+              bottom: 12,
+              right: 14,
+              display: "flex",
+              gap: 0.75,
+              zIndex: 3
+            }}
+          >
+            {imagenes.map((_, i) => (
+              <Box
+                key={i}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIndex(i);
+                }}
+                sx={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: "50%",
+                  bgcolor: i === index ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.45)",
+                  cursor: "pointer",
+                  transition: "all .2s ease",
+                  "&:hover": {
+                    bgcolor: "white"
+                  }
+                }}
+              />
+            ))}
+          </Box>
+        )}
+      </Box>
 
       <Box
         sx={{
           position: "absolute",
-          top: 350 - 28,
+          top: 322,
           left: "50%",
           transform: "translateX(-50%)",
           width: 56,
@@ -123,18 +292,11 @@ export default function ServicioCard({
           zIndex: 2
         }}
       >
-        {iconPorServicio[servicio.titulo] ?? <BuildOutlinedIcon />}
+        {iconPorServicio[servicio.icono] ?? <BuildOutlinedIcon />}
       </Box>
 
-      <CardContent
-        sx={{
-          px: 3,
-          pt: 5,
-          pb: 4,
-          flexGrow: 1
-        }}
-      >
-        <Stack spacing={2} sx={{ height: "100%", width: "100%" }}>
+      <CardContent sx={{ px: 3, pt: 5, pb: 4, flexGrow: 1 }}>
+        <Stack spacing={2}>
           <Typography variant="h6" fontWeight={600} align="center">
             {servicio.titulo}
           </Typography>

@@ -37,12 +37,13 @@ public static class ServicioMapper
                         EsPrincipal = i.EsPrincipal,
                     })
                     .ToList(),
-                Activo = servicio.Activo
+                Activo = servicio.Activo,
+                Icono = servicio.Icono
             })
             .ToList();
     }
 
-    public static ServicioActivoDto MapearServicioADto(Servicio servicio)
+    public static ServicioActivoDto MapearServicioAActivoDto(Servicio servicio)
     {
         return new ServicioActivoDto
         {
@@ -55,6 +56,46 @@ public static class ServicioMapper
                     EsPrincipal = i.EsPrincipal,
                 })
                 .ToList(),
+            Icono = servicio.Icono,
         };
+    }
+    
+    public static ServicioDto MapearServicioADto(Servicio servicio)
+    {
+        return new ServicioDto
+        {
+            Id = servicio.Id,
+            Titulo = servicio.Titulo,
+            Descripcion = servicio.Descripcion,
+            Imagenes = servicio.Imagenes
+                .Select(i => new ServicioImagenDto {
+                    Url = i.Url,
+                    EsPrincipal = i.EsPrincipal,
+                })
+                .ToList(),
+            Icono = servicio.Icono,
+            Activo = servicio.Activo
+        };
+    }
+    
+    public static Servicio MapearServicioDtoAEntidad(CrearServicioDto servicio, ICollection<string> imagenesUrl)
+    {
+        var imagenes = imagenesUrl
+            .Select((url, index) =>
+                new ServicioImagen(
+                    url,
+                    esPrincipal: index == 0
+                )
+            )
+            .ToList();
+        
+        return new Servicio(servicio.Titulo, servicio.Descripcion, imagenes, servicio.Icono);
+    }
+    
+    public static List<ServicioImagen> MapearImagenesUrlAImagen(ICollection<string> urls)
+    {
+        return urls
+            .Select(url => new ServicioImagen(url, esPrincipal: false))
+            .ToList();
     }
 }

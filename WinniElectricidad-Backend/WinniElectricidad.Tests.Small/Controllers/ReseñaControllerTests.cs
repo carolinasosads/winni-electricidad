@@ -93,7 +93,7 @@ public class ReseñaControllerTests
             Assert.That(body.ImagenUrl, Is.Null);
         });
 
-        _mockServicioImagenes.Verify(s => s.GuardarAsync(It.IsAny<IFormFile>(), "resenias"), Times.Never);
+        _mockServicioImagenes.Verify(s => s.GuardarImagenAsync(It.IsAny<IFormFile>(), "resenias"), Times.Never);
     }
 
     [Test]

@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using WinniElectricidad.Api.Servicios;
 using WinniElectricidad.Compartido.DTOs.Servicios;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Servicio;
+using WinniElectricidad.LogicaNegocio.ExcepcionesPersonalizadas.Servicios;
 
 namespace WinniElectricidad.Api.Controllers;
 
@@ -15,20 +17,28 @@ public class ServicioController : ControllerBase
     private readonly IObtenerServiciosSegunEstado _obtenerServiciosSegunEstado;
     private readonly IDesactivarServicio _desactivarServicio;
     private readonly IActivarServicio _activarServicio;
+    private readonly ICrearServicio _crearServicio;
+    private readonly IEditarServicio _editarServicio;
 
-    
+    private readonly IServicioImagenes _servicioImagenes;
+
     /// <summary>
     /// Inicializa una nueva instancia del <see cref="ServicioController"/> con las dependencias necesarias.
     /// </summary>
     /// <param name="obtenerServiciosSegunEstado">Servicio para obtener los servicios activos.</param>
     /// <param name="desactivarServicio">Servicio para desactivar un servicio activo.</param>
     /// <param name="activarServicio">Servicio para activar un servicio desactivado.</param>
-
-    public ServicioController(IObtenerServiciosSegunEstado obtenerServiciosSegunEstado, IDesactivarServicio desactivarServicio, IActivarServicio activarServicio)
+    /// <param name="crearServicio">Servicio para crear un nuevo servicio ofrecido por la empresa.</param>
+    /// <param name="editarServicio">Servicio para editar un servicio existente.</param>
+    /// <param name="servicioImagenes">Servicio para guardar o remover imagenes en Azure blob.</param>
+    public ServicioController(IObtenerServiciosSegunEstado obtenerServiciosSegunEstado, IDesactivarServicio desactivarServicio, IActivarServicio activarServicio, ICrearServicio crearServicio, IEditarServicio editarServicio, IServicioImagenes servicioImagenes)
     {
         _obtenerServiciosSegunEstado = obtenerServiciosSegunEstado;
         _desactivarServicio = desactivarServicio;
         _activarServicio = activarServicio;
+        _crearServicio = crearServicio;
+        _editarServicio = editarServicio;
+        _servicioImagenes = servicioImagenes;
     }
     
     /// <summary>
@@ -218,6 +228,191 @@ public class ServicioController : ControllerBase
         catch (Exception)
         {
             return StatusCode(500, new { message = "Error inesperado." });
+        }
+    }
+    
+    /// <summary>
+    /// Crea un nuevo servicio técnico ofrecido por la empresa.
+    /// </summary>
+    /// <remarks>
+    /// Este endpoint permite al administrador registrar un nuevo servicio en el sistema,
+    /// incluyendo su información principal y un conjunto de imágenes asociadas.
+    ///
+    /// **Flujo:**
+    /// 1. Recibe los datos del servicio mediante <see cref="CrearServicioDto"/>.  
+    /// 2. Guarda las imágenes enviadas utilizando el servicio <see cref="_servicioImagenes"/>.  
+    /// 3. Ejecuta la lógica de creación mediante <see cref="_crearServicio"/>.  
+    /// 4. Devuelve la información del servicio creado.
+    ///
+    /// En caso de error durante la creación, las imágenes previamente almacenadas
+    /// son eliminadas para mantener la consistencia del sistema.
+    ///
+    /// **Requiere autenticación:**  
+    /// - Solo disponible para usuarios con el rol <c>Administrador</c>.
+    ///
+    /// **Códigos de respuesta:**
+    /// - `200 OK` → Servicio creado correctamente.  
+    /// - `400 Bad Request` → Los datos enviados no son válidos.  
+    /// - `403 Forbidden` → El usuario no tiene permisos para realizar la operación.  
+    /// - `409 Conflict` → El servicio no puede crearse debido a reglas de negocio.  
+    /// - `500 Internal Server Error` → Error inesperado del servidor.
+    /// </remarks>
+    /// <param name="nuevoServicio">
+    /// Datos del servicio a crear, como título, descripción y precio.
+    /// </param>
+    /// <param name="imagenes">
+    /// Conjunto de imágenes asociadas al servicio.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Token de cancelación para abortar la operación si es necesario.
+    /// </param>
+    /// <returns>
+    /// Una respuesta HTTP con los datos del servicio creado.
+    /// </returns>
+    /// <response code="200">Servicio creado correctamente.</response>
+    /// <response code="400">Los datos enviados no son válidos.</response>
+    /// <response code="403">Permisos insuficientes.</response>
+    /// <response code="409">Conflicto al crear el servicio.</response>
+    /// <response code="500">Error inesperado del servidor.</response>
+    [HttpPost]
+    [ProducesResponseType(typeof(ServicioDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> CrearNuevoServicio([FromForm] CrearServicioDto nuevoServicio, ICollection<IFormFile> imagenes, CancellationToken cancellationToken)
+    {
+        ICollection<string>? imagenesUrl = null;
+        
+        try
+        {
+            imagenesUrl = await _servicioImagenes.GuardarImagenesAsync(imagenes, nuevoServicio.Titulo , "servicios");
+            
+            var servicioCreado = await _crearServicio.Ejecutar(nuevoServicio, imagenesUrl, cancellationToken);
+            
+            return Ok(servicioCreado);
+        } catch (ServicioException ex)
+        {
+            await EliminarImagenes(imagenesUrl);
+            return Conflict(new { message = ex.Message });
+        } catch (ServicioDuplicadoException ex)
+        {
+            await EliminarImagenes(imagenesUrl);
+            return Conflict(new { message = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            await EliminarImagenes(imagenesUrl);
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            await EliminarImagenes(imagenesUrl);
+            return Forbid(ex.Message);
+        }
+        catch (Exception)
+        {
+            await EliminarImagenes(imagenesUrl);
+            return StatusCode(500, new { message = "Error inesperado." });
+        }
+    }
+
+    /// <summary>
+    /// Edita la información de un servicio existente.
+    /// </summary>
+    /// <remarks>
+    /// Este endpoint permite al administrador modificar los datos de un servicio previamente registrado,
+    /// incluyendo su información principal y, opcionalmente, un nuevo conjunto de imágenes.
+    ///
+    /// **Flujo:**
+    /// 1. Recibe el identificador del servicio y los nuevos datos mediante <see cref="EditarServicioDto"/>.  
+    /// 2. Si se envían imágenes nuevas, se almacenan utilizando <see cref="_servicioImagenes"/>.  
+    /// 3. Ejecuta la lógica de edición mediante <see cref="_editarServicio"/>.  
+    /// 4. Devuelve la información actualizada del servicio.
+    ///
+    /// En caso de error durante la edición, las imágenes cargadas son eliminadas
+    /// para evitar inconsistencias.
+    ///
+    /// **Requiere autenticación:**  
+    /// - Solo disponible para usuarios con el rol <c>Administrador</c>.
+    ///
+    /// **Códigos de respuesta:**
+    /// - `200 OK` → Servicio editado correctamente.  
+    /// - `400 Bad Request` → Los datos enviados no son válidos.  
+    /// - `403 Forbidden` → El usuario no tiene permisos para realizar la operación.  
+    /// - `409 Conflict` → El servicio no puede editarse debido a reglas de negocio.  
+    /// - `500 Internal Server Error` → Error inesperado del servidor.
+    /// </remarks>
+    /// <param name="idServicio">
+    /// Identificador único del servicio que se desea editar.
+    /// </param>
+    /// <param name="servicio">
+    /// Nuevos datos del servicio.
+    /// </param>
+    /// <param name="imagenesNuevas">
+    /// Nuevas imágenes asociadas al servicio (opcional).
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Token de cancelación para abortar la operación si es necesario.
+    /// </param>
+    /// <returns>
+    /// Una respuesta HTTP con los datos del servicio actualizado.
+    /// </returns>
+    /// <response code="200">Servicio editado correctamente.</response>
+    /// <response code="400">Los datos enviados no son válidos.</response>
+    /// <response code="403">Permisos insuficientes.</response>
+    /// <response code="409">Conflicto al editar el servicio.</response>
+    /// <response code="500">Error inesperado del servidor.</response>
+    [HttpPut("{idServicio:int}")]
+    [ProducesResponseType(typeof(ServicioActivoDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> Editar(int idServicio, [FromForm] EditarServicioDto servicio, [FromForm(Name = "imagenes")] List<IFormFile>? imagenesNuevas, CancellationToken cancellationToken)
+    {
+        ICollection<string>? imagenesUrl = null;
+        
+        try
+        {
+            if (imagenesNuevas is { Count: > 0 })
+                imagenesUrl = await _servicioImagenes.GuardarImagenesAsync(imagenesNuevas, servicio.Titulo , "servicios");
+            
+            var servicioEditado = await _editarServicio.Ejecutar(idServicio, servicio, imagenesUrl, cancellationToken);
+            
+            return Ok(servicioEditado);
+        } catch (ServicioException ex)
+        {
+            await EliminarImagenes(imagenesUrl);
+            return Conflict(new { message = ex.Message });
+        } catch (ServicioDuplicadoException ex)
+        {
+            await EliminarImagenes(imagenesUrl);
+            return Conflict(new { message = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            await EliminarImagenes(imagenesUrl);
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            await EliminarImagenes(imagenesUrl);
+            return Forbid(ex.Message);
+        }
+        catch (Exception)
+        {
+            await EliminarImagenes(imagenesUrl);
+            return StatusCode(500, new { message = "Error inesperado." });
+        }
+    }
+    private async Task EliminarImagenes(ICollection<string>? urls)
+    {
+        if (urls is { Count: > 0 })
+        {
+            await _servicioImagenes.EliminarImagenesAsync(urls);
         }
     }
 }

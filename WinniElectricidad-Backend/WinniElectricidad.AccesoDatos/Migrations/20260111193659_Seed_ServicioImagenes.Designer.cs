@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WinniElectricidad.AccesoDatos.Repositorios.EF;
 
@@ -11,9 +12,11 @@ using WinniElectricidad.AccesoDatos.Repositorios.EF;
 namespace WinniElectricidad.AccesoDatos.Migrations
 {
     [DbContext(typeof(WinniElectricidadContext))]
-    partial class WinniElectricidadContextModelSnapshot : ModelSnapshot
+    [Migration("20260111193659_Seed_ServicioImagenes")]
+    partial class Seed_ServicioImagenes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -307,13 +310,6 @@ namespace WinniElectricidad.AccesoDatos.Migrations
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
 
-                    b.Property<string>("Icono")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasDefaultValue("Otro");
-
                     b.Property<string>("Titulo")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -332,7 +328,6 @@ namespace WinniElectricidad.AccesoDatos.Migrations
                             Id = 1,
                             Activo = true,
                             Descripcion = "Instalaciones, reparaciones y mantenimiento eléctrico en hogares y comercios.",
-                            Icono = "Electricidad",
                             Titulo = "Electricidad"
                         },
                         new
@@ -340,7 +335,6 @@ namespace WinniElectricidad.AccesoDatos.Migrations
                             Id = 2,
                             Activo = true,
                             Descripcion = "Instalación y reparación de cañerías, griferías y artefactos sanitarios.",
-                            Icono = "Sanitaria",
                             Titulo = "Sanitaria"
                         },
                         new
@@ -348,7 +342,6 @@ namespace WinniElectricidad.AccesoDatos.Migrations
                             Id = 3,
                             Activo = true,
                             Descripcion = "Instalación y mantenimiento de sistemas de aire acondicionado y calefacción.",
-                            Icono = "Climatización",
                             Titulo = "Climatización"
                         },
                         new
@@ -356,7 +349,6 @@ namespace WinniElectricidad.AccesoDatos.Migrations
                             Id = 4,
                             Activo = true,
                             Descripcion = "Instalación y mantenimiento de sistemas de riego para jardines.",
-                            Icono = "Riego",
                             Titulo = "Riego"
                         },
                         new
@@ -364,7 +356,6 @@ namespace WinniElectricidad.AccesoDatos.Migrations
                             Id = 5,
                             Activo = true,
                             Descripcion = "Servicios técnicos generales sujetos a evaluación previa.",
-                            Icono = "Otro",
                             Titulo = "Otro"
                         });
                 });

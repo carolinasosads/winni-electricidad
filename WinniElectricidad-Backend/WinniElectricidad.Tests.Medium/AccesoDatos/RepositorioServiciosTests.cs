@@ -17,9 +17,9 @@ public class RepositorioServiciosTests
         await using (context)
         {
             context.Servicios.AddRange(
-                new Servicio("Electricidad", "Instalaciones completas", null) { Activo = true },
-                new Servicio("Sanitaria", "Servicio sanitario completo", null) { Activo = false },
-                new Servicio("Riego", "Sistema de riego automatizado", null) { Activo = true }
+                new Servicio("Electricidad", "Instalaciones completas", null, "icono") { Activo = true },
+                new Servicio("Sanitaria", "Servicio sanitario completo", null, "icono") { Activo = false },
+                new Servicio("Riego", "Sistema de riego automatizado", null, "icono") { Activo = true }
             );
             await context.SaveChangesAsync();
 
@@ -43,9 +43,9 @@ public class RepositorioServiciosTests
         await using (context)
         {
             context.Servicios.AddRange(
-                new Servicio("Electricidad", "Instalaciones completas", null) { Activo = true },
-                new Servicio("Sanitaria", "Servicio sanitario completo", null) { Activo = false },
-                new Servicio("Riego", "Sistema de riego automatizado", null) { Activo = true }
+                new Servicio("Electricidad", "Instalaciones completas", null, "icono") { Activo = true },
+                new Servicio("Sanitaria", "Servicio sanitario completo", null, "icono") { Activo = false },
+                new Servicio("Riego", "Sistema de riego automatizado", null, "icono") { Activo = true }
             );
             await context.SaveChangesAsync();
 
@@ -68,8 +68,8 @@ public class RepositorioServiciosTests
         await using (context)
         {
             context.Servicios.AddRange(
-                new Servicio("Electricidad", "Instalaciones completas", null),
-                new Servicio("Sanitaria", "Servicio sanitario completo", null)
+                new Servicio("Electricidad", "Instalaciones completas", null, "icono"),
+                new Servicio("Sanitaria", "Servicio sanitario completo", null, "icono")
             );
             await context.SaveChangesAsync();
             

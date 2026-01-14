@@ -30,7 +30,7 @@ public class AgregarReseñaTests
                 IdUsuario = 5
             };
 
-            var servicio = new Servicio("Electricidad", "Instalaciones completas", null)
+            var servicio = new Servicio("Electricidad", "Instalaciones completas", null, "icono")
             {
                 Id = 50,
                 Activo = true
@@ -101,7 +101,7 @@ public class AgregarReseñaTests
         await using (connection)
         await using (context)
         {
-            var servicio = new Servicio("Sanitaria", "Sanitaria completa", null)
+            var servicio = new Servicio("Sanitaria", "Sanitaria completa", null, "icono")
             {
                 Id = 60,
                 Activo = true
@@ -213,7 +213,7 @@ public class AgregarReseñaTests
                 IdUsuario = 1
             };
 
-            var servicio = new Servicio("Electricidad", "Test descripcion detallada", null)
+            var servicio = new Servicio("Electricidad", "Test descripcion detallada", null, "icono")
             {
                 Id = 10,
                 Activo = true

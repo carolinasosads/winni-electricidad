@@ -17,8 +17,8 @@ public class ObtenerServiciosSegunEstadoTests
         await using (context)
         {
             context.Servicios.AddRange(
-                new Servicio("Electricidad", "Instalaciones eléctricas completas", null),
-                new Servicio("Sanitaria", "Servicio sanitario completo", null) { Activo = false }
+                new Servicio("Electricidad", "Instalaciones eléctricas completas", null, "icono"),
+                new Servicio("Sanitaria", "Servicio sanitario completo", null, "icono") { Activo = false }
             );
             await context.SaveChangesAsync();
 
@@ -43,8 +43,8 @@ public class ObtenerServiciosSegunEstadoTests
         await using (context)
         {
             context.Servicios.AddRange(
-                new Servicio("Electricidad", "Instalaciones eléctricas completas", null),
-                new Servicio("Sanitaria", "Servicio sanitario completo", null) { Activo = false }
+                new Servicio("Electricidad", "Instalaciones eléctricas completas", null, "icono"),
+                new Servicio("Sanitaria", "Servicio sanitario completo", null, "icono") { Activo = false }
             );
             await context.SaveChangesAsync();
 
