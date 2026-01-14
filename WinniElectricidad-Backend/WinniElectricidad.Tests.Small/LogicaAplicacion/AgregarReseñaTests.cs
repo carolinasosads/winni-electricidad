@@ -9,7 +9,7 @@ using WinniElectricidad.LogicaNegocio.InterfacesRepositorios;
 namespace WinniElectricidad.Tests.Small.LogicaAplicacion;
 
 [TestFixture]
-public class AgregarReseñaSmallTests
+public class AgregarReseñaTests
 {
     private Mock<IRepositorioReseña> _mockRepoReseña;
     private Mock<IRepositorioUsuario> _mockRepoUsuario;
@@ -28,6 +28,12 @@ public class AgregarReseñaSmallTests
         _mockServicioModeracion = new Mock<IModeracionOpenAi>();
         _mockEvaluarPuntaje = new Mock<IEvaluarPuntajeResenia>();
 
+        // Por defecto: NO ofensiva
+        _mockServicioModeracion
+            .Setup(m => m.EsOfensiva(It.IsAny<string>()))
+            .ReturnsAsync(false);
+
+        // Puntaje IA por defecto para tests
         _mockEvaluarPuntaje
             .Setup(p => p.CalcularPuntajeIa(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(80);
@@ -49,7 +55,7 @@ public class AgregarReseñaSmallTests
         {
             IdServicio = 1,
             Descripcion = "Test",
-            Calificacion = 5
+            Calificacion = 4
         };
 
         _mockRepoUsuario
@@ -62,6 +68,114 @@ public class AgregarReseñaSmallTests
 
         _mockRepoReseña.Verify(
             r => r.Add(It.IsAny<Reseña>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+
+        _mockServicioModeracion.Verify(
+            m => m.EsOfensiva(It.IsAny<string>()),
+            Times.Never);
+
+        _mockEvaluarPuntaje.Verify(
+            p => p.CalcularPuntajeIa(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Test]
+    public void Ejecutar_ServicioNoExiste_LanzaReseñaException()
+    {
+        // Arrange
+        var dto = new ReseñaACrearDto
+        {
+            IdServicio = 99,
+            Descripcion = "Test",
+            Calificacion = 4
+        };
+
+        var usuario = new UsuarioCliente(
+            "Cliente Test",
+            "1234567",
+            "mail@test.com",
+            "099000000",
+            new List<Direccion>())
+        {
+            IdUsuario = 10
+        };
+
+        _mockRepoUsuario
+            .Setup(r => r.FindById(10, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(usuario);
+
+        _mockRepoServicio
+            .Setup(r => r.FindById(dto.IdServicio, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Servicio?)null);
+
+        // Act + Assert
+        Assert.ThrowsAsync<ReseñaException>(() =>
+            _servicio.Ejecutar(dto, 10, null, CancellationToken.None));
+
+        _mockRepoReseña.Verify(
+            r => r.Add(It.IsAny<Reseña>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+
+        _mockServicioModeracion.Verify(
+            m => m.EsOfensiva(It.IsAny<string>()),
+            Times.Never);
+
+        _mockEvaluarPuntaje.Verify(
+            p => p.CalcularPuntajeIa(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Test]
+    public void Ejecutar_ReseñaOfensiva_LanzaReseñaOfensivaException()
+    {
+        // Arrange
+        var dto = new ReseñaACrearDto
+        {
+            IdServicio = 1,
+            Descripcion = "Texto ofensivo",
+            Calificacion = 1
+        };
+
+        var usuario = new UsuarioCliente(
+            "Cliente Test",
+            "1234567",
+            "mail@test.com",
+            "099000000",
+            new List<Direccion>())
+        {
+            IdUsuario = 10
+        };
+
+        var servicio = new Servicio(
+            "Electricidad",
+            "Instalaciones y reparaciones eléctricas para hogares y comercios, con garantía.",
+            new List<ServicioImagen>())
+        {
+            Id = 1
+        };
+
+        _mockRepoUsuario
+            .Setup(r => r.FindById(10, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(usuario);
+
+        _mockRepoServicio
+            .Setup(r => r.FindById(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(servicio);
+
+        _mockServicioModeracion
+            .Setup(m => m.EsOfensiva(It.IsAny<string>()))
+            .ReturnsAsync(true);
+
+        // Act + Assert
+        Assert.ThrowsAsync<ReseñaOfensivaException>(() =>
+            _servicio.Ejecutar(dto, 10, null, CancellationToken.None));
+
+        _mockRepoReseña.Verify(
+            r => r.Add(It.IsAny<Reseña>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+
+        _mockEvaluarPuntaje.Verify(
+            p => p.CalcularPuntajeIa(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
 
@@ -208,18 +322,51 @@ public class AgregarReseñaSmallTests
         _mockRepoServicio
             .Setup(r => r.FindById(1, It.IsAny<CancellationToken>()))
             .ReturnsAsync(servicio);
+   
+        _mockRepoServicio
+            .Setup(r => r.FindById(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(servicio);
 
         Reseña reseñaGuardada = null!;
         _mockRepoReseña
             .Setup(r => r.Add(It.IsAny<Reseña>(), It.IsAny<CancellationToken>()))
-            .Callback<Reseña, CancellationToken>((r, _) => reseñaGuardada = r)
-            .ReturnsAsync((Reseña r, CancellationToken _) => r);
+            .Callback<Reseña, CancellationToken>((r, _) =>
+            {
+                r.Id = 123;
+                reseñaGuardada = r;
+            });
+
+
+        var imagenUrl = "/resenias/test.jpg";
+
+        // Act
+        var result = await _servicio.Ejecutar(dto, 10, imagenUrl, CancellationToken.None);
 
         // Act
         await _servicio.Ejecutar(dto, 10, null, CancellationToken.None);
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.IdReseña, Is.EqualTo(123));
+            Assert.That(result.Descripcion, Is.EqualTo(dto.Descripcion));
+            Assert.That(result.Calificacion, Is.EqualTo(dto.Calificacion));
+            Assert.That(result.ImagenUrl, Is.EqualTo(imagenUrl));
+            Assert.That(result.Servicio.Id, Is.EqualTo(1));
+            Assert.That(result.Cliente.IdUsuario, Is.EqualTo(10));
+        });
 
         // Assert
         Assert.That(reseñaGuardada, Is.Not.Null);
+        _mockRepoReseña.Verify(
+            r => r.Add(It.IsAny<Reseña>(), It.IsAny<CancellationToken>()),
+            Times.Once);
+
+        Assert.That(reseñaGuardada, Is.Not.Null);
         Assert.That(reseñaGuardada.PuntajeReseniaIa, Is.EqualTo(80));
+
+        _mockEvaluarPuntaje.Verify(
+            p => p.CalcularPuntajeIa(dto.Descripcion, dto.Calificacion, It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 }

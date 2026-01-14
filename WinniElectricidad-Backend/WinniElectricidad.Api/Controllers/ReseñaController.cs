@@ -202,6 +202,26 @@ public class ReseñaController : ControllerBase
         }
     }
     
+    /// <summary>
+    /// Obtiene las reseñas destacadas del sistema.
+    /// </summary>
+    /// <remarks>
+    /// Retorna un máximo de tres reseñas aprobadas, priorizadas según el criterio
+    /// definido por la lógica de negocio (por ejemplo, puntaje asignado por IA).
+    /// Este endpoint está pensado para mostrar reseñas destacadas en la página principal.
+    /// </remarks>
+    /// <param name="ct">
+    /// Token de cancelación para abortar la operación si la solicitud es cancelada.
+    /// </param>
+    /// <returns>
+    /// Una lista de reseñas aprobadas consideradas como destacadas.
+    /// </returns>
+    /// <response code="200">
+    /// Reseñas destacadas obtenidas correctamente.
+    /// </response>
+    /// <response code="500">
+    /// Ocurrió un error interno al intentar obtener las reseñas destacadas.
+    /// </response>
     [HttpGet("destacadas")]
     [ProducesResponseType(typeof(IEnumerable<ReseñaCreadaDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]

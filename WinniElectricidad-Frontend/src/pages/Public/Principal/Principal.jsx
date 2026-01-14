@@ -164,7 +164,8 @@ export default function PaginaPrincipal() {
           imagenUrl,
         };
       })
-      .filter((x) => (x.texto || "").trim().length > 0);
+      .filter((x) => (x.texto || "").trim().length > 0)
+      .slice(0, 3);
   }, [resenasRaw]);
 
   useEffect(() => {

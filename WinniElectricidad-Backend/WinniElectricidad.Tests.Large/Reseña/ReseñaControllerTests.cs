@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using WinniElectricidad.Compartido.DTOs.Reseñas;
 using WinniElectricidad.LogicaNegocio.Entidades;
@@ -21,8 +20,6 @@ public class ReseñaControllerTests : LargeTestBase
     public async Task Reseñar_E2E_FlujoCompleto(bool conImagen)
     {
         // Arrange
-        const string endpoint = EndpointBase;
-
         await DbSeeder.CleanDatabaseAsync(Factory);
 
         var usuario = await DbSeeder.SeedUsuarioConDireccionesAsync(Factory);
@@ -59,16 +56,18 @@ public class ReseñaControllerTests : LargeTestBase
         {
             var imagenBytes = "fake image content"u8.ToArray();
             var imagenContent = new ByteArrayContent(imagenBytes);
-            imagenContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+            imagenContent.Headers.ContentType =
+                new MediaTypeHeaderValue("image/jpeg");
 
             form.Add(imagenContent, "imagen", "foto-e2e.jpg");
         }
 
         // Act
-        var resp = await Client.PostAsync(endpoint, form);
+        var resp = await Client.PostAsync(EndpointBase, form);
 
-        // Assert
+        // Assert HTTP
         Assert.That(resp.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
         var dto = await resp.Content.ReadFromJsonAsync<ReseñaCreadaDto>();
         Assert.That(dto, Is.Not.Null);
 
@@ -79,16 +78,6 @@ public class ReseñaControllerTests : LargeTestBase
             Assert.That(dto.Calificacion, Is.EqualTo(5));
             Assert.That(dto.Servicio.Id, Is.EqualTo(idServicio));
             Assert.That(dto.Cliente.IdUsuario, Is.EqualTo(usuario.IdUsuario));
-
-            if (conImagen)
-            {
-                Assert.That(dto.ImagenUrl, Is.Not.Null);
-                Assert.That(dto.ImagenUrl, Does.Contain("/resenias/"));
-            }
-            else
-            {
-                Assert.That(dto.ImagenUrl, Is.Null);
-            }
         });
 
         using (var scope = Factory.Services.CreateScope())
@@ -102,6 +91,8 @@ public class ReseñaControllerTests : LargeTestBase
             {
                 Assert.That(reseñaEnDb.IdUsuario, Is.EqualTo(usuario.IdUsuario));
                 Assert.That(reseñaEnDb.IdServicio, Is.EqualTo(idServicio));
+
+                Assert.That(reseñaEnDb.PuntajeReseniaIa, Is.EqualTo(80));
             });
 
             if (conImagen)

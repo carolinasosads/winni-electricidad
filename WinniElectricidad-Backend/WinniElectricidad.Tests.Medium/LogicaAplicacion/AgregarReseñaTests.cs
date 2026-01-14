@@ -5,6 +5,7 @@ using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Reseña;
 using WinniElectricidad.LogicaAplicacion.Servicios.Reseña;
 using WinniElectricidad.LogicaNegocio.Entidades;
 using WinniElectricidad.LogicaNegocio.ExcepcionesPersonalizadas.Reseñas;
+using WinniElectricidad.LogicaNegocio.InterfacesRepositorios;
 using WinniElectricidad.Tests.Medium.Utils;
 
 namespace WinniElectricidad.Tests.Medium.LogicaAplicacion;
@@ -45,6 +46,9 @@ public class AgregarReseñaTests
             var repoServicios = new RepositorioServicios(context);
 
             var moderacionMock = new Mock<IModeracionOpenAi>();
+            moderacionMock
+                .Setup(m => m.EsOfensiva(It.IsAny<string>()))
+                .ReturnsAsync(false);
 
             var evaluarPuntajeMock = new Mock<IEvaluarPuntajeResenia>();
             evaluarPuntajeMock
@@ -96,7 +100,6 @@ public class AgregarReseñaTests
                 Assert.That(reseñaEnDb.IdServicio, Is.EqualTo(50));
                 Assert.That(reseñaEnDb.ImagenUrl, Is.EqualTo(imagenUrl));
 
-                // ✅ opcional: verificar que persistió el puntaje mockeado
                 Assert.That(reseñaEnDb.PuntajeReseniaIa, Is.EqualTo(70));
             });
         }
@@ -124,6 +127,9 @@ public class AgregarReseñaTests
             var repoServicios = new RepositorioServicios(context);
 
             var moderacionMock = new Mock<IModeracionOpenAi>();
+            moderacionMock
+                .Setup(m => m.EsOfensiva(It.IsAny<string>()))
+                .ReturnsAsync(false);
 
             var evaluarPuntajeMock = new Mock<IEvaluarPuntajeResenia>();
             evaluarPuntajeMock
@@ -183,6 +189,9 @@ public class AgregarReseñaTests
             var repoServicios = new RepositorioServicios(context);
 
             var moderacionMock = new Mock<IModeracionOpenAi>();
+            moderacionMock
+                .Setup(m => m.EsOfensiva(It.IsAny<string>()))
+                .ReturnsAsync(false);
 
             var evaluarPuntajeMock = new Mock<IEvaluarPuntajeResenia>();
             evaluarPuntajeMock
@@ -259,11 +268,11 @@ public class AgregarReseñaTests
                 .ReturnsAsync(70);
 
             var servicioAgregar = new AgregarReseña(
-                repoReseñas,
-                repoUsuarios,
-                repoServicios,
-                moderacionMock.Object,
-                evaluarPuntajeMock.Object
+                repositorioReseña: repoReseñas,
+                repositorioUsuario: repoUsuarios,
+                repositorioServicio: repoServicios,
+                moderacionOpenAi: moderacionMock.Object,
+                evaluarPuntajeResenia: evaluarPuntajeMock.Object
             );
 
             var dtoEntrada = new ReseñaACrearDto
