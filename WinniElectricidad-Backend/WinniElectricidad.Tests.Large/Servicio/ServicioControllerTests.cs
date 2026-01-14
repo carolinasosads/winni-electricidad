@@ -92,7 +92,8 @@ public class ServicioControllerTests : LargeTestBase
             var servicio = new LogicaNegocio.Entidades.Servicio(
                 "Electricidad",
                 "Servicio de prueba",
-                null)
+                null, 
+                "icono")
             { Activo = true };
 
             db.Servicios.Add(servicio);
@@ -140,7 +141,8 @@ public class ServicioControllerTests : LargeTestBase
             var servicio = new LogicaNegocio.Entidades.Servicio(
                 "Sanitaria",
                 "Servicio de prueba",
-                null)
+                null, 
+                "icono")
             { Activo = false };
 
             db.Servicios.Add(servicio);
@@ -188,7 +190,8 @@ public class ServicioControllerTests : LargeTestBase
             var servicio = new LogicaNegocio.Entidades.Servicio(
                     "Electricidad",
                     "Servicio activo inicialmente",
-                    null)
+                    null, 
+                    "icono")
                 { Activo = true };
 
             db.Servicios.Add(servicio);
@@ -236,7 +239,8 @@ public class ServicioControllerTests : LargeTestBase
         var form = new MultipartFormDataContent
         {
             { new StringContent("Electricidad"), "Titulo" },
-            { new StringContent("Servicio eléctrico general"), "Descripcion" }
+            { new StringContent("Servicio eléctrico general"), "Descripcion" },
+            { new StringContent("Otro"), "Icono" }
         };
 
         // imagen fake

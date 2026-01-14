@@ -296,6 +296,10 @@ public class ServicioController : ControllerBase
         {
             await EliminarImagenes(imagenesUrl);
             return Conflict(new { message = ex.Message });
+        } catch (ServicioDuplicadoException ex)
+        {
+            await EliminarImagenes(imagenesUrl);
+            return Conflict(new { message = ex.Message });
         }
         catch (ArgumentException ex)
         {
@@ -380,6 +384,10 @@ public class ServicioController : ControllerBase
             
             return Ok(servicioEditado);
         } catch (ServicioException ex)
+        {
+            await EliminarImagenes(imagenesUrl);
+            return Conflict(new { message = ex.Message });
+        } catch (ServicioDuplicadoException ex)
         {
             await EliminarImagenes(imagenesUrl);
             return Conflict(new { message = ex.Message });

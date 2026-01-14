@@ -20,7 +20,8 @@ public class EditarServicioTests
             var servicio = new Servicio(
                 "Electricidad",
                 "Descripcion original",
-                new List<ServicioImagen>())
+                new List<ServicioImagen>(),
+                "icono")
             {
                 Activo = true
             };

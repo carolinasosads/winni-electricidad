@@ -37,7 +37,8 @@ public static class ServicioMapper
                         EsPrincipal = i.EsPrincipal,
                     })
                     .ToList(),
-                Activo = servicio.Activo
+                Activo = servicio.Activo,
+                Icono = servicio.Icono
             })
             .ToList();
     }
@@ -55,6 +56,7 @@ public static class ServicioMapper
                     EsPrincipal = i.EsPrincipal,
                 })
                 .ToList(),
+            Icono = servicio.Icono,
         };
     }
     
@@ -71,6 +73,7 @@ public static class ServicioMapper
                     EsPrincipal = i.EsPrincipal,
                 })
                 .ToList(),
+            Icono = servicio.Icono,
             Activo = servicio.Activo
         };
     }
@@ -86,7 +89,7 @@ public static class ServicioMapper
             )
             .ToList();
         
-        return new Servicio(servicio.Titulo, servicio.Descripcion, imagenes);
+        return new Servicio(servicio.Titulo, servicio.Descripcion, imagenes, servicio.Icono);
     }
     
     public static List<ServicioImagen> MapearImagenesUrlAImagen(ICollection<string> urls)

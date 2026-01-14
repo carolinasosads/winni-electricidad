@@ -69,7 +69,7 @@ public class AgendarReservaTests
 
         var servicios = new List<Servicio>
         {
-            new("Electricidad", "Instalaciones completas", null)
+            new("Electricidad", "Instalaciones completas", null, "icono")
             {
                 Activo = true
             }
@@ -190,7 +190,7 @@ public class AgendarReservaTests
         _mockRepoServicios.Setup(r => r.FindByIds(It.IsAny<List<int>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<Servicio>
             {
-                new("Electricidad", "Instalaciones completas", null) { Activo = true }
+                new("Electricidad", "Instalaciones completas", null, "icono") { Activo = true }
             });
 
         _mockRepoReservas.Setup(r => r.HorarioOcupado(fecha, It.IsAny<CancellationToken>()))

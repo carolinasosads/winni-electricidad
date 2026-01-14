@@ -35,7 +35,7 @@ public class EditarServicioTests
     [Test]
     public void Ejecutar_IndexPrincipalNuevaInvalido_LanzaArgumentException()
     {
-        var servicio = new Servicio("Electricidad", "Descripcion detallada", new List<ServicioImagen>());
+        var servicio = new Servicio("Electricidad", "Descripcion detallada", new List<ServicioImagen>(), "icono");
 
         _repoMock
             .Setup(r => r.FindById(1, It.IsAny<CancellationToken>()))
@@ -62,7 +62,8 @@ public class EditarServicioTests
             {
                 new ServicioImagen("/img/existente.jpg", esPrincipal: false),
                 new ServicioImagen("/img/otra.jpg", esPrincipal: true)
-            }
+            }, 
+            "icono"
         );
 
         _repoMock

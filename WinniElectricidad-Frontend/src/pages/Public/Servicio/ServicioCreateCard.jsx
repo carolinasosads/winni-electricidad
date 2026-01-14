@@ -92,6 +92,21 @@ export default function ServicioCreateCard({ onCrear }) {
     }
   };
 
+  const handleRemoveImage = (index) => {
+    setImagenes((prev) => prev.filter((_, i) => i !== index));
+
+    setPreviews((prev) => {
+      URL.revokeObjectURL(prev[index]);
+      return prev.filter((_, i) => i !== index);
+    });
+
+    setImagenActiva((prev) => {
+      if (prev === index) return 0;
+      if (prev > index) return prev - 1;
+      return prev;
+    });
+  };
+
   return (
     <Card
       sx={{
@@ -160,25 +175,54 @@ export default function ServicioCreateCard({ onCrear }) {
             {previews.map((src, i) => (
               <Box
                 key={i}
-                component="img"
-                src={src}
-                onClick={() => setImagenActiva(i)}
-                sx={{
-                  width: 44,
-                  height: 44,
-                  objectFit: "cover",
-                  borderRadius: 1,
-                  cursor: "pointer",
-                  border: i === imagenActiva ? "2px solid" : "1px solid",
-                  borderColor: i === imagenActiva ? "primary.main" : "divider",
-                  opacity: i === imagenActiva ? 1 : 0.6,
-                  transition: "all .2s"
-                }}
-              />
+                sx={{ position: "relative" }}
+              >
+                <Box
+                  component="img"
+                  src={src}
+                  onClick={() => setImagenActiva(i)}
+                  sx={{
+                    width: 44,
+                    height: 44,
+                    objectFit: "cover",
+                    borderRadius: 1,
+                    cursor: "pointer",
+                    border: i === imagenActiva ? "2px solid" : "1px solid",
+                    borderColor: i === imagenActiva ? "primary.main" : "divider",
+                    opacity: i === imagenActiva ? 1 : 0.6
+                  }}
+                />
+
+                <Box
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemoveImage(i);
+                  }}
+                  sx={{
+                    position: "absolute",
+                    top: -6,
+                    right: -6,
+                    width: 18,
+                    height: 18,
+                    borderRadius: "50%",
+                    bgcolor: "error.main",
+                    color: "white",
+                    fontSize: 12,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                    zIndex: 5
+                  }}
+                >
+                  ×
+                </Box>
+              </Box>
             ))}
           </Stack>
         )}
 
+      {previews.length === 0 && (
       <Box
         sx={{
           position: "absolute",
@@ -199,6 +243,7 @@ export default function ServicioCreateCard({ onCrear }) {
       >
         <AddOutlinedIcon />
       </Box>
+    )}
 
       <CardContent
         sx={{

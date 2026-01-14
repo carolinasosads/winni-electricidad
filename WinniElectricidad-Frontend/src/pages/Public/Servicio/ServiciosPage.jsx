@@ -46,7 +46,6 @@ export default function ServiciosPage() {
   const [imagenesEditando, setImagenesEditando] = useState([]);
   const [editando, setEditando] = useState(false);
   
-
   const serviciosNormalizados = servicios.map(s => {
     const imagenPrincipal =
       Array.isArray(s.imagenes) &&
@@ -189,6 +188,7 @@ export default function ServiciosPage() {
 
                 formData.append("Titulo", nuevoServicio.titulo);
                 formData.append("Descripcion", nuevoServicio.descripcion);
+                formData.append("Icono", nuevoServicio.icono);
 
                 nuevoServicio.imagenes.forEach((img) => {
                   formData.append("imagenes", img);

@@ -90,6 +90,11 @@ public class WinniElectricidadContext : DbContext
                 .WithOne()
                 .HasForeignKey(r => r.IdServicio)
                 .OnDelete(DeleteBehavior.Restrict);
+            
+            entity.Property(s => s.Icono)
+                .IsRequired()
+                .HasMaxLength(50)
+                .HasDefaultValue("Otro");
         });
         
         // -------------------- SERVICIO IMAGENES --------------------
@@ -232,35 +237,40 @@ public class WinniElectricidadContext : DbContext
                     Id = 1,
                     Titulo = "Electricidad",
                     Descripcion = "Instalaciones, reparaciones y mantenimiento eléctrico en hogares y comercios.",
-                    Activo = true
+                    Activo = true,
+                    Icono = "Electricidad"
                 },
                 new Servicio
                 {
                     Id = 2,
                     Titulo = "Sanitaria",
                     Descripcion = "Instalación y reparación de cañerías, griferías y artefactos sanitarios.",
-                    Activo = true
+                    Activo = true,
+                    Icono = "Sanitaria"
                 },
                 new Servicio
                 {
                     Id = 3,
                     Titulo = "Climatización",
                     Descripcion = "Instalación y mantenimiento de sistemas de aire acondicionado y calefacción.",
-                    Activo = true
+                    Activo = true,
+                    Icono = "Climatización"
                 },
                 new Servicio
                 {
                     Id = 4,
                     Titulo = "Riego",
                     Descripcion = "Instalación y mantenimiento de sistemas de riego para jardines.",
-                    Activo = true
+                    Activo = true,
+                    Icono = "Riego"
                 },
                 new Servicio
                 {
                     Id = 5,
                     Titulo = "Otro",
                     Descripcion = "Servicios técnicos generales sujetos a evaluación previa.",
-                    Activo = true
+                    Activo = true,
+                    Icono = "Otro"
                 }
         );
 

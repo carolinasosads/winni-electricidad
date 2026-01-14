@@ -7,6 +7,7 @@ public class Servicio
     public string Titulo { get; set; }
     public string? Descripcion { get; set; }
     public bool Activo { get; set; } = true;
+    public string Icono { get; set; } = "Otro";
     
     public ICollection<ServicioImagen> Imagenes { get; set; } = new List<ServicioImagen>();
     public ICollection<Reseña>  Reseñas { get; set; } = new List<Reseña>();
@@ -14,11 +15,12 @@ public class Servicio
 
     public Servicio() {}
     
-    public Servicio(string titulo, string? descripcion, ICollection<ServicioImagen> imagenes)
+    public Servicio(string titulo, string? descripcion, ICollection<ServicioImagen> imagenes, string icono)
     {
         Titulo = titulo;
         Descripcion = descripcion;
         Imagenes = imagenes;
+        Icono = icono;
         Reseñas = new List<Reseña>();
         Validar();
     }

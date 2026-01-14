@@ -18,6 +18,9 @@ import BoltOutlinedIcon from "@mui/icons-material/BoltOutlined";
 import PlumbingOutlinedIcon from "@mui/icons-material/PlumbingOutlined";
 import AcUnitOutlinedIcon from "@mui/icons-material/AcUnitOutlined";
 import WaterOutlinedIcon from "@mui/icons-material/WaterOutlined";
+import ConstructionOutlinedIcon from "@mui/icons-material/ConstructionOutlined";
+import HandymanOutlinedIcon from "@mui/icons-material/HandymanOutlined";
+import HomeRepairServiceOutlinedIcon from "@mui/icons-material/HomeRepairServiceOutlined";
 import BuildOutlinedIcon from "@mui/icons-material/BuildOutlined";
 import ChevronLeftRoundedIcon from "@mui/icons-material/ChevronLeftRounded";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
@@ -50,6 +53,9 @@ export default function ServicioCard({
     Sanitaria: <PlumbingOutlinedIcon />,
     Climatización: <AcUnitOutlinedIcon />,
     Riego: <WaterOutlinedIcon />,
+    Mantenimiento: <HandymanOutlinedIcon />,
+    Construcción: <ConstructionOutlinedIcon />,
+    Reparaciones: <HomeRepairServiceOutlinedIcon />,
     Otro: <BuildOutlinedIcon />
   };
 
@@ -95,6 +101,7 @@ export default function ServicioCard({
 
     const principalIndex = imagenes.findIndex(i => i.esPrincipal);
     setIndex(principalIndex >= 0 ? principalIndex : 0);
+    console.log(servicio)
   }, [imagenes]);
 
   return (
@@ -285,7 +292,7 @@ export default function ServicioCard({
           zIndex: 2
         }}
       >
-        {iconPorServicio[servicio.titulo] ?? <BuildOutlinedIcon />}
+        {iconPorServicio[servicio.icono] ?? <BuildOutlinedIcon />}
       </Box>
 
       <CardContent sx={{ px: 3, pt: 5, pb: 4, flexGrow: 1 }}>

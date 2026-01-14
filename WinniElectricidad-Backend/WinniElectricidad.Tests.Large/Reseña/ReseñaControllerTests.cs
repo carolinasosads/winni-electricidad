@@ -39,7 +39,8 @@ public class ReseñaControllerTests : LargeTestBase
             var servicio = new LogicaNegocio.Entidades.Servicio(
                 "Electricidad E2E",
                 "Servicio eléctrico E2E",
-                new List<ServicioImagen>())
+                new List<ServicioImagen>(),
+                "icono")
             { Activo = true };
 
             db.Servicios.Add(servicio);

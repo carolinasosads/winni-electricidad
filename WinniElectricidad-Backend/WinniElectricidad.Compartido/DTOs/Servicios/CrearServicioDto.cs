@@ -9,4 +9,6 @@ public class CrearServicioDto
     
     [Required]
     public string Descripcion { get; init; }
+    [Required]
+    public string Icono { get; init; }
 }

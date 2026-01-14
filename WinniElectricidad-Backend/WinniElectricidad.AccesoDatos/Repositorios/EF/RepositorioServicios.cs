@@ -68,4 +68,12 @@ public class RepositorioServicios : IRepositorioServicio
             .Where(s => ids.Contains(s.Id))
             .ToListAsync(ct);
     }
+
+    public async Task<Servicio> FindByTitulo(string titulo, CancellationToken ct = default)
+    {
+        var servicio = await _db.Servicios
+            .Where(x => x.Titulo == titulo)
+            .FirstOrDefaultAsync(ct);
+        return servicio;
+    }
 }

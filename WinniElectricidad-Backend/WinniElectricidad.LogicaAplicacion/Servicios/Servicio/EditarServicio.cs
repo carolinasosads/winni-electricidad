@@ -2,6 +2,7 @@
 using WinniElectricidad.Compartido.DTOs.Servicios;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Servicio;
 using WinniElectricidad.LogicaNegocio.Entidades;
+using WinniElectricidad.LogicaNegocio.ExcepcionesPersonalizadas.Servicios;
 using WinniElectricidad.LogicaNegocio.InterfacesRepositorios;
 
 namespace WinniElectricidad.LogicaAplicacion.Servicios.Servicio;
@@ -20,6 +21,13 @@ public class EditarServicio : IEditarServicio
         if (servicioAEditar == null)
         {
             throw new ArgumentException("El servicio no existe.");
+        }
+        
+        var existeServicio = await _repositorioServicio.FindByTitulo(servicio.Titulo, ct);
+
+        if (existeServicio is not null && existeServicio.Id != servicioAEditar.Id)
+        {
+            throw new ServicioDuplicadoException("Ya existe un servicio de " + servicio.Titulo);
         }
         
         if (servicio.UrlPrincipalExistente != null && servicioAEditar.Imagenes.All(i => i.Url != servicio.UrlPrincipalExistente))

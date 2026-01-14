@@ -6,4 +6,5 @@ public interface IRepositorioServicio : IRepositorio<Servicio>
 {
     Task<IReadOnlyList<Servicio>> FindAllSegunEstado(bool activo, CancellationToken ct = default);
     Task<IReadOnlyList<Servicio>> FindByIds(List<int> ids, CancellationToken ct = default);
+    Task<Servicio> FindByTitulo(string titulo, CancellationToken ct = default);
 }
