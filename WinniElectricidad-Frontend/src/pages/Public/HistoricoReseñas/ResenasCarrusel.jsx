@@ -49,7 +49,7 @@ export default function ResenasCarrusel({ resenas, onSelect }) {
             >
               <Box
                 component="img"
-                src={`${import.meta.env.VITE_API_URL}${r.imagenUrl}`}
+                src={`${r.imagenUrl}`}
                 alt="Trabajo realizado"
                 sx={{
                   width: "100%",
