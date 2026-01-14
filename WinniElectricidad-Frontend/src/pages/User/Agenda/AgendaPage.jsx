@@ -50,7 +50,7 @@ export default function AgendaPage({ onReserve }) {
 
   const location = useLocation();
   const servicioPreseleccionado = location.state?.servicioPreseleccionado;
-
+  const [isPreselected, setIsPreselected] = useState(false);
 
   // filtros
   const [servicios, setServicios] = useState([]);
@@ -141,6 +141,7 @@ export default function AgendaPage({ onReserve }) {
 
     if (existe) {
       setServicios([existe]);
+      setIsPreselected(true);
     }
   }, [servicioPreseleccionado, serviciosOpts]);
 
@@ -299,7 +300,7 @@ export default function AgendaPage({ onReserve }) {
                 mb: 2
               }}
             >
-              {servicios.length === 1 && (
+              {isPreselected && servicios.length === 1 && (
                 <Box sx={{ mb: 1 }}>
                   <Chip
                     color="primary"
@@ -319,7 +320,10 @@ export default function AgendaPage({ onReserve }) {
                 servicioOpciones={serviciosOpts}
                 direccionesUsuario={direccionesUsuario}
                 servicios={servicios}
-                setServicios={setServicios}
+                setServicios={(newServicios) => {
+                  setServicios(newServicios);
+                  setIsPreselected(false);
+                }}
                 tipoTrabajo={tipoTrabajo}
                 setTipoTrabajo={setTipoTrabajo}
                 direccionId={direccionId}
