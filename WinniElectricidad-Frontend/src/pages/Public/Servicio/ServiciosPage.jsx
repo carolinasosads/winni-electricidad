@@ -209,7 +209,16 @@ export default function ServiciosPage() {
             servicio={servicio}
             rol={rol}
             onToggleActivo={setServicioAccion}
-            onSolicitar={() => navigate("/cliente/agenda")}
+            onSolicitar={(servicio) =>
+                navigate("/cliente/agenda", {
+                    state: {
+                        servicioPreseleccionado: {
+                            id: servicio.id,
+                            label: servicio.titulo
+                        }
+                    }
+                })
+            }
             onOpenGaleria={(index) => {
               setServicioSeleccionado(servicio);
               setImgModalIndex(index);
