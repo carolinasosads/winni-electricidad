@@ -35,7 +35,16 @@ export default function ResenaCard({ resena, esAdmin, onDesaprobar, onVerMas }) 
     return () => ro.disconnect();
   }, [resena?.descripcion]);
 
-  const urlCompartir = `${window.location.origin}/resenas`;
+  const resenaId =
+    resena?.idReseña ??
+    resena?.idResena ??
+    resena?.id ??
+    resena?.resenaId ??
+    null;
+
+  const anchorId = `resena-${resenaId}`;
+  const urlCompartir = `${window.location.origin}/resenas#${anchorId}`;
+
   const textoCompartir = `Mirá esta reseña: "${resena?.descripcion ?? ""}"`;
 
   const shareUrls = {

@@ -98,6 +98,34 @@ export default function ResenasPage() {
     [resenas]
   );
 
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (!hash) return;
+
+    const targetId = hash.replace("#", "");
+
+    const intentarScroll = () => {
+      const el = document.getElementById(targetId);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+        return true;
+      }
+      return false;
+    };
+
+    if (intentarScroll()) return;
+
+    let intentos = 0;
+    const interval = setInterval(() => {
+      intentos += 1;
+      if (intentarScroll() || intentos >= 20) {
+        clearInterval(interval);
+      }
+    }, 200);
+
+    return () => clearInterval(interval);
+  }, [resenas]);
+
   /* ---------- Desaprobar ---------- */
 
   const solicitarDesaprobarResena = (resena) => {
@@ -216,15 +244,28 @@ export default function ResenasPage() {
             }
           }}
         >
-          {resenasFiltradas.map(resena => (
-            <ResenaCard
-              key={resena.id}
-              resena={resena}
-              esAdmin={rol === "Administrador"}
-              onDesaprobar={solicitarDesaprobarResena}
-              onVerMas={setResenaSeleccionada}
-            />
-          ))}
+          {resenasFiltradas.map(resena => {
+            const resenaId =
+              resena?.idReseña ??
+              resena?.idResena ??
+              resena?.id ??
+              resena?.resenaId;
+
+            return (
+              <Box
+                key={resenaId}
+                id={`resena-${resenaId}`}
+                sx={{ scrollMarginTop: 120 }}
+              >
+                <ResenaCard
+                  resena={resena}
+                  esAdmin={rol === "Administrador"}
+                  onDesaprobar={solicitarDesaprobarResena}
+                  onVerMas={setResenaSeleccionada}
+                />
+              </Box>
+            );
+          })}
         </Box>
       )}
 
