@@ -46,27 +46,71 @@ public class AprobarReserva : IAprobarReserva
 
         var cliente = reserva.UsuarioCliente;
         var fecha = reserva.FechaReserva.ToString("dd/MM/yyyy HH:mm");
+        var footer = _enviarEmail.GetFooter();
 
         var cuerpoEmailCliente = $@"
-            <div style='font-family: Arial, sans-serif; color: #333;'>
-                <h2>Reserva confirmada</h2>
-                <p>Hola {cliente.NombreCompleto},</p>
-                <p>Tu reserva para el <strong>{fecha}</strong> fue <strong>confirmada</strong>.</p>
-                <p>¡Gracias por confiar en Winni Electricidad!</p>
-            </div>";
+          <div style=""font-family: Arial, sans-serif; background-color:#f4f6f8; padding:24px;"">
+            <div style=""max-width:600px; margin:0 auto; background-color:#ffffff; border-radius:8px; overflow:hidden;"">
+
+              <div style=""background-color:#1f3a5f; color:#ffffff; padding:16px 24px;"">
+                <h2 style=""margin:0; font-size:20px;"">Winni Electricidad</h2>
+              </div>
+
+              <div style=""padding:24px; color:#333333;"">
+                <h3 style=""margin-top:0; color:#1f3a5f;"">Reserva confirmada</h3>
+
+                <p style=""margin:0 0 12px 0;"">
+                  Hola <strong>{cliente.NombreCompleto}</strong> 👋🏽,
+                </p>
+
+                <p style=""margin:0 0 16px 0;"">
+                  Tu reserva para el <strong>{fecha}</strong> fue <strong>confirmada</strong>.
+                </p>
+
+                <p style=""margin:0;"">
+                  Gracias por confiar en <strong>Winni Electricidad</strong>.
+                </p>
+
+                {footer}
+              </div>
+
+            </div>
+          </div>";
 
         await _enviarEmail.Ejecutar(cliente.Email, "Winni Electricidad - Reserva confirmada", cuerpoEmailCliente, cancellationToken);
 
         var admin = await _repositorioUsuario.ObtenerAdministrador(cancellationToken);
 
         var cuerpoEmailAdmin = $@"
-            <div style='font-family: Arial, sans-serif; color: #333;'>
-                <h2>Reserva confirmada</h2>
-                <p><strong>Cliente:</strong> {cliente.NombreCompleto}</p>
-                <p><strong>Email:</strong> {cliente.Email}</p>
-                <p><strong>Fecha de la reserva:</strong> {fecha}</p>
-                <p>La reserva fue marcada como <strong>confirmada</strong> en el sistema.</p>
-            </div>";
+          <div style=""font-family: Arial, sans-serif; background-color:#f4f6f8; padding:24px;"">
+            <div style=""max-width:600px; margin:0 auto; background-color:#ffffff; border-radius:8px; overflow:hidden;"">
+
+              <div style=""background-color:#1f3a5f; color:#ffffff; padding:16px 24px;"">
+                <h2 style=""margin:0; font-size:20px;"">Winni Electricidad</h2>
+              </div>
+
+              <div style=""padding:24px; color:#333333;"">
+                <h3 style=""margin-top:0; color:#1f3a5f;"">Reserva confirmada</h3>
+
+                <p style=""margin:0 0 8px 0;"">
+                  <strong>Cliente:</strong> {cliente.NombreCompleto}
+                </p>
+                <p style=""margin:0 0 8px 0;"">
+                  <strong>Email:</strong> {cliente.Email}
+                </p>
+                <p style=""margin:0 0 16px 0;"">
+                  <strong>Fecha de la reserva:</strong> {fecha}
+                </p>
+
+                <p style=""margin:0;"">
+                  La reserva fue marcada como <strong>confirmada</strong> en el sistema.
+                </p>
+
+                {footer}
+              </div>
+
+            </div>
+          </div>";
 
         await _enviarEmail.Ejecutar(admin.Email, "Reserva confirmada – Notificación interna", cuerpoEmailAdmin, cancellationToken);
     }
