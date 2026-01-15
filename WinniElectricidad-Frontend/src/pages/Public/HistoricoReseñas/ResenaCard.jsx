@@ -1,26 +1,22 @@
 import { useEffect, useRef, useState } from "react";
-import {
-  Card,
-  CardContent,
-  Typography,
-  Rating,
-  Chip,
-  IconButton,
-  Tooltip,
-  Box
-} from "@mui/material";
+import {  Card,  CardContent,  Typography,  Rating,  Chip,  IconButton,  Tooltip,
+  Box,  Stack,  Menu,  MenuItem,  ListItemIcon,  ListItemText} from "@mui/material";
+
 import DoNotDisturbOnIcon from "@mui/icons-material/DoNotDisturbOn";
+import ShareIcon from "@mui/icons-material/Share";
+
+import FacebookIcon from "@mui/icons-material/Facebook";
+import WhatsAppIcon from "@mui/icons-material/WhatsApp";
+import XIcon from "@mui/icons-material/X";
 
 const MAX_LINES = 3;
 
-export default function ResenaCard({
-  resena,
-  esAdmin,
-  onDesaprobar,
-  onVerMas
-}) {
+export default function ResenaCard({ resena, esAdmin, onDesaprobar, onVerMas }) {
   const textRef = useRef(null);
   const [tieneOverflow, setTieneOverflow] = useState(false);
+
+  const [anchorEl, setAnchorEl] = useState(null);
+  const openMenu = Boolean(anchorEl);
 
   useEffect(() => {
     const el = textRef.current;
@@ -38,6 +34,35 @@ export default function ResenaCard({
 
     return () => ro.disconnect();
   }, [resena?.descripcion]);
+
+  const resenaId =
+    resena?.idReseña ??
+    resena?.idResena ??
+    resena?.id ??
+    resena?.resenaId ??
+    null;
+
+  const anchorId = `resena-${resenaId}`;
+  const urlCompartir = `${window.location.origin}/resenas#${anchorId}`;
+
+  const textoCompartir = `Mirá esta reseña: "${resena?.descripcion ?? ""}"`;
+
+  const shareUrls = {
+    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+      urlCompartir
+    )}`,
+    whatsapp: `https://wa.me/?text=${encodeURIComponent(
+      `${textoCompartir}\n${urlCompartir}`
+    )}`,
+    x: `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+      textoCompartir
+    )}&url=${encodeURIComponent(urlCompartir)}`
+  };
+
+  const abrirShare = (url) => {
+    window.open(url, "_blank", "noopener,noreferrer");
+    setAnchorEl(null);
+  };
 
   return (
     <Card
@@ -164,6 +189,47 @@ export default function ResenaCard({
         >
           {new Date(resena.fechaReseña).toLocaleDateString("es-UY")}
         </Typography>
+
+        {/* ----COMPARTIR RESEÑA ---- */}
+        <Stack direction="row" justifyContent="center" mt={1}>
+          <Tooltip title="Compartir">
+            <IconButton
+              size="small"
+              onClick={(e) => setAnchorEl(e.currentTarget)}
+            >
+              <ShareIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+
+          <Menu
+            anchorEl={anchorEl}
+            open={openMenu}
+            onClose={() => setAnchorEl(null)}
+            anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+            transformOrigin={{ vertical: "top", horizontal: "center" }}
+          >
+            <MenuItem onClick={() => abrirShare(shareUrls.facebook)}>
+              <ListItemIcon>
+                <FacebookIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>Facebook</ListItemText>
+            </MenuItem>
+
+            <MenuItem onClick={() => abrirShare(shareUrls.whatsapp)}>
+              <ListItemIcon>
+                <WhatsAppIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>WhatsApp</ListItemText>
+            </MenuItem>
+
+            <MenuItem onClick={() => abrirShare(shareUrls.x)}>
+              <ListItemIcon>
+                <XIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>X</ListItemText>
+            </MenuItem>
+          </Menu>
+        </Stack>
       </CardContent>
     </Card>
   );

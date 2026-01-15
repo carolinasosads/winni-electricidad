@@ -98,6 +98,11 @@ public static class DbSeeder
         
         var fecha = fechaReserva ?? DateTime.Today.AddDays(3).AddHours(9);
 
+        while (fecha.DayOfWeek == DayOfWeek.Sunday)
+        {
+            fecha = fecha.AddDays(1);
+        }
+
         var reserva = new LogicaNegocio.Entidades.Reserva(
             fecha,
             TipoServicioReserva.Instalacion,
