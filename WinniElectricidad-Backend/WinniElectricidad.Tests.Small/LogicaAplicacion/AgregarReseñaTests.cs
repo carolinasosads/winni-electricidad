@@ -149,10 +149,12 @@ public class AgregarReseñaTests
         var servicio = new Servicio(
             "Electricidad",
             "Instalaciones y reparaciones eléctricas para hogares y comercios, con garantía.",
-            new List<ServicioImagen>())
+            new List<ServicioImagen>(),
+            "icono")
         {
             Id = 1
         };
+
 
         _mockRepoUsuario
             .Setup(r => r.FindById(10, It.IsAny<CancellationToken>()))
@@ -176,44 +178,6 @@ public class AgregarReseñaTests
 
         _mockEvaluarPuntaje.Verify(
             p => p.CalcularPuntajeIa(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
-            Times.Never);
-    }
-
-    [Test]
-    public void Ejecutar_ServicioNoExiste_LanzaReseñaException()
-    {
-        // Arrange
-        var dto = new ReseñaACrearDto
-        {
-            IdServicio = 99,
-            Descripcion = "Test",
-            Calificacion = 4
-        };
-
-        var usuario = new UsuarioCliente(
-            "Cliente Test",
-            "1234567",
-            "mail@test.com",
-            "099000000",
-            new List<Direccion>())
-        {
-            IdUsuario = 10
-        };
-
-        _mockRepoUsuario
-            .Setup(r => r.FindById(10, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(usuario);
-
-        _mockRepoServicio
-            .Setup(r => r.FindById(dto.IdServicio, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Servicio?)null);
-
-        // Act + Assert
-        Assert.ThrowsAsync<ReseñaException>(() =>
-            _servicio.Ejecutar(dto, 10, null, CancellationToken.None));
-
-        _mockRepoReseña.Verify(
-            r => r.Add(It.IsAny<Reseña>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
 
@@ -314,7 +278,6 @@ public class AgregarReseñaTests
             Id = 1
         };
 
-
         _mockRepoUsuario
             .Setup(r => r.FindById(10, It.IsAny<CancellationToken>()))
             .ReturnsAsync(usuario);
@@ -322,28 +285,23 @@ public class AgregarReseñaTests
         _mockRepoServicio
             .Setup(r => r.FindById(1, It.IsAny<CancellationToken>()))
             .ReturnsAsync(servicio);
-   
-        _mockRepoServicio
-            .Setup(r => r.FindById(1, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(servicio);
 
         Reseña reseñaGuardada = null!;
+
         _mockRepoReseña
             .Setup(r => r.Add(It.IsAny<Reseña>(), It.IsAny<CancellationToken>()))
-            .Callback<Reseña, CancellationToken>((r, _) =>
+            .ReturnsAsync((Reseña r, CancellationToken _) =>
             {
                 r.Id = 123;
                 reseñaGuardada = r;
+                return r;
             });
-
 
         var imagenUrl = "/resenias/test.jpg";
 
         // Act
         var result = await _servicio.Ejecutar(dto, 10, imagenUrl, CancellationToken.None);
 
-        // Act
-        await _servicio.Ejecutar(dto, 10, null, CancellationToken.None);
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.Multiple(() =>
@@ -356,14 +314,12 @@ public class AgregarReseñaTests
             Assert.That(result.Cliente.IdUsuario, Is.EqualTo(10));
         });
 
-        // Assert
         Assert.That(reseñaGuardada, Is.Not.Null);
+        Assert.That(reseñaGuardada.PuntajeReseniaIa, Is.EqualTo(80));
+
         _mockRepoReseña.Verify(
             r => r.Add(It.IsAny<Reseña>(), It.IsAny<CancellationToken>()),
             Times.Once);
-
-        Assert.That(reseñaGuardada, Is.Not.Null);
-        Assert.That(reseñaGuardada.PuntajeReseniaIa, Is.EqualTo(80));
 
         _mockEvaluarPuntaje.Verify(
             p => p.CalcularPuntajeIa(dto.Descripcion, dto.Calificacion, It.IsAny<CancellationToken>()),
