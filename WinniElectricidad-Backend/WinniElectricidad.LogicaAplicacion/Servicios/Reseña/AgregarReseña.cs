@@ -13,13 +13,15 @@ public class AgregarReseña : IAgregarReseña
     private readonly IRepositorioServicio _repositorioServicio;
     
     private readonly IModeracionOpenAi _moderacionOpenAi;
-
-    public AgregarReseña(IRepositorioReseña repositorioReseña, IRepositorioUsuario repositorioUsuario,  IRepositorioServicio repositorioServicio, IModeracionOpenAi moderacionOpenAi)
+    private readonly IEvaluarPuntajeResenia _evaluarPuntajeResenia;
+    
+    public AgregarReseña(IRepositorioReseña repositorioReseña, IRepositorioUsuario repositorioUsuario,  IRepositorioServicio repositorioServicio, IModeracionOpenAi moderacionOpenAi, IEvaluarPuntajeResenia evaluarPuntajeResenia)
     {
         _repositorioReseña = repositorioReseña;
         _repositorioUsuario = repositorioUsuario;
         _repositorioServicio = repositorioServicio;
         _moderacionOpenAi = moderacionOpenAi;
+        _evaluarPuntajeResenia = evaluarPuntajeResenia;
     }
 
     public async Task<ReseñaCreadaDto> Ejecutar(ReseñaACrearDto nuevaReseña, int idUsuario, string? imagenUrl,
@@ -44,6 +46,11 @@ public class AgregarReseña : IAgregarReseña
         }
         
         var reseña = ReseñaMapper.MapearNuevaReseñaDtoAEntidad(nuevaReseña, idUsuario, imagenUrl);
+       
+        var puntaje = await _evaluarPuntajeResenia.CalcularPuntajeIa(nuevaReseña.Descripcion, nuevaReseña.Calificacion, ct);
+
+        reseña.PuntajeReseniaIa = puntaje;
+
         await _repositorioReseña.Add(reseña, ct);
         
         var dto = ReseñaMapper.MapearAReseñaCreadaDto(reseña, usuario, servicio);

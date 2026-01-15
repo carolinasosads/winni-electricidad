@@ -69,6 +69,7 @@ public class ApiTestFactory : WebApplicationFactory<Program>
 
             services.AddSingleton<IModeracionOpenAi, ModeracionOpenAiFake>();
             services.AddSingleton<IServicioImagenes, ServicioImagenesFake>();
+            services.AddSingleton<IEvaluarPuntajeResenia, EvaluarPuntajeReseniaFake>();
             
             var sp = services.BuildServiceProvider();
             using var scope = sp.CreateScope();
