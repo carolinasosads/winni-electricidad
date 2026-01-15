@@ -111,7 +111,7 @@ export default function ReservaDetailModalCliente({
 
                     {esPendiente && requiereConfirmacionCliente && (
                         <Alert severity="warning" sx={{ mb: 2 }}>
-                            <strong>El representante sugiere un cambio de fecha.</strong>
+                            <strong>Winni Electricidad sugirió un cambio de fecha.</strong>
                             <br />
                             Podés aprobar la nueva fecha, cancelarla o proponer otra modificación.
                         </Alert>
@@ -166,7 +166,7 @@ export default function ReservaDetailModalCliente({
 
                         {esPendiente && !requiereConfirmacionCliente && (
                             <Alert severity="info">
-                                Esta reserva está pendiente de revisión del representante. Cuando haya un cambio que necesite tu
+                                Esta reserva está pendiente de revisión de parte de Winni Electricidad. Cuando haya un cambio que necesite tu
                                 confirmación, vas a poder aceptarla desde acá.
                             </Alert>
                         )}
