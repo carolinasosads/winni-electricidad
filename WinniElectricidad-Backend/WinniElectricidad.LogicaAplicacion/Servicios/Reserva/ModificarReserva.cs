@@ -51,7 +51,13 @@ public class ModificarReserva : IModificarReserva
         var fechaAnteriorString = fechaAnterior.ToString("dd/MM/yyyy HH:mm");
         var fechaNuevaString = reserva.FechaReserva.ToString("dd/MM/yyyy HH:mm");
 
-        var direccion = reserva.Direccion?.ToString() ?? "Sin dirección registrada";
+        var direccion = $"{reserva.Direccion.Calle}"
+              + (string.IsNullOrWhiteSpace(reserva.Direccion.Apto)
+                  ? ""
+                  : $" Apto {reserva.Direccion.Apto}")
+              + (string.IsNullOrWhiteSpace(reserva.Direccion.Esquina)
+                  ? ""
+                  : $" Esq. {reserva.Direccion.Esquina}");
         var comentario = string.IsNullOrWhiteSpace(reserva.Comentario)
             ? "Sin comentarios adicionales." : reserva.Comentario;
         var tipoServicio = reserva.TipoServicioReserva.ToString();
@@ -72,20 +78,43 @@ public class ModificarReserva : IModificarReserva
                     La reserva quedó <strong>Pendiente</strong> para su revisión.
                 </p>";
 
+        var footer = _enviarEmail.GetFooter();
+
         var cuerpoCliente = $@"
-            <div style='font-family: Arial, sans-serif; color: #333;'>
-                <h2>Reserva reprogramada</h2>
+            <div style=""font-family: Arial, sans-serif; background-color:#f4f6f8; padding:24px;"">
+              <div style=""max-width:600px; margin:0 auto; background-color:#ffffff; border-radius:8px; overflow:hidden;"">
 
-                <p>Hola {cliente.NombreCompleto},</p>
+                <!-- Header -->
+                <div style=""background-color:#1f3a5f; color:#ffffff; padding:16px 24px;"">
+                  <h2 style=""margin:0; font-size:20px;"">Winni Electricidad</h2>
+                </div>
 
-                <p>Te informamos que tu reserva ha sido <strong>reprogramada con una fecha sugerida</strong>.</p>
+                <!-- Body -->
+                <div style=""padding:24px; color:#333333;"">
+                  <h3 style=""margin-top:0; color:#1f3a5f;"">Reserva reprogramada</h3>
 
-                <p><strong>Fecha anterior:</strong> {fechaAnteriorString}</p>
-                <p><strong>Nueva fecha sugerida:</strong> {fechaNuevaString}</p>
+                  <p style=""margin:0 0 12px 0;"">
+                    Hola <strong>{cliente.NombreCompleto} 👋🏽</strong>,
+                  </p>
 
-                {bloqueEstadoCliente}
+                  <p style=""margin:0 0 16px 0;"">
+                    Te informamos que tu reserva fue
+                    <strong>reprogramada con una nueva fecha sugerida</strong>.
+                  </p>
 
-                <p>¡Gracias por confiar en Winni Electricidad!</p>
+                  <p style=""margin:0 0 8px 0;"">
+                    <strong>Fecha anterior:</strong> {fechaAnteriorString}
+                  </p>
+                  <p style=""margin:0 0 16px 0;"">
+                    <strong>Nueva fecha sugerida:</strong> {fechaNuevaString}
+                  </p>
+
+                  {bloqueEstadoCliente}
+
+                  {footer}
+                </div>
+
+              </div>
             </div>";
 
         await _enviarEmail.Ejecutar(cliente.Email, "Winni Electricidad - Reserva reprogramada", cuerpoCliente, cancellationToken);
@@ -93,23 +122,47 @@ public class ModificarReserva : IModificarReserva
         var admin = await _repositorioUsuario.ObtenerAdministrador(cancellationToken);
 
         var cuerpoAdmin = $@"
-            <div style='font-family: Arial, sans-serif; color: #333;'>
-                <h2>Reserva reprogramada (sugerencia de nueva fecha)</h2>
+            <div style=""font-family: Arial, sans-serif; background-color:#f4f6f8; padding:24px;"">
+              <div style=""max-width:600px; margin:0 auto; background-color:#ffffff; border-radius:8px; overflow:hidden;"">
 
-                <p><strong>Cliente:</strong> {cliente.NombreCompleto}</p>
-                <p><strong>Email:</strong> {cliente.Email}</p>
-                <p><strong>Teléfono:</strong> {cliente.Telefono}</p>
+                <!-- Header -->
+                <div style=""background-color:#1f3a5f; color:#ffffff; padding:16px 24px;"">
+                  <h2 style=""margin:0; font-size:20px;"">Winni Electricidad</h2>
+                </div>
 
-                <p><strong>Tipo de servicio:</strong> {tipoServicio}</p>
-                <p><strong>Dirección:</strong> {direccion}</p>
+                <!-- Body -->
+                <div style=""padding:24px; color:#333333;"">
+                  <h3 style=""margin-top:0; color:#1f3a5f;"">
+                    Reserva reprogramada (nueva fecha sugerida)
+                  </h3>
 
-                <p><strong>Fecha anterior:</strong> {fechaAnteriorString}</p>
-                <p><strong>Nueva fecha sugerida:</strong> {fechaNuevaString}</p>
+                  <p style=""margin:0 0 8px 0;""><strong>Cliente:</strong> {cliente.NombreCompleto}</p>
+                  <p style=""margin:0 0 8px 0;""><strong>Email:</strong> {cliente.Email}</p>
+                  <p style=""margin:0 0 8px 0;""><strong>Teléfono:</strong> {cliente.Telefono}</p>
 
-                <p><strong>Comentario del cliente:</strong> {comentario}</p>
+                  <p style=""margin:16px 0 8px 0;""><strong>Tipo de servicio:</strong> {tipoServicio}</p>
+                  <p style=""margin:0 0 8px 0;""><strong>Dirección:</strong> {direccion}</p>
 
-                <p>Recordá contactar al cliente para confirmar si la nueva fecha le queda bien
-                o coordinar una alternativa.</p>
+                  <p style=""margin:16px 0 8px 0;"">
+                    <strong>Fecha anterior:</strong> {fechaAnteriorString}
+                  </p>
+                  <p style=""margin:0 0 12px 0;"">
+                    <strong>Nueva fecha sugerida:</strong> {fechaNuevaString}
+                  </p>
+
+                  <p style=""margin:0 0 16px 0;"">
+                    <strong>Comentario del cliente:</strong> {comentario}
+                  </p>
+
+                  <p style=""margin:0;"">
+                    Recordá contactar al cliente para confirmar si la nueva fecha le queda bien
+                    o coordinar una alternativa.
+                  </p>
+
+                  {footer}
+                </div>
+
+              </div>
             </div>";
         await _enviarEmail.Ejecutar(admin.Email, "Reserva reprogramada – Nueva fecha sugerida", cuerpoAdmin, cancellationToken);
     }
