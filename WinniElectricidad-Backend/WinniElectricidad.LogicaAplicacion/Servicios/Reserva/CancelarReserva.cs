@@ -31,18 +31,50 @@ public class CancelarReserva : ICancelarReserva
                       ?? throw new InvalidOperationException("El cliente asociado a la reserva no existe.");
 
         var fecha = reserva.FechaReserva.ToString("dd/MM/yyyy HH:mm");
-        var direccion = reserva.Direccion?.ToString() ?? "Sin dirección registrada";
+        var direccion = $"{reserva.Direccion.Calle}"
+                        + (string.IsNullOrWhiteSpace(reserva.Direccion.Apto)
+                          ? ""
+                          : $" Apto {reserva.Direccion.Apto}")
+                        + (string.IsNullOrWhiteSpace(reserva.Direccion.Esquina)
+                          ? ""
+                          : $" Esq. {reserva.Direccion.Esquina}");
         var comentario = string.IsNullOrWhiteSpace(reserva.Comentario)
             ? "Sin comentarios adicionales." : reserva.Comentario;
         var tipoServicio = reserva.TipoServicioReserva.ToString();
 
+        var footer = _enviarEmail.GetFooter();
+
         var cuerpoCliente = $@"
-            <div style='font-family: Arial, sans-serif; color: #333;'>
-                <h2>Reserva cancelada</h2>
-                <p>Hola {cliente.NombreCompleto},</p>
-                <p>Te informamos que tu reserva para el <strong>{fecha}</strong> fue <strong>cancelada</strong>.</p>
-                <p>Si crees que se trata de un error o querés reprogramar, podés agendar una nueva reserva desde la plataforma.</p>
-                <p>¡Gracias por confiar en Winni Electricidad!</p>
+            <div style=""font-family: Arial, sans-serif; background-color:#f4f6f8; padding:24px;"">
+              <div style=""max-width:600px; margin:0 auto; background-color:#ffffff; border-radius:8px; overflow:hidden;"">
+
+                <!-- Header -->
+                <div style=""background-color:#1f3a5f; color:#ffffff; padding:16px 24px;"">
+                  <h2 style=""margin:0; font-size:20px;"">Winni Electricidad</h2>
+                </div>
+
+                <!-- Body -->
+                <div style=""padding:24px; color:#333333;"">
+                  <h3 style=""margin-top:0; color:#1f3a5f;"">Reserva cancelada</h3>
+
+                  <p style=""margin:0 0 12px 0;"">
+                    Hola <strong>{cliente.NombreCompleto} 👋🏽</strong>,
+                  </p>
+
+                  <p style=""margin:0 0 16px 0;"">
+                    Te informamos que tu reserva para el
+                    <strong>{fecha}</strong> fue <strong>cancelada</strong>.
+                  </p>
+
+                  <p style=""margin:0;"">
+                    Si creés que se trata de un error o querés reprogramar,
+                    podés agendar una nueva reserva desde la plataforma.
+                  </p>
+
+                  {footer}
+                </div>
+
+              </div>
             </div>";
 
         await _enviarEmail.Ejecutar(cliente.Email, "Winni Electricidad - Reserva cancelada", cuerpoCliente, cancellationToken);
@@ -51,22 +83,43 @@ public class CancelarReserva : ICancelarReserva
         var admin = await _repositorioUsuario.ObtenerAdministrador(cancellationToken);
         
         var cuerpoAdmin = $@"
-            <div style='font-family: Arial, sans-serif; color: #333;'>
-                <h2>Reserva cancelada</h2>
+          <div style=""font-family: Arial, sans-serif; background-color:#f4f6f8; padding:24px;"">
+            <div style=""max-width:600px; margin:0 auto; background-color:#ffffff; border-radius:8px; overflow:hidden;"">
 
-                <p><strong>Cliente:</strong> {cliente.NombreCompleto}</p>
-                <p><strong>Email:</strong> {cliente.Email}</p>
-                <p><strong>Teléfono:</strong> {cliente.Telefono}</p>
+              <!-- Header -->
+              <div style=""background-color:#1f3a5f; color:#ffffff; padding:16px 24px;"">
+                <h2 style=""margin:0; font-size:20px;"">Winni Electricidad</h2>
+              </div>
 
-                <p><strong>Tipo de servicio:</strong> {tipoServicio}</p>
-                <p><strong>Dirección:</strong> {direccion}</p>
+              <!-- Body -->
+              <div style=""padding:24px; color:#333333;"">
+                <h3 style=""margin-top:0; color:#1f3a5f;"">
+                  Reserva cancelada
+                </h3>
 
-                <p><strong>Fecha de la reserva cancelada:</strong> {fecha}</p>
+                <p style=""margin:0 0 8px 0;""><strong>Cliente:</strong> {cliente.NombreCompleto}</p>
+                <p style=""margin:0 0 8px 0;""><strong>Email:</strong> {cliente.Email}</p>
+                <p style=""margin:0 0 8px 0;""><strong>Teléfono:</strong> {cliente.Telefono}</p>
 
-                <p><strong>Comentario del cliente:</strong> {comentario}</p>
+                <p style=""margin:16px 0 8px 0;""><strong>Tipo de servicio:</strong> {tipoServicio}</p>
+                <p style=""margin:0 0 8px 0;""><strong>Dirección:</strong> {direccion}</p>
+                <p style=""margin:0 0 8px 0;"">
+                  <strong>Fecha de la reserva cancelada:</strong> {fecha}
+                </p>
 
-                <p>Esta reserva ha sido marcada como <strong>cancelada</strong> en el sistema.</p>
-            </div>";
+                <p style=""margin:16px 0 12px 0;"">
+                  <strong>Comentario del cliente:</strong> {comentario}
+                </p>
+
+                <p style=""margin:0;"">
+                  Esta reserva ha sido marcada como <strong>cancelada</strong> en el sistema.
+                </p>
+
+                {footer}
+              </div>
+
+            </div>
+          </div>";
 
         await _enviarEmail.Ejecutar(admin.Email, "Reserva cancelada – Notificación interna", cuerpoAdmin, cancellationToken);
      }

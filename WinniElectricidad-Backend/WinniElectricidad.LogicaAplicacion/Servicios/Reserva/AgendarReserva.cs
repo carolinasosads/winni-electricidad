@@ -83,49 +83,93 @@ public class AgendarReserva : IAgendarReserva
             : reserva.Comentario;
         var serviciosTexto = string.Join(", ", reserva.Servicios);
         var numeroTelefono = usuario.Telefono;
+        var footer = _enviarEmail.GetFooter();
 
         var admin = await _repositorioUsuario.ObtenerAdministrador(ct);
 
         if (admin is null) throw new ReservaException("No hay un usuario administrador.");
         
         var cuerpoEmailCliente = $@"
-              <div style='font-family: Arial, sans-serif; color: #333;'>
-                   <h2>Reserva recibida (pendiente de confirmación)</h2>
+            <div style=""font-family: Arial, sans-serif; background-color:#f4f6f8; padding:24px;"">
+              <div style=""max-width:600px; margin:0 auto; background-color:#ffffff; border-radius:8px; overflow:hidden;"">
 
-                   <p>Hola {nombreCliente},</p>
+                <!-- Header -->
+                <div style=""background-color:#1f3a5f; color:#ffffff; padding:16px 24px;"">
+                  <h2 style=""margin:0; font-size:20px;"">Winni Electricidad</h2>
+                </div>
 
-                   <p>Recibimos tu solicitud de reserva para un presupuesto. 
-                   <strong>La reserva está pendiente de revisión.</strong> </p>
+                <!-- Body -->
+                <div style=""padding:24px; color:#333333;"">
+                  <h3 style=""margin-top:0; color:#1f3a5f;"">
+                    Reserva recibida (pendiente de confirmación)
+                  </h3>
 
-                   <p>A continuación compartimos los datos que registró:</p>
+                  <p style=""margin:0 0 12px 0;"">
+                    Hola <strong>{nombreCliente}</strong> 👋🏽,
+                  </p>
 
-                   <p><strong>Fecha solicitada:</strong> {fecha}</p>
+                  <p style=""margin:0 0 16px 0;"">
+                    Recibimos tu solicitud de reserva para un presupuesto.
+                    <strong>La reserva está pendiente de revisión.</strong>
+                  </p>
 
-                   <p><strong>Servicios seleccionados:</strong></p>
-                   <p>{serviciosTexto}</p>
+                  <p style=""margin:0 0 8px 0;""><strong>Fecha solicitada:</strong> {fecha}</p>
+                  <p style=""margin:0 0 8px 0;""><strong>Servicios seleccionados:</strong></p>
+                  <p style=""margin:0 0 12px 0;"">{serviciosTexto}</p>
 
-                   <p><strong>Comentario:</strong> {comentario}</p>
+                  <p style=""margin:0 0 12px 0;"">
+                    <strong>Comentario:</strong> {comentario}
+                  </p>
 
-                   <p>Un miembro del equipo de Winni Electricidad se va a contactar contigo en breve y 
-                   <strong>coordinarán la confirmación de la reserva</strong>.</p>
+                  <p style=""margin:0;"">
+                    Un miembro del equipo de Winni Electricidad se va a contactar contigo en breve y
+                    <strong>coordinarán la confirmación de la reserva</strong>.
+                  </p>
 
-                   <p>¡Gracias por confiar en Winni Electricidad!</p>
-               </div>";
+                  {footer}
+                </div>
 
+              </div>
+            </div>";
+        
         var cuerpoEmailAdmin = $@"
-                <div style='font-family: Arial, sans-serif; color: #333;'>
-                    <h2>Nueva reserva de presupuesto agendada</h2>
-                    <p><strong>Nombre del cliente:</strong> {nombreCliente}</p>
-                    <p><strong>Email:</strong> {emailCliente}</p>
-                    <p><strong>Teléfono:</strong> {numeroTelefono}</p>
-                    <p><strong>Fecha:</strong> {fecha}</p>
-                    <p><strong>Dirección:</strong> {direccion}</p>
-                    <p><strong>Tipo de servicio:</strong> {reserva.TipoServicio}</p>
-                    <p><strong>Servicios:</strong></p>
-                    <p>{serviciosTexto}</p>
-                    <p><strong>Comentario del cliente:</strong> {comentario}</p>
-                    <p><strong>¡No olvides confirmarla o sugerir una modificación de fecha en tu panel de reservas!</strong></p>
-                </div>";
+            <div style=""font-family: Arial, sans-serif; background-color:#f4f6f8; padding:24px;"">
+              <div style=""max-width:600px; margin:0 auto; background-color:#ffffff; border-radius:8px; overflow:hidden;"">
+
+                <!-- Header -->
+                <div style=""background-color:#1f3a5f; color:#ffffff; padding:16px 24px;"">
+                  <h2 style=""margin:0; font-size:20px;"">Winni Electricidad</h2>
+                </div>
+
+                <!-- Body -->
+                <div style=""padding:24px; color:#333333;"">
+                  <h3 style=""margin-top:0; color:#1f3a5f;"">
+                    Nueva reserva de presupuesto agendada
+                  </h3>
+
+                  <p style=""margin:0 0 8px 0;""><strong>Cliente:</strong> {nombreCliente}</p>
+                  <p style=""margin:0 0 8px 0;""><strong>Email:</strong> {emailCliente}</p>
+                  <p style=""margin:0 0 8px 0;""><strong>Teléfono:</strong> {numeroTelefono}</p>
+                  <p style=""margin:0 0 8px 0;""><strong>Fecha:</strong> {fecha}</p>
+                  <p style=""margin:0 0 8px 0;""><strong>Dirección:</strong> {direccion}</p>
+                  <p style=""margin:0 0 8px 0;""><strong>Tipo de servicio:</strong> {reserva.TipoServicio}</p>
+
+                  <p style=""margin:0 0 8px 0;""><strong>Servicios:</strong></p>
+                  <p style=""margin:0 0 12px 0;"">{serviciosTexto}</p>
+
+                  <p style=""margin:0 0 16px 0;"">
+                    <strong>Comentario del cliente:</strong> {comentario}
+                  </p>
+
+                  <p style=""margin:0;"">
+                    <strong>¡No olvides confirmarla o sugerir una modificación de fecha desde el panel de reservas!</strong>
+                  </p>
+
+                  {footer}
+                </div>
+
+              </div>
+            </div>";
 
         await _enviarEmail.Ejecutar(emailCliente, "Winni Electricidad - Reserva de presupuesto", cuerpoEmailCliente, ct);
         await _enviarEmail.Ejecutar(admin.Email, "Nueva reserva de presupuesto agendada", cuerpoEmailAdmin, ct);

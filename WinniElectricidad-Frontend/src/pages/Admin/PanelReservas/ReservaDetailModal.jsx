@@ -223,7 +223,7 @@ export default function ReservaDetailModal({
                   <>
                     {requiereConfirmacionCliente && (
                       <Alert severity="info">
-                        El representante sugirió un cambio de fecha. La aprobación
+                        Ya sugeriste un cambio de fecha. La aprobación
                         ahora es responsabilidad del cliente.
                       </Alert>
                     )}

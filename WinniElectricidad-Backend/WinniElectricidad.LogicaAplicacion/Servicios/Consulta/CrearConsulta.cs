@@ -57,20 +57,42 @@ public class CrearConsulta : ICrearConsulta
 
         var asuntoAdmin = "Nueva consulta";
 
+        var footer = _enviarEmail.GetFooter();
+
         var cuerpoAdmin = $@"
-            <div style='font-family: Arial, sans-serif; color: #333;'>
-                <h2>Nueva consulta</h2>
-
-                <p>Se recibió una nueva consulta desde la página principal.</p>
-
-                <p><strong>Nombre:</strong> {nombre}</p>
-                <p><strong>Email:</strong> {email}</p>
-                <p><strong>Teléfono:</strong> {telefono}</p>
-
-                <p><strong>Mensaje:</strong></p>
-                <p>{mensaje}</p>
-
-                <p>Respondé este correo para contactarte directamente con la persona.</p>
+            <div style=""font-family: Arial, sans-serif; background-color:#f4f6f8; padding:24px;"">
+              <div style=""max-width:600px; margin:0 auto; background-color:#ffffff; border-radius:8px; overflow:hidden;"">
+    
+                <!-- Header -->
+                <div style=""background-color:#1f3a5f; color:#ffffff; padding:16px 24px;"">
+                  <h2 style=""margin:0; font-size:20px;"">Winni Electricidad</h2>
+                </div>
+    
+                <!-- Body -->
+                <div style=""padding:24px; color:#333333;"">
+                  <h3 style=""margin-top:0; color:#1f3a5f;"">
+                    Nueva consulta
+                  </h3>
+    
+                  <p style=""margin:0 0 16px 0;"">
+                    Se recibió una nueva consulta desde la página principal.
+                  </p>
+    
+                  <p style=""margin:0 0 8px 0;""><strong>Nombre:</strong> {nombre}</p>
+                  <p style=""margin:0 0 8px 0;""><strong>Email:</strong> {email}</p>
+                  <p style=""margin:0 0 16px 0;""><strong>Teléfono:</strong> {telefono}</p>
+    
+                  <p style=""margin:0 0 8px 0;""><strong>Mensaje:</strong></p>
+                  <p style=""margin:0 0 16px 0;"">{mensaje}</p>
+    
+                  <p style=""margin:0;"">
+                    Utiliza el correo que se encuentra arriba para contactarte directamente con la persona.
+                  </p>
+    
+                  {footer}
+                </div>
+    
+              </div>
             </div>";
 
         await _enviarEmail.Ejecutar(admin.Email, asuntoAdmin, cuerpoAdmin, ct);

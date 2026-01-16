@@ -45,18 +45,53 @@ public class RecuperarContrasena : IRecuperarContrasena
     
         var urlRecuperacionContrasena = $"https://icy-flower-09db15f0f.3.azurestaticapps.net/reset-password?token={Uri.EscapeDataString(tokenPlain)}";
 
+        var footer = _enviarEmail.GetFooter();
+
         var cuerpo = $@"
-            <div style='font-family: Arial, sans-serif; color: #333;'>
-                <h2>Recuperación de contraseña</h2>
-                <p>Hola {usuarioEncontrado.NombreCompleto},</p>
-                <p>Hacé clic en el siguiente enlace para restablecer tu contraseña:</p>
-                <p>
-                    <a href=""{urlRecuperacionContrasena}"">Restablecer contraseña</a>
-                </p>
-                <p>Ten en cuenta que este link es válido únicamente por los siguientes 30 minutos.</p>
-                <p>Si no solicitaste este cambio, podés ignorar este mensaje.</p>
-                <hr />
-                <p style='font-size:12px; color:#888;'>Este mensaje fue enviado por Winni Electricidad mediante Resend.</p>
+            <div style=""font-family: Arial, sans-serif; background-color:#f4f6f8; padding:24px;"">
+              <div style=""max-width:600px; margin:0 auto; background-color:#ffffff; border-radius:8px; overflow:hidden;"">
+
+                <!-- Header -->
+                <div style=""background-color:#1f3a5f; color:#ffffff; padding:16px 24px;"">
+                  <h2 style=""margin:0; font-size:20px;"">Winni Electricidad</h2>
+                </div>
+
+                <!-- Body -->
+                <div style=""padding:24px; color:#333333;"">
+                  <h3 style=""margin-top:0; color:#1f3a5f;"">
+                    Recuperación de contraseña
+                  </h3>
+
+                  <p style=""margin:0 0 12px 0;"">
+                    Hola <strong>{usuarioEncontrado.NombreCompleto} 👋🏽</strong>,
+                  </p>
+
+                  <p style=""margin:0 0 16px 0;"">
+                    Recibimos una solicitud para restablecer tu contraseña.
+                    Para continuar, hacé clic en el siguiente botón:
+                  </p>
+
+                  <p style=""margin:24px 0; text-align:center;"">
+                    <a
+                      href=""{urlRecuperacionContrasena}""
+                      style=""background-color:#1f3a5f; color:#ffffff; padding:12px 20px;
+                             text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;"">
+                      Restablecer contraseña
+                    </a>
+                  </p>
+
+                  <p style=""margin:0 0 12px 0;"">
+                    Este enlace es válido únicamente por los próximos <strong>30 minutos</strong>.
+                  </p>
+
+                  <p style=""margin:0;"">
+                    Si no solicitaste este cambio, podés ignorar este mensaje.
+                  </p>
+
+                  {footer}
+                </div>
+
+              </div>
             </div>";
 
         await _enviarEmail.Ejecutar(email, "Winni Electricidad - Recuperación de contraseña", cuerpo, ct);
