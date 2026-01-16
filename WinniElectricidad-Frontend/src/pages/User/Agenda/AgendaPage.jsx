@@ -11,6 +11,7 @@ import {
   startOfWeek,
 } from "date-fns";
 import { es } from "date-fns/locale";
+import { useLocation } from "react-router-dom";
 
 // MUI
 import {
@@ -46,6 +47,10 @@ export default function AgendaPage({ onReserve }) {
 
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
+
+  const location = useLocation();
+  const servicioPreseleccionado = location.state?.servicioPreseleccionado;
+  const [isPreselected, setIsPreselected] = useState(false);
 
   // filtros
   const [servicios, setServicios] = useState([]);
@@ -126,6 +131,19 @@ export default function AgendaPage({ onReserve }) {
 
     return () => ac.abort();
   }, []);
+
+  useEffect(() => {
+    if (!servicioPreseleccionado || serviciosOpts.length === 0) return;
+
+    const existe = serviciosOpts.find(
+      (s) => s.id === servicioPreseleccionado.id
+    );
+
+    if (existe) {
+      setServicios([existe]);
+      setIsPreselected(true);
+    }
+  }, [servicioPreseleccionado, serviciosOpts]);
 
   // ---- helpers de calendario ----
   const calendarDays = useMemo(() => {
@@ -275,19 +293,45 @@ export default function AgendaPage({ onReserve }) {
 
         <Grid container spacing={3} justifyContent="center">
           <Grid item xs={12} md={8} lg={8}>
-            <AgendaFilters
-              width={CALENDAR_WIDTH}
-              servicioOpciones={serviciosOpts}
-              direccionesUsuario={direccionesUsuario}
-              servicios={servicios}
-              setServicios={setServicios}
-              tipoTrabajo={tipoTrabajo}
-              setTipoTrabajo={setTipoTrabajo}
-              direccionId={direccionId}
-              setDireccionId={setDireccionId}
-              loadingServicios={loadingServicios}
-              errorServicios={errorServicios}
-            />
+            <Box
+              sx={{
+                width: CALENDAR_WIDTH,
+                mx: "auto",
+                mb: 2
+              }}
+            >
+              {isPreselected && servicios.length === 1 && (
+                <Box sx={{ mb: 1 }}>
+                  <Chip
+                    color="primary"
+                    variant="outlined"
+                    label={`Servicio preseleccionado: ${servicios[0].label}`}
+                    onDelete={() => setServicios([])}
+                    sx={{
+                      fontWeight: 600,
+                      borderRadius: 2
+                    }}
+                  />
+                </Box>
+              )}
+
+              <AgendaFilters
+                width={CALENDAR_WIDTH}
+                servicioOpciones={serviciosOpts}
+                direccionesUsuario={direccionesUsuario}
+                servicios={servicios}
+                setServicios={(newServicios) => {
+                  setServicios(newServicios);
+                  setIsPreselected(false);
+                }}
+                tipoTrabajo={tipoTrabajo}
+                setTipoTrabajo={setTipoTrabajo}
+                direccionId={direccionId}
+                setDireccionId={setDireccionId}
+                loadingServicios={loadingServicios}
+                errorServicios={errorServicios}
+              />
+            </Box>
 
             {isMobile ? (
               <Paper variant="outlined" sx={{ p: 2, mt: 2 }}>
