@@ -30,6 +30,7 @@ export default function Pago() {
     presupuestoSeleccionado.montoPagado
     : 0;
 
+  const bloqueado = loading || preferenceId !== null;
 
   const loadPresupuestos = async (signal) => {
     try {
@@ -132,7 +133,10 @@ export default function Pago() {
           <PresupuestoCarousel
             presupuestos={presupuestos}
             seleccionadoId={presupuestoSeleccionado?.id}
-            onSeleccionar={setPresupuestoSeleccionado}
+            onSeleccionar={
+              bloqueado ? undefined : setPresupuestoSeleccionado
+            }
+            bloqueado={bloqueado}
           />
         )}
 
@@ -143,6 +147,7 @@ export default function Pago() {
           value={monto}
           onChange={(e) => setMonto(e.target.value)}
           inputProps={{ min: 1, max: saldoPendiente }}
+          disabled={bloqueado}
         />
 
         {!preferenceId && (
@@ -150,7 +155,7 @@ export default function Pago() {
             variant="contained"
             fullWidth
             onClick={handleConfirmarPago}
-            disabled={loading}
+            disabled={bloqueado}
             sx={{
               py: 1.6,
               fontSize: "1rem",
