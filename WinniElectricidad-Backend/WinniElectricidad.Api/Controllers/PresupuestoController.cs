@@ -219,6 +219,13 @@ public class PresupuestoController : ControllerBase
     {
         try
         {
+            var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(idClaim)) return Unauthorized(new { message = "Token inválido o expirado." });
+
+            var idUsu = int.Parse(idClaim);
+            
+            if(idUsu != idUsuario) return Unauthorized("Credenciales inválidas.");
+            
             var presupuestos = await _obtenerPresupuestosConReserva.Ejecutar(idUsuario, ct);
             return Ok(presupuestos ?? Enumerable.Empty<PresupuestoConReservaDto>());
         }
