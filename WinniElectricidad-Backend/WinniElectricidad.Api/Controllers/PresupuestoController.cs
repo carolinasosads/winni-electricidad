@@ -210,12 +210,12 @@ public class PresupuestoController : ControllerBase
     /// <response code="200">Lista obtenida correctamente.</response>
     /// <response code="400">El idUsuario es inválido.</response>
     /// <response code="500">Ocurrió un error inesperado.</response>
-    [HttpGet("usuario/{idUsuario:int}/con-reserva")]
+    [HttpGet("mis-presupuestos")]
     [Authorize]
     [ProducesResponseType(typeof(IEnumerable<PresupuestoConReservaDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> ObtenerPresupuestosConReservaPorUsuario([FromRoute] int idUsuario, CancellationToken ct)
+    public async Task<IActionResult> ObtenerPresupuestosConReservaPorUsuario( CancellationToken ct)
     {
         try
         {
@@ -224,9 +224,7 @@ public class PresupuestoController : ControllerBase
 
             var idUsu = int.Parse(idClaim);
             
-            if(idUsu != idUsuario) return Unauthorized("Credenciales inválidas.");
-            
-            var presupuestos = await _obtenerPresupuestosConReserva.Ejecutar(idUsuario, ct);
+            var presupuestos = await _obtenerPresupuestosConReserva.Ejecutar(idUsu, ct);
             return Ok(presupuestos ?? Enumerable.Empty<PresupuestoConReservaDto>());
         }
         catch (ArgumentException ex)
