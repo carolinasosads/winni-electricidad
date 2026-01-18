@@ -211,7 +211,7 @@ public class PresupuestoController : ControllerBase
     /// <response code="400">El idUsuario es inválido.</response>
     /// <response code="500">Ocurrió un error inesperado.</response>
     [HttpGet("mis-presupuestos")]
-    [Authorize]
+    [Authorize(Roles = "Cliente")]
     [ProducesResponseType(typeof(IEnumerable<PresupuestoConReservaDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
