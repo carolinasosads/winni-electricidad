@@ -2,6 +2,7 @@ import { Box, Typography, Card, CardActionArea } from "@mui/material";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import RateReviewIcon from "@mui/icons-material/RateReview";
 import BuildIcon from "@mui/icons-material/Build";
+import PaymentIcon from '@mui/icons-material/Payment';
 import { useNavigate } from "react-router-dom";
 
 export default function ClienteDashboard() {
@@ -26,6 +27,12 @@ export default function ClienteDashboard() {
       descripcion: "Ver o crear una reseña.",
       icono: RateReviewIcon,
       ruta: "/cliente/resenas",
+    },
+    {
+      titulo: "Pagar",
+      descripcion: "Realizá una seña o paga un presupuesto completo.",
+      icono: PaymentIcon,
+      ruta: "/cliente/pago/crear",
     },
   ];
 

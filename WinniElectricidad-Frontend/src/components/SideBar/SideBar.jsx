@@ -13,6 +13,7 @@ import DateRangeIcon from '@mui/icons-material/DateRange';
 import GroupIcon from '@mui/icons-material/Group';
 import ViewAgendaIcon from '@mui/icons-material/ViewAgenda';
 import RateReviewIcon from '@mui/icons-material/RateReview';
+import PaymentIcon from '@mui/icons-material/Payment';
 import { matchPath, useLocation } from 'react-router-dom';
 
 import SidebarContext from './Context/SideBarContext';
@@ -170,6 +171,14 @@ function Sidebar({
                     icon={<ViewAgendaIcon />}
                     href="/cliente/mis-reservas"
                     selected={pathname.startsWith("/cliente/mis-reservas")}
+                  />
+
+                  <SidebarPageItem
+                    id="pago-cliente"
+                    title="Pagar"
+                    icon={<PaymentIcon />}
+                    href="/cliente/pago/crear"
+                    selected={pathname.startsWith("/cliente/pago/crear")}
                   />
                 </>
               )}
