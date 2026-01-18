@@ -18,12 +18,14 @@ public class PresupuestoController : ControllerBase
     private readonly ICrearPresupuesto _crearPresupuesto;
     private readonly IObtenerPresupuesto _obtenerPresupuesto;
     private readonly IRegistrarPagoPresupuesto _registrarPagoPresupuesto;
-
-    public PresupuestoController(ICrearPresupuesto crearPresupuesto, IObtenerPresupuesto obtenerPresupuesto,IRegistrarPagoPresupuesto registrarPagoPresupuesto)
+    private readonly IObtenerPresupuestoConReserva _obtenerPresupuestosConReserva;
+    
+    public PresupuestoController(ICrearPresupuesto crearPresupuesto, IObtenerPresupuesto obtenerPresupuesto,IRegistrarPagoPresupuesto registrarPagoPresupuesto, IObtenerPresupuestoConReserva obtenerPresupuestosConReserva)
     {
         _crearPresupuesto = crearPresupuesto;
         _obtenerPresupuesto = obtenerPresupuesto;
         _registrarPagoPresupuesto = registrarPagoPresupuesto;
+        _obtenerPresupuestosConReserva = obtenerPresupuestosConReserva;
     }
 
     /// <summary>
@@ -184,6 +186,50 @@ public class PresupuestoController : ControllerBase
         {
             return StatusCode(StatusCodes.Status500InternalServerError,
                 new { message = "Ocurrió un error inesperado al registrar el pago." });
+        }
+    }
+
+    /// <summary>
+    /// Obtiene todos los presupuestos de un usuario, incluyendo la información de la reserva asociada.
+    /// </summary>
+    /// <remarks>
+    /// Este endpoint permite consultar el listado de presupuestos pertenecientes a un usuario.
+    /// Cada ítem incluye los datos del presupuesto y la reserva asociada (si corresponde),
+    /// listo para ser consumido por el frontend.
+    ///
+    /// **Códigos de respuesta:**
+    /// - `200 OK` → Lista de presupuestos obtenida correctamente (puede ser vacía).
+    /// - `400 Bad Request` → Id de usuario inválido.
+    /// - `500 Internal Server Error` → Error inesperado.
+    /// </remarks>
+    /// <param name="idUsuario">Identificador del usuario del cual se desean obtener los presupuestos.</param>
+    /// <param name="ct">Token de cancelación.</param>
+    /// <returns>
+    /// Retorna una lista de <see cref="PresupuestoConReservaDto"/> con los presupuestos del usuario y su reserva.
+    /// </returns>
+    /// <response code="200">Lista obtenida correctamente.</response>
+    /// <response code="400">El idUsuario es inválido.</response>
+    /// <response code="500">Ocurrió un error inesperado.</response>
+    [HttpGet("usuario/{idUsuario:int}/con-reserva")]
+    [Authorize]
+    [ProducesResponseType(typeof(IEnumerable<PresupuestoConReservaDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> ObtenerPresupuestosConReservaPorUsuario([FromRoute] int idUsuario, CancellationToken ct)
+    {
+        try
+        {
+            var presupuestos = await _obtenerPresupuestosConReserva.Ejecutar(idUsuario, ct);
+            return Ok(presupuestos ?? Enumerable.Empty<PresupuestoConReservaDto>());
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                new { message = "Ocurrió un error inesperado al obtener los presupuestos del usuario." });
         }
     }
 }
