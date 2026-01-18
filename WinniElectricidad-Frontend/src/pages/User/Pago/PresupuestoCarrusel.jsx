@@ -18,6 +18,7 @@ export default function PresupuestoCarrusel({
   presupuestos,
   seleccionadoId,
   onSeleccionar,
+  bloqueado
 }) {
   const theme = useTheme();
   const esMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -50,10 +51,12 @@ export default function PresupuestoCarrusel({
   };
 
   const handleTouchStart = (e) => {
+    if (bloqueado) return;
     touchStartX.current = e.touches[0].clientX;
   };
 
   const handleTouchEnd = (e) => {
+    if (bloqueado) return;
     if (touchStartX.current === null) return;
     const delta = e.changedTouches[0].clientX - touchStartX.current;
     if (Math.abs(delta) > 50) delta > 0 ? goPrev() : goNext();
@@ -76,6 +79,7 @@ export default function PresupuestoCarrusel({
           <Box sx={{ display: "flex", alignItems: "center" }}>
             <IconButton
               onClick={goPrev}
+              disabled={bloqueado}
               sx={{
                 bgcolor: "background.paper",
                 boxShadow: 2,
@@ -91,6 +95,8 @@ export default function PresupuestoCarrusel({
           onClick={() => onSeleccionar(presupuesto)}
           sx={{
             flex: 1,
+            opacity: bloqueado ? 0.9 : 1,
+            cursor: bloqueado ? "default" : "pointer",
             borderRadius: 3,
             border:
               seleccionadoId === presupuesto.id
@@ -157,6 +163,7 @@ export default function PresupuestoCarrusel({
           <Box sx={{ display: "flex", alignItems: "center" }}>
             <IconButton
               onClick={goNext}
+              disabled={bloqueado}
               sx={{
                 bgcolor: "background.paper",
                 boxShadow: 2,
