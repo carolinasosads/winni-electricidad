@@ -202,7 +202,6 @@ public class PresupuestoController : ControllerBase
     /// - `400 Bad Request` → Id de usuario inválido.
     /// - `500 Internal Server Error` → Error inesperado.
     /// </remarks>
-    /// <param name="idUsuario">Identificador del usuario del cual se desean obtener los presupuestos.</param>
     /// <param name="ct">Token de cancelación.</param>
     /// <returns>
     /// Retorna una lista de <see cref="PresupuestoConReservaDto"/> con los presupuestos del usuario y su reserva.
