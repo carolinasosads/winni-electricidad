@@ -2,6 +2,7 @@ import { Box, Typography, Card, CardActionArea } from "@mui/material";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import RateReviewIcon from "@mui/icons-material/RateReview";
 import BuildIcon from "@mui/icons-material/Build";
+import PaymentIcon from '@mui/icons-material/Payment';
 import { useNavigate } from "react-router-dom";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 
@@ -29,12 +30,17 @@ export default function ClienteDashboard() {
       ruta: "/cliente/resenas",
     },
     {
-      titulo: "Mis reservas",
-      descripcion: "Consultá el estado y el historial de tus reservas.",
-      icono: ListAltIcon,
-      ruta: "/cliente/mis-reservas",
+      titulo: "Pagar",
+      descripcion: "Realizá una seña o paga un presupuesto completo.",
+      icono: PaymentIcon,
+      ruta: "/cliente/pago/crear",
     },
-
+      {
+          titulo: "Mis reservas",
+          descripcion: "Consultá el estado y el historial de tus reservas.",
+          icono: ListAltIcon,
+          ruta: "/cliente/mis-reservas",
+      },
   ];
 
   return (

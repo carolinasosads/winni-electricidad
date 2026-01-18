@@ -13,6 +13,7 @@ import MainLayout from "../../layout/MainLayout.jsx";
 import AgendaPage from "../../pages/User/Agenda/AgendaPage.jsx";
 import CrearResena from "../../pages/User/Reseña/CrearResena.jsx";
 import ClienteDashboard from "../../pages/User/Dashboard/ClienteDashboard.jsx";
+import Pago from "../../pages/User/Pago/Pago.jsx";
 
 import DashboardAdmin from "../../pages/Admin/Dashboard/DashboardAdmin.jsx"
 import PanelReservas from "../../pages/Admin/PanelReservas/PanelReservas.jsx"
@@ -55,6 +56,7 @@ export default function App() {
         <Route path="resenas/crear" element={<CrearResena />} />
         <Route path="servicios" element={<ServiciosPage />} /> 
         <Route path="mis-reservas" element={<PanelReservasCliente />} />
+        <Route path="pago/crear" element={<Pago />} />
       </Route>
 
       {/* Usuario Administrador */}

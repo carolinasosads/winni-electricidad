@@ -101,3 +101,32 @@ export const registrarPagoPresupuesto = async (idReserva, monto, signal) => {
     throw new ApiError("Error al registrar el pago.");
   }
 };
+
+export const obtenerPresupuestoSegunIdUsuario = async (signal) => {
+  try {
+    const resp = await fetch(`${urlAPIPresupuesto}mis-presupuestos`, {
+      method: "GET",
+      headers: getAuthHeaders(),
+      signal,
+    });
+
+    if (!resp.ok) {
+      const data = await handleJsonOrText(resp);
+      throw new ApiError(
+        data?.message || "Error al obtener los presupuestos",
+        resp.status
+      );
+    }
+
+    const data = await resp.json();
+    return Array.isArray(data) ? data : [];
+
+  } catch (err) {
+    if (err?.name === "AbortError") {
+      return []; 
+    }
+
+    if (err instanceof ApiError) throw err;
+    throw new ApiError("Error al obtener los presupuestos.");
+  }
+};
