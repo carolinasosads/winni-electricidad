@@ -63,6 +63,8 @@ public class RepositorioPresupuestos : IRepositorioPresupuesto
             .AsNoTracking()
             .Include(p => p.Reserva)
             .Include(p => p.Pagos)
+            .Include(p => p.Reserva)
+            .Include(p => p.Reserva.Servicios)
             .Where(p => p.IdUsuario == idUsuario)
             .OrderByDescending(p => p.FechaPresupuesto)
             .ToListAsync(ct);
