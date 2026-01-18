@@ -209,6 +209,8 @@ builder.Services.AddScoped<IListarTodosLosUsuarios, ListarTodosLosUsuarios>();
 builder.Services.AddScoped<IObtenerDetalleUsuario, ObtenerDetalleUsuario>();
 builder.Services.AddScoped<IObtenerPresupuesto, ObtenerPresupuesto>();
 builder.Services.AddScoped<IRegistrarPagoPresupuesto, RegistrarPagoPresupuesto>();
+// - Presupuesto -
+builder.Services.AddScoped<IObtenerPresupuestoConReserva, ObtenerPresupuestoConReserva>();
 
 // - Publico - 
 builder.Services.AddScoped<ICrearConsulta, CrearConsulta>();
