@@ -26,6 +26,9 @@ import PaginaPrincipal from "../../pages/Public/Principal/Principal.jsx"
 import ServiciosPage from "../../pages/Public/Servicio/ServiciosPage.jsx";
 import PanelReservasCliente from "../../pages/User/PanelReservas/PanelReservasCliente.jsx";
 
+import Success from "../../pages/User/Pago/Success.jsx";
+import Failure from "../../pages/User/Pago/Failure.jsx";
+import Pending from "../../pages/User/Pago/Pending.jsx"
 
 export default function App() {
   return (
@@ -56,6 +59,10 @@ export default function App() {
         <Route path="servicios" element={<ServiciosPage />} /> 
         <Route path="mis-reservas" element={<PanelReservasCliente />} />
         <Route path="pago/crear" element={<Pago />} />
+        <Route path="success" element={<Success />} />
+        <Route path="pending" element={<Pending />} />
+        <Route path="failure" element={<Failure />} />
+
       </Route>
 
       {/* Usuario Administrador */}

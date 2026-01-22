@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using OpenAI;
 using Resend;
+using MercadoPago.Config;
 using WinniElectricidad.AccesoDatos.Repositorios.EF;
 using WinniElectricidad.Api.Servicios;
 using WinniElectricidad.Compartido.Configuracion;
@@ -60,6 +61,13 @@ builder.Configuration
     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
     .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
     .AddEnvironmentVariables();
+
+// --- MercadoPago ---
+var mpToken = builder.Configuration["MercadoPago:AccessToken"]; 
+if (string.IsNullOrWhiteSpace(mpToken))
+    throw new InvalidOperationException("MercadoPago AccesToken no configurado. Verificar appsettings o variables de entorno.");
+
+MercadoPagoConfig.AccessToken = mpToken;
 
 builder.Services.AddOptions();
 builder.Services.AddHttpClient<ResendClient>();
@@ -210,6 +218,8 @@ builder.Services.AddScoped<IObtenerPresupuesto, ObtenerPresupuesto>();
 builder.Services.AddScoped<IRegistrarPagoPresupuesto, RegistrarPagoPresupuesto>();
 // - Presupuesto -
 builder.Services.AddScoped<IObtenerPresupuestoConReserva, ObtenerPresupuestoConReserva>();
+// - Pago -
+builder.Services.AddScoped<ICrearPreferenciaPago, CrearPreferenciaPago>();
 
 // - Publico - 
 builder.Services.AddScoped<ICrearConsulta, CrearConsulta>();

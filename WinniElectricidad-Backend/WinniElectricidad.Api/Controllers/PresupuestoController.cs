@@ -19,13 +19,15 @@ public class PresupuestoController : ControllerBase
     private readonly IObtenerPresupuesto _obtenerPresupuesto;
     private readonly IRegistrarPagoPresupuesto _registrarPagoPresupuesto;
     private readonly IObtenerPresupuestoConReserva _obtenerPresupuestosConReserva;
+    private readonly ICrearPreferenciaPago _crearPreferenciaPago;
     
-    public PresupuestoController(ICrearPresupuesto crearPresupuesto, IObtenerPresupuesto obtenerPresupuesto,IRegistrarPagoPresupuesto registrarPagoPresupuesto, IObtenerPresupuestoConReserva obtenerPresupuestosConReserva)
+    public PresupuestoController(ICrearPresupuesto crearPresupuesto, IObtenerPresupuesto obtenerPresupuesto,IRegistrarPagoPresupuesto registrarPagoPresupuesto, IObtenerPresupuestoConReserva obtenerPresupuestosConReserva, ICrearPreferenciaPago crearPreferenciaPago)
     {
         _crearPresupuesto = crearPresupuesto;
         _obtenerPresupuesto = obtenerPresupuesto;
         _registrarPagoPresupuesto = registrarPagoPresupuesto;
         _obtenerPresupuestosConReserva = obtenerPresupuestosConReserva;
+        _crearPreferenciaPago = crearPreferenciaPago;
     }
 
     /// <summary>
@@ -234,6 +236,32 @@ public class PresupuestoController : ControllerBase
         {
             return StatusCode(StatusCodes.Status500InternalServerError,
                 new { message = "Ocurrió un error inesperado al obtener los presupuestos del usuario." });
+        }
+    }
+    
+    [HttpPost("pagar")]
+    [Authorize(Roles = "Cliente")]
+    public async Task<IActionResult> CrearPago(PagoPendienteDto pagoPendienteDto, CancellationToken ct)
+    {
+        try
+        {
+            var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(idClaim)) return Unauthorized(new { message = "Token inválido o expirado." });
+
+            var idUsu = int.Parse(idClaim);
+            
+            var pagoPendiente = await _crearPreferenciaPago.Ejecutar(pagoPendienteDto, idUsu, ct);
+            
+            return Ok(pagoPendiente);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                new { message = "Ocurrió un error inesperado al pagar" });
         }
     }
 }

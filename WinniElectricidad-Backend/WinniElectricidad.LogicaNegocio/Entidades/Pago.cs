@@ -10,8 +10,8 @@ public class Pago
 
     [Range(0, double.MaxValue)]
     public decimal Monto { get; set; }
-
     public DateTime FechaHoraRealizado { get; set; } = DateTime.UtcNow;
+    public EstadoPago EstadoPago { get; set; }
     #endregion
 
     #region EF
@@ -24,12 +24,13 @@ public class Pago
 
     public Pago() { }
 
-    public Pago(decimal monto, int idPresupuesto, int idUsuario)
+    public Pago(decimal monto, int idPresupuesto, int idUsuario, EstadoPago estadoPago)
     {
         Monto = monto;
         FechaHoraRealizado = DateTime.UtcNow;
         IdPresupuesto = idPresupuesto;
         IdUsuario = idUsuario;
+        EstadoPago = estadoPago;
         Validar();
     }
 

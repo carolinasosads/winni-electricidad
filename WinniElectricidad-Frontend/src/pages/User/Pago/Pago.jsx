@@ -12,6 +12,7 @@ import {
 import { initMercadoPago, Wallet } from "@mercadopago/sdk-react";
 import PresupuestoCarousel from "./PresupuestoCarrusel";
 import { obtenerPresupuestoSegunIdUsuario } from "../../../services/presupuestoService";
+import { crearPago } from "../../../services/pagoService";
 
 initMercadoPago(import.meta.env.VITE_MP_PUBLIC_KEY);
 
@@ -26,7 +27,7 @@ export default function Pago() {
 
   const saldoPendiente = presupuestoSeleccionado
     ? presupuestoSeleccionado.montoTotal -
-      presupuestoSeleccionado.montoPagado
+    presupuestoSeleccionado.montoPagado
     : 0;
 
 
@@ -67,19 +68,19 @@ export default function Pago() {
     setErrorMsg("");
 
     try {
-      // ACA VA EL POST REAL AL BACK
-      console.log("Pago a crear:", {
-        idPresupuesto: presupuestoSeleccionado.id,
-        monto: Number(monto),
-      });
+      const pago = { idPresupuesto: presupuestoSeleccionado.id, monto: Number(monto) };
+      const resp = await crearPago(pago);
 
-      // mock de preferenceId
-      setPreferenceId("PREFERENCE_ID_MOCK");
+      const prefId = resp?.IdPreference ?? resp?.idPreference ?? resp?.preferenceId ?? resp?.id;
+      if (!prefId) throw new Error("No se recibió preferenceId del backend.");
+
+      setPreferenceId(prefId);
     } catch (e) {
-      setErrorMsg("Error al generar el pago.");
+      setErrorMsg(e?.message || "Error al generar el pago.");
     } finally {
       setLoading(false);
     }
+
   };
 
   return (
