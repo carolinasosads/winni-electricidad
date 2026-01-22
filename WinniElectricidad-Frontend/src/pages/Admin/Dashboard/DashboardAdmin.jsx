@@ -4,6 +4,7 @@ import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import BuildIcon from "@mui/icons-material/Build";
 import RateReviewIcon from "@mui/icons-material/RateReview";
+import EditNotificationsIcon from '@mui/icons-material/EditNotifications';
 import { useNavigate } from "react-router-dom";
 
 export default function DashboardAdmin() {
@@ -40,6 +41,12 @@ export default function DashboardAdmin() {
       icono: RateReviewIcon,
       ruta: "/admin/resenas",
     },
+    {
+      titulo: "Recordatorios",
+      descripcion: "Envía recordatorios de mantenimiento a los clientes.",
+      icono: EditNotificationsIcon,
+      ruta: "/admin/recordatorios",
+    }
   ];
 
   return (
