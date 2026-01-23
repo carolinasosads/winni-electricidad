@@ -46,7 +46,6 @@ export default function EstadoList({ titulo, color, items = [], onSelect }) {
           size="small"
           sx={{
             bgcolor: color + "22",
-            color: color.replace(".main", ""),
             fontWeight: 600,
             ml: "auto",
           }}

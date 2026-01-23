@@ -59,18 +59,38 @@ public class RepositorioReservas : IRepositorioReserva
             .ToListAsync(ct);
     }
     
-    public async Task<IReadOnlyList<Reserva>> FindHistoricoReservas(DateTime fechaMinima, DateTime fechaLimite,
-        CancellationToken ct = default)
+    public async Task<IReadOnlyList<Reserva>> FindHistoricoReservas(DateTime fechaMinima, DateTime fechaLimite, string? filtro, CancellationToken ct = default)
     {
-        return await _db.Reservas
+        var query = _db.Reservas
             .AsNoTracking()
             .Include(r => r.UsuarioCliente)
             .Include(r => r.Direccion)
             .Include(r => r.Servicios)
-            .Where(r => r.FechaReserva.Date >= fechaMinima
-                        && r.FechaReserva.Date <= fechaLimite)
-            .ToListAsync(ct);
+            .Where(r =>
+                r.FechaReserva.Date >= fechaMinima &&
+                r.FechaReserva.Date <= fechaLimite
+            );
+
+        if (!string.IsNullOrWhiteSpace(filtro))
+        {
+            filtro = filtro.ToLower().Trim();
+
+            query = query.Where(r =>
+                r.UsuarioCliente != null &&
+                (
+                    (r.UsuarioCliente.NombreCompleto != null &&
+                     r.UsuarioCliente.NombreCompleto.ToLower().Contains(filtro)) ||
+                    (r.UsuarioCliente.Email != null &&
+                     r.UsuarioCliente.Email.ToLower().Contains(filtro)) ||
+                    (r.UsuarioCliente.Telefono != null &&
+                     r.UsuarioCliente.Telefono.ToLower().Contains(filtro))
+                )
+            );
+        }
+
+        return await query.ToListAsync(ct);
     }
+
     public async Task<bool> UsuarioTieneReservaEnHorario(int idUsuario, DateTime fechaReserva,
         CancellationToken ct = default)
     {
@@ -100,31 +120,62 @@ public class RepositorioReservas : IRepositorioReserva
                            r.EstadoReserva != EstadoReserva.Cancelada, ct);
     }
 
-    public async Task<IReadOnlyList<Reserva>> FindAllFinalizadas(CancellationToken ct = default)
+    public async Task<IReadOnlyList<Reserva>> FindAllFinalizadas(string? filtro, CancellationToken ct = default)
     {
         var hoy = DateTime.Today;
-
-        return await _db.Reservas
+        var query = _db.Reservas
             .AsNoTracking()
             .Include(r => r.UsuarioCliente)
             .Include(r => r.Direccion)
             .Include(r => r.Servicios)
             .Where(r =>
                 r.FechaReserva.Date < hoy &&
-                r.EstadoReserva != EstadoReserva.Cancelada)
-            .ToListAsync(ct);
+                r.EstadoReserva != EstadoReserva.Cancelada
+            );
+
+        if (!string.IsNullOrWhiteSpace(filtro))
+        {
+            filtro = filtro.ToLower().Trim();
+
+            query = query.Where(r =>
+                r.UsuarioCliente != null &&
+                (
+                    (r.UsuarioCliente.NombreCompleto != null &&
+                     r.UsuarioCliente.NombreCompleto.ToLower().Contains(filtro)) ||
+                    (r.UsuarioCliente.Email != null &&
+                     r.UsuarioCliente.Email.ToLower().Contains(filtro)) ||
+                    (r.UsuarioCliente.Telefono != null &&
+                     r.UsuarioCliente.Telefono.ToLower().Contains(filtro))
+                )
+            );
+        }
+
+        return await query.ToListAsync(ct);
     }
 
-    public async Task<IReadOnlyList<Reserva>> FindAllSegunEstado(EstadoReserva estado, CancellationToken ct = default)
+    public async Task<IReadOnlyList<Reserva>> FindAllSegunEstado(EstadoReserva estado, string? filtro, CancellationToken ct = default)
     {
-        return await _db.Reservas
+        var query = _db.Reservas
             .AsNoTracking()
             .Include(r => r.UsuarioCliente)
             .Include(r => r.Direccion)
             .Include(r => r.Servicios)
-            .Where(r => r.EstadoReserva == estado)
-            .ToListAsync(ct);
-        
+            .Where(r => r.EstadoReserva == estado);
+
+        if (!string.IsNullOrWhiteSpace(filtro))
+        {
+            filtro = filtro.ToLower().Trim();
+
+            query = query.Where(r =>
+                r.UsuarioCliente != null &&
+                (
+                    (r.UsuarioCliente.NombreCompleto != null && r.UsuarioCliente.NombreCompleto.ToLower().Contains(filtro)) ||
+                    (r.UsuarioCliente.Email != null && r.UsuarioCliente.Email.ToLower().Contains(filtro)) ||
+                    (r.UsuarioCliente.Telefono != null && r.UsuarioCliente.Telefono.ToLower().Contains(filtro))
+                )
+            );
+        }
+        return await query.ToListAsync(ct);
     }
     public async Task<Reserva?> ObtenerReservaPorId(int id, CancellationToken ct = default)
     {

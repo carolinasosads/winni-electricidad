@@ -14,9 +14,9 @@ public class ObtenerHistoricoFinalizadas : IObtenerHistoricoFinalizadas
         _repositorioReserva = repo;
     }
 
-    public async Task<IEnumerable<HistoricoReservaDto>> Ejecutar(CancellationToken ct = default)
+    public async Task<IEnumerable<HistoricoReservaDto>> Ejecutar(string? filtro, CancellationToken ct = default)
     {
-        var reservas = await _repositorioReserva.FindAllFinalizadas(ct);
+        var reservas = await _repositorioReserva.FindAllFinalizadas(filtro, ct);
 
         return reservas
             .Select(reserva => ReservaMapper.MapearAHistoricoReservaDto(reserva))

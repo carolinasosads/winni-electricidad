@@ -15,7 +15,7 @@ public class ObtenerReservasPorEstado : IObtenerReservasPorEstado
         _repositorioReserva = repositorioReserva;
     }
 
-    public async Task<IEnumerable<HistoricoReservaDto>> Ejecutar(string estado, CancellationToken ct = default)
+    public async Task<IEnumerable<HistoricoReservaDto>> Ejecutar(string estado, string? filtro, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(estado))
             throw new ArgumentException("Debe indicar un estado.");
@@ -24,7 +24,7 @@ public class ObtenerReservasPorEstado : IObtenerReservasPorEstado
         if (!Enum.TryParse<EstadoReserva>(estado, ignoreCase: true, out var estadoEnum))
             throw new ArgumentException($"El estado '{estado}' no es válido.", nameof(estado));
 
-        var reservas = await _repositorioReserva.FindAllSegunEstado(estadoEnum, ct);
+        var reservas = await _repositorioReserva.FindAllSegunEstado(estadoEnum, filtro, ct);
 
         return reservas
             .Select(ReservaMapper.MapearAHistoricoReservaDto)
