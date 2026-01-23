@@ -54,19 +54,22 @@ public class RepositorioPresupuestos : IRepositorioPresupuesto
     public async Task<Presupuesto?> FindByReservaId(int idReserva, CancellationToken ct = default)
     {
         return await _db.Presupuestos
-            .Include(p => p.Pagos)
+            .Include(p => p.Pagos.Where(pago => pago.EstadoPago == EstadoPago.Confirmado))
             .FirstOrDefaultAsync(p => p.IdReserva == idReserva, ct);
     }
     public async Task<IEnumerable<Presupuesto>> ObtenerPresupuestosConReservaPorUsuario(int idUsuario, CancellationToken ct = default)
     {
-        return await _db.Presupuestos
+        var presupuestos = await _db.Presupuestos
             .AsNoTracking()
             .Include(p => p.Reserva)
-            .Include(p => p.Pagos)
+            .Include(p => p.Pagos.Where(pago => pago.EstadoPago == EstadoPago.Confirmado))
             .Include(p => p.Reserva.Direccion)
             .Include(p => p.Reserva.Servicios)
             .Where(p => p.IdUsuario == idUsuario)
             .OrderByDescending(p => p.FechaPresupuesto)
             .ToListAsync(ct);
+
+        return presupuestos;
+        // TODO, filtrar los que ya se pagaron por completo y que la reserva no este cancealada creo
     }
 }

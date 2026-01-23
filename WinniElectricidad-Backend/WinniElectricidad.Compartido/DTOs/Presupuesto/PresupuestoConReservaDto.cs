@@ -8,13 +8,13 @@ public class PresupuestoConReservaDto
     [Required] 
     public int Id { get; set; }
     
-    public ReservaCreadaDto reserva { get; set; }
+    public ReservaCreadaDto Reserva { get; set; }
     
     [Required]
     [Range(0, double.MaxValue)]
     public decimal MontoTotal { get; set; }
     
-    [Range(0.01, double.MaxValue)]
+    [Range(0, double.MaxValue)]
     public decimal? MontoPagado { get; set; }
     
     [MaxLength(500, ErrorMessage = "La descripción del trabajo no puede superar los 500 caracteres.")]

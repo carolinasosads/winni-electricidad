@@ -1,8 +1,10 @@
 using MercadoPago.Client.Preference;
+using MercadoPago.Error;
 using MercadoPago.Resource.Preference;
 using WinniElectricidad.Compartido.DTOs.Mappers;
 using WinniElectricidad.Compartido.DTOs.Pago;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Pago;
+using WinniElectricidad.LogicaNegocio.ExcepcionesPersonalizadas.Pago;
 using WinniElectricidad.LogicaNegocio.InterfacesRepositorios;
 
 namespace WinniElectricidad.LogicaAplicacion.Servicios.Pago;
@@ -18,13 +20,30 @@ public class CrearPreferenciaPago:ICrearPreferenciaPago
 
     public async Task<PagoPendienteDevueltoDto> Ejecutar(PagoPendienteDto pagoPendienteDto, int idUsuario, CancellationToken ct = default)
     {
+        if (pagoPendienteDto.Monto > pagoPendienteDto.MontoTotal - pagoPendienteDto.MontoPagado)
+        {
+            throw new PagoException("El monto ingresado supera el monto restante a pagar.");
+        }
+
+        if (pagoPendienteDto.MontoTotal - pagoPendienteDto.MontoPagado == 0)
+        {
+            throw new PagoException("El presupuesto seleccionado ya fue pagado por completo.");
+        }
+        
+        var servicios = pagoPendienteDto.NombresServicios switch
+        {
+            null or { Count: 0 } => "trabajo",
+            { Count: 1 } => pagoPendienteDto.NombresServicios[0],
+            _ => string.Join(", ", pagoPendienteDto.NombresServicios)
+        };
+
         var request = new PreferenceRequest
         {
             Items = new List<PreferenceItemRequest>
             {
                 new PreferenceItemRequest
                 {
-                    Title = "PagoTest",
+                    Title = "Pago de presupuesto de " + servicios + " - Winni Electricidad",
                     Quantity = 1,
                     CurrencyId = "UYU",
                     UnitPrice = pagoPendienteDto.Monto

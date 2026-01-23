@@ -1,10 +1,12 @@
 using System.Security.Claims;
+using MercadoPago.Error;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WinniElectricidad.Compartido.DTOs.Pago;
 using WinniElectricidad.Compartido.DTOs.Presupuesto;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Pago;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Presupuesto;
+using WinniElectricidad.LogicaNegocio.ExcepcionesPersonalizadas.Pago;
 
 namespace WinniElectricidad.Api.Controllers;
 
@@ -253,10 +255,19 @@ public class PresupuestoController : ControllerBase
             var pagoPendiente = await _crearPreferenciaPago.Ejecutar(pagoPendienteDto, idUsu, ct);
             
             return Ok(pagoPendiente);
+        } 
+        catch (PagoException ex)
+        {
+            return BadRequest(new { message = ex.Message });
         }
         catch (ArgumentException ex)
         {
             return BadRequest(new { message = ex.Message });
+        }
+        catch (MercadoPagoApiException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                new { message = "Ocurrió un error inesperado al pagar" });
         }
         catch (Exception)
         {

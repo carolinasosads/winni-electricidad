@@ -69,7 +69,7 @@ export default function Pago() {
     setErrorMsg("");
 
     try {
-      const pago = { idPresupuesto: presupuestoSeleccionado.id, monto: Number(monto) };
+      const pago = { idPresupuesto: presupuestoSeleccionado.id, monto: Number(monto), NombresServicios: presupuestoSeleccionado.reserva.servicios, montoTotal: presupuestoSeleccionado.montoTotal, montoPagado: presupuestoSeleccionado.montoPagado };
       const resp = await crearPago(pago);
 
       const prefId = resp?.IdPreference ?? resp?.idPreference ?? resp?.preferenceId ?? resp?.id;

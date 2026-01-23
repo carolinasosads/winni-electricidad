@@ -49,7 +49,7 @@ public static class PresupuestoMapper
         return new PresupuestoConReservaDto
         {
             Id = presupuesto.Id,
-            reserva = ReservaMapper.MapearAReservaCreadaDto(presupuesto.Reserva),
+            Reserva = ReservaMapper.MapearAReservaCreadaDto(presupuesto.Reserva),
             MontoTotal = presupuesto.Monto,
             MontoPagado = montoPagadoCalculado,
             DescripcionTrabajo = presupuesto.DescripcionTrabajo,
