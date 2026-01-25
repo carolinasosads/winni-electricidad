@@ -1,14 +1,16 @@
-import { CircularProgress, Box, Typography, Dialog, DialogTitle, DialogContent, DialogActions, Button, Alert, Toolbar, IconButton, Chip } from "@mui/material";
+import { CircularProgress, Box, Typography, Dialog, DialogTitle, DialogContent, DialogActions, Button, Alert, Toolbar, IconButton, Chip, useMediaQuery } from "@mui/material";
 import Divider from '@mui/material/Divider';
 import ChevronLeftRoundedIcon from "@mui/icons-material/ChevronLeftRounded";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 import HowToRegIcon from '@mui/icons-material/HowToReg';
 import { TextField } from "@mui/material";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "@mui/material/styles";
 
 import AppHeader from "../../../components/Header/Header.jsx";
 import { SitemarkIcon } from "../../../components/CustomIcons/CustomIcons.jsx";
@@ -45,7 +47,45 @@ export default function ServiciosPage() {
   const [servicioEditando, setServicioEditando] = useState(null);
   const [imagenesEditando, setImagenesEditando] = useState([]);
   const [editando, setEditando] = useState(false);
-  
+
+  // --- Mobile: swipe en el modal (sin flechas) ---
+  const theme = useTheme();
+  const esMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const touchStartXModal = useRef(null);
+
+  const cerrarGaleria = () => {
+    setServicioSeleccionado(null);
+  };
+
+  const modalPrev = () => {
+    if (!servicioSeleccionado?.imagenes?.length) return;
+    setImgModalIndex((i) =>
+      i === 0 ? servicioSeleccionado.imagenes.length - 1 : i - 1
+    );
+  };
+
+  const modalNext = () => {
+    if (!servicioSeleccionado?.imagenes?.length) return;
+    setImgModalIndex((i) =>
+      i === servicioSeleccionado.imagenes.length - 1 ? 0 : i + 1
+    );
+  };
+
+  const handleTouchStartModal = (e) => {
+    touchStartXModal.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEndModal = (e) => {
+    if (touchStartXModal.current === null) return;
+    const delta = e.changedTouches[0].clientX - touchStartXModal.current;
+
+    if (Math.abs(delta) > 50) {
+      delta > 0 ? modalPrev() : modalNext();
+    }
+
+    touchStartXModal.current = null;
+  };
+
   const serviciosNormalizados = servicios.map(s => {
     const imagenPrincipal =
       Array.isArray(s.imagenes) &&
@@ -538,9 +578,10 @@ export default function ServiciosPage() {
         </DialogActions>
       </Dialog>
 
+      {/* --- swipe en mobile y cerrar tocando afuera o con X --- */}
       <Dialog
         open={Boolean(servicioSeleccionado)}
-        onClose={() => setServicioSeleccionado(null)}
+        onClose={cerrarGaleria}
         fullWidth
         maxWidth="md"
         PaperProps={{
@@ -564,7 +605,30 @@ export default function ServiciosPage() {
             p: 0,
             position: "relative",
           }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) cerrarGaleria();
+          }}
         >
+          {/* Botón X siempre */}
+          <IconButton
+            onClick={(e) => {
+              e.stopPropagation();
+              cerrarGaleria();
+            }}
+            sx={{
+              position: "absolute",
+              top: 14,
+              right: 14,
+              zIndex: 10,
+              color: "white",
+              bgcolor: "rgba(0,0,0,0.6)",
+              "&:hover": { bgcolor: "rgba(0,0,0,0.8)" }
+            }}
+            aria-label="Cerrar"
+          >
+            <CloseRoundedIcon />
+          </IconButton>
+
           {servicioSeleccionado && (
             <Box
               sx={{
@@ -578,6 +642,11 @@ export default function ServiciosPage() {
                   opacity: 1
                 }
               }}
+              onTouchStart={esMobile ? handleTouchStartModal : undefined}
+              onTouchEnd={esMobile ? handleTouchEndModal : undefined}
+              onClick={(e) => {
+                if (e.target === e.currentTarget) cerrarGaleria();
+              }}
             >
               <Box
                 component="img"
@@ -590,59 +659,58 @@ export default function ServiciosPage() {
                   maxHeight: "100%",
                   objectFit: "contain"
                 }}
+                onClick={(e) => e.stopPropagation()}
               />
 
-              <IconButton
-                className="modal-arrow"
-                onClick={() =>
-                  setImgModalIndex((i) =>
-                    i === 0
-                      ? servicioSeleccionado.imagenes.length - 1
-                      : i - 1
-                  )
-                }
-                sx={{
-                  position: "absolute",
-                  left: 24,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  color: "white",
-                  opacity: 0,
-                  transition: "opacity .25s ease, transform .15s ease",
-                  filter: "drop-shadow(0 4px 8px rgba(0,0,0,.6))",
-                  "&:hover": {
-                    transform: "translateY(-50%) scale(1.1)"
-                  }
-                }}
-              >
-                <ChevronLeftRoundedIcon sx={{ fontSize: 30 }} />
-              </IconButton>
+              {!esMobile && (
+                <>
+                  <IconButton
+                    className="modal-arrow"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      modalPrev();
+                    }}
+                    sx={{
+                      position: "absolute",
+                      left: 24,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      color: "white",
+                      opacity: 0,
+                      transition: "opacity .25s ease, transform .15s ease",
+                      filter: "drop-shadow(0 4px 8px rgba(0,0,0,.6))",
+                      "&:hover": {
+                        transform: "translateY(-50%) scale(1.1)"
+                      }
+                    }}
+                  >
+                    <ChevronLeftRoundedIcon sx={{ fontSize: 30 }} />
+                  </IconButton>
 
-              <IconButton
-                className="modal-arrow"
-                onClick={() =>
-                  setImgModalIndex((i) =>
-                    i === servicioSeleccionado.imagenes.length - 1
-                      ? 0
-                      : i + 1
-                  )
-                }
-                sx={{
-                  position: "absolute",
-                  right: 24,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  color: "white",
-                  opacity: 0,
-                  transition: "opacity .25s ease, transform .15s ease",
-                  filter: "drop-shadow(0 4px 8px rgba(0,0,0,.6))",
-                  "&:hover": {
-                    transform: "translateY(-50%) scale(1.1)"
-                  }
-                }}
-              >
-                <ChevronRightRoundedIcon sx={{ fontSize: 30 }} />
-              </IconButton>
+                  <IconButton
+                    className="modal-arrow"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      modalNext();
+                    }}
+                    sx={{
+                      position: "absolute",
+                      right: 24,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      color: "white",
+                      opacity: 0,
+                      transition: "opacity .25s ease, transform .15s ease",
+                      filter: "drop-shadow(0 4px 8px rgba(0,0,0,.6))",
+                      "&:hover": {
+                        transform: "translateY(-50%) scale(1.1)"
+                      }
+                    }}
+                  >
+                    <ChevronRightRoundedIcon sx={{ fontSize: 30 }} />
+                  </IconButton>
+                </>
+              )}
             </Box>
           )}
         </DialogContent>
