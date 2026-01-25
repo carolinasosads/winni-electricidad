@@ -205,11 +205,11 @@ public class ReservaController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<HistoricoReservaDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
 
-    public async Task<IActionResult> GetHistoricoMensual(int mes, int anio, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetHistoricoMensual(int mes, int anio, [FromQuery] string? filtro, CancellationToken cancellationToken)
     {
         try
         {
-            var resultado = await _obtenerHistoricoMensualReservas.Ejecutar( mes, anio, cancellationToken);
+            var resultado = await _obtenerHistoricoMensualReservas.Ejecutar( mes, anio, filtro, cancellationToken);
 
             return Ok(resultado);
         }
@@ -254,11 +254,11 @@ public class ReservaController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<HistoricoReservaDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
 
-    public async Task<IActionResult> GetHistoricoFinalizadas(CancellationToken ct)
+    public async Task<IActionResult> GetHistoricoFinalizadas([FromQuery]string? filtro, CancellationToken ct)
     {
         try
         {
-            var resultado = await _obtenerHistoricoFinalizadas.Ejecutar(ct);
+            var resultado = await _obtenerHistoricoFinalizadas.Ejecutar(filtro, ct);
             return Ok(resultado);
         }
         catch (Exception)
@@ -303,11 +303,11 @@ public class ReservaController : ControllerBase
     [Authorize(Roles = "Administrador")]
     [ProducesResponseType(typeof(IEnumerable<HistoricoReservaDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetPorEstado([FromQuery] string estado, CancellationToken ct)
+    public async Task<IActionResult> GetPorEstado([FromQuery] string estado, [FromQuery]string? filtro, CancellationToken ct)
     {
         try
         {
-            var resultado = await _obtenerReservasPorEstado.Ejecutar(estado, ct);
+            var resultado = await _obtenerReservasPorEstado.Ejecutar(estado, filtro, ct);
 
             return Ok(resultado);
         }

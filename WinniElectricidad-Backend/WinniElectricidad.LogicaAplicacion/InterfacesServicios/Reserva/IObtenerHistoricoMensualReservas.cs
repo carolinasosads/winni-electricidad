@@ -4,5 +4,5 @@ namespace WinniElectricidad.LogicaAplicacion.InterfacesServicios.Reserva;
 
 public interface IObtenerHistoricoMensualReservas
 {
-    Task<IEnumerable<HistoricoReservaDto>> Ejecutar(int mes, int anio, CancellationToken cancellationToken  = default);
+    Task<IEnumerable<HistoricoReservaDto>> Ejecutar(int mes, int anio, string? filtro, CancellationToken cancellationToken  = default);
 }

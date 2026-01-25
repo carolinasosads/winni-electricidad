@@ -15,7 +15,7 @@ public class ObtenerHistoricoMensualReservas : IObtenerHistoricoMensualReservas
         _repositorioReserva = repositorioReserva;
     }
 
-    public async Task<IEnumerable<HistoricoReservaDto>> Ejecutar(int mes, int anio,  CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<HistoricoReservaDto>> Ejecutar(int mes, int anio, string? filtro, CancellationToken cancellationToken = default)
     {
         if (mes < 1 || mes > 12)
             throw new ArgumentException("El mes debe estar entre 1 y 12.");
@@ -26,7 +26,7 @@ public class ObtenerHistoricoMensualReservas : IObtenerHistoricoMensualReservas
         var inicioMes = new DateTime(anio, mes, 1);
         var finMes = inicioMes.AddMonths(1).AddTicks(-1);
 
-        var reservas = await _repositorioReserva.FindHistoricoReservas(inicioMes, finMes, cancellationToken);
+        var reservas = await _repositorioReserva.FindHistoricoReservas(inicioMes, finMes, filtro, cancellationToken);
 
         var resultado = reservas
             .Select(r => ReservaMapper.MapearAHistoricoReservaDto(r))

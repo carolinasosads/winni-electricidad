@@ -19,8 +19,15 @@ async function handleJsonOrText(resp) {
 
 // --- GETs ---
 
-export async function getReservasPorMesYAnio(mes, anio) {
-  const resp = await fetch(`${urlAPIReserva}historico-mensual/${mes}/${anio}`, {
+export async function getReservasPorMesYAnio(mes, anio, filtro = "") {
+  const qs = new URLSearchParams();
+  if (filtro?.trim()) qs.set("filtro", filtro.trim());
+
+  const url = `${urlAPIReserva}historico-mensual/${mes}/${anio}${
+    qs.toString() ? `?${qs.toString()}` : ""
+  }`;
+
+  const resp = await fetch(url, {
     method: "GET",
     headers: getAuthHeaders(),
   });
@@ -33,8 +40,12 @@ export async function getReservasPorMesYAnio(mes, anio) {
   return await resp.json();
 }
 
-export async function getReservasPorEstado(estado) {
-  const resp = await fetch(`${urlAPIReserva}por-estado?estado=${estado}`, {
+export async function getReservasPorEstado(estado, filtro = "") {
+  const qs = new URLSearchParams();
+  qs.set("estado", estado);
+  if (filtro?.trim()) qs.set("filtro", filtro.trim());
+
+  const resp = await fetch(`${urlAPIReserva}por-estado?${qs.toString()}`, {
     method: "GET",
     headers: getAuthHeaders(),
   });
@@ -47,8 +58,15 @@ export async function getReservasPorEstado(estado) {
   return await resp.json();
 }
 
-export async function getReservasFinalizadas() {
-  const resp = await fetch(`${urlAPIReserva}finalizadas`, {
+export async function getReservasFinalizadas(filtro = "") {
+  const qs = new URLSearchParams();
+  if (filtro?.trim()) qs.set("filtro", filtro.trim());
+
+  const url = `${urlAPIReserva}finalizadas${
+    qs.toString() ? `?${qs.toString()}` : ""
+  }`;
+
+  const resp = await fetch(url, {
     method: "GET",
     headers: getAuthHeaders(),
   });

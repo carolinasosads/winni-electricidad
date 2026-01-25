@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   getReservasPorMesYAnio,
   getReservasPorEstado,
@@ -21,8 +21,11 @@ import {
   IconButton,
   useMediaQuery,
   Alert,
+  TextField,
+  InputAdornment,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
+import SearchIcon from "@mui/icons-material/Search";
 
 const ordenarPorHorario = (reservas) => {
   if (!Array.isArray(reservas)) return [];
@@ -91,18 +94,34 @@ export default function PanelReservas() {
   const [mensajeOk, setMensajeOk] = useState(null);
   const [mensajeError, setMensajeError] = useState(null);
 
+  const [filtro, setFiltro] = useState("");
+  const [filtroDebounced, setFiltroDebounced] = useState("");
+  const debounceRef = useRef(null);
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    debounceRef.current = setTimeout(() => {
+      setFiltroDebounced(filtro.trim());
+    }, 400);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [filtro]);
+
   // mobile / desktop
   const isMobile = useMediaQuery("(max-width:900px)");
   const [openDrawer, setOpenDrawer] = useState(false);
 
   // ---- Cargar reservas de todos los estados y cargar reservas del mes para el calendario ----
-  async function recargarTodo() {
+  async function recargarTodo(filtroActual = "") {
     try {
       const [p, c, ca, f] = await Promise.all([
-        getReservasPorEstado("Pendiente"),
-        getReservasPorEstado("Confirmada"),
-        getReservasPorEstado("Cancelada"),
-        getReservasFinalizadas(),
+        getReservasPorEstado("Pendiente", filtroActual),
+        getReservasPorEstado("Confirmada", filtroActual),
+        getReservasPorEstado("Cancelada", filtroActual),
+        getReservasFinalizadas(filtroActual),
       ]);
 
       const pOrdenadas = ordenarPorHorario(p);
@@ -117,7 +136,7 @@ export default function PanelReservas() {
 
       limpiarIdsQueYaNoEstanPendientes(pOrdenadas);
 
-      const data = await getReservasPorMesYAnio(mesActual, anioActual);
+      const data = await getReservasPorMesYAnio(mesActual, anioActual, filtroActual);
       setReservasMes(data);
     } catch {
       setMensajeError(
@@ -127,14 +146,18 @@ export default function PanelReservas() {
   }
 
   useEffect(() => {
-    recargarTodo();
+    recargarTodo("");
   }, []);
 
-  // ---- Cargar reservas de un nuevo mes al calendario ----
+  useEffect(() => {
+    recargarTodo(filtroDebounced);
+  }, [filtroDebounced]);
+
+  // ---- Cargar reservas de un nuevo mes al calendario (respetando filtro) ----
   useEffect(() => {
     async function loadMes() {
       try {
-        const data = await getReservasPorMesYAnio(mesActual, anioActual);
+        const data = await getReservasPorMesYAnio(mesActual, anioActual, filtroDebounced);
         setReservasMes(data);
       } catch (err) {
         setMensajeError(err?.message || "Error al cargar las reservas del mes.");
@@ -142,7 +165,7 @@ export default function PanelReservas() {
     }
 
     loadMes();
-  }, [mesActual, anioActual]);
+  }, [mesActual, anioActual, filtroDebounced]);
 
   // ----- Handlers de acciones -----
   const handleAprobar = async (reserva) => {
@@ -150,7 +173,7 @@ export default function PanelReservas() {
       const resp = await aprobarReserva(reserva.idReserva);
 
       setSelectedReserva(null);
-      recargarTodo();
+      recargarTodo(filtroDebounced);
       setMensajeOk(resp.message);
       setMensajeError(null);
 
@@ -168,7 +191,7 @@ export default function PanelReservas() {
       const resp = await cancelarReserva(reserva.idReserva);
 
       setSelectedReserva(null);
-      recargarTodo();
+      recargarTodo(filtroDebounced);
       setMensajeOk(resp.message);
       setMensajeError(null);
 
@@ -195,7 +218,7 @@ export default function PanelReservas() {
       setOpenModificar(false);
       setSelectedReserva(null);
 
-      recargarTodo();
+      recargarTodo(filtroDebounced);
       setMensajeOk(resp.message);
       setMensajeError(null);
 
@@ -231,6 +254,27 @@ export default function PanelReservas() {
       <Typography variant="h4" fontWeight={700} sx={{ mb: 2 }}>
         Panel de Reservas
       </Typography>
+
+      {/* FILTRO */}
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+        Podés filtrar por nombre, correo electrónico o teléfono
+      </Typography>
+
+      <TextField
+        value={filtro}
+        onChange={(e) => setFiltro(e.target.value)}
+        placeholder="Buscar por nombre, correo o teléfono…"
+        fullWidth
+        size="small"
+        sx={{ mb: 2 }}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <SearchIcon fontSize="small" />
+            </InputAdornment>
+          ),
+        }}
+      />
 
       {/* MENSAJES */}
       {mensajeError && (
