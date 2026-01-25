@@ -27,10 +27,10 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
 
-const ordenarPorHorario = (reservas) => {
+const ordenarPorHorarioDesc = (reservas) => {
   if (!Array.isArray(reservas)) return [];
   return [...reservas].sort(
-    (a, b) => new Date(a.fechaReserva) - new Date(b.fechaReserva)
+    (a, b) => new Date(b.fechaReserva) - new Date(a.fechaReserva)
   );
 };
 
@@ -51,7 +51,7 @@ function leerIdsPendientesConfirmacion() {
 function guardarIdsPendientesConfirmacion(ids) {
   try {
     localStorage.setItem(LS_KEY, JSON.stringify(ids));
-  } catch {}
+  } catch { }
 }
 
 function agregarIdPendienteConfirmacion(idReserva) {
@@ -124,10 +124,10 @@ export default function PanelReservas() {
         getReservasFinalizadas(filtroActual),
       ]);
 
-      const pOrdenadas = ordenarPorHorario(p);
-      const cOrdenadas = ordenarPorHorario(c);
-      const caOrdenadas = ordenarPorHorario(ca);
-      const fOrdenadas = ordenarPorHorario(f);
+      const pOrdenadas = ordenarPorHorarioDesc(p);
+      const cOrdenadas = ordenarPorHorarioDesc(c);
+      const caOrdenadas = ordenarPorHorarioDesc(ca);
+      const fOrdenadas = ordenarPorHorarioDesc(f);
 
       setPendientes(pOrdenadas);
       setConfirmadas(cOrdenadas);
