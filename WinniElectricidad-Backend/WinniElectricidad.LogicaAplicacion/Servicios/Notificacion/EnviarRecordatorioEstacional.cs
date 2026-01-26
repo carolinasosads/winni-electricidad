@@ -1,4 +1,5 @@
-﻿using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Notificacion;
+﻿using System.ComponentModel.DataAnnotations;
+using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Notificacion;
 
 namespace WinniElectricidad.LogicaAplicacion.Servicios.Notificacion;
 
@@ -24,6 +25,15 @@ public class EnviarRecordatorioEstacional : IEnviarRecordatorioEstacional
 
         if (emailClientesParaEnviar.Any(e => string.IsNullOrWhiteSpace(e)))
             throw new ArgumentException("La lista de destinatarios contiene emails inválidos.");
+        
+        var emailValidator = new EmailAddressAttribute();
+        
+        if (emailClientesParaEnviar.Any(e => !emailValidator.IsValid(e)))
+        {
+            throw new ArgumentException(
+                "La lista de destinatarios contiene emails con formato inválido."
+            );
+        }
         
         var cuerpoHtml = $@"
             <div style='font-family: Arial, sans-serif; background-color:#f4f6f8; padding:16px; box-sizing:border-box;'>

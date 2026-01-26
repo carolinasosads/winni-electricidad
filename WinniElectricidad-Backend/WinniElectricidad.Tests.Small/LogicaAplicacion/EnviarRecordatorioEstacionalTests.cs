@@ -73,4 +73,30 @@ public class EnviarRecordatorioEstacionalTests
                 new List<string>(),
                 CancellationToken.None));
     }
+    
+    [Test]
+    public void Ejecutar_ConEmailVacio_LanzaArgumentException()
+    {
+        var emails = new List<string> { "a@test.com", " " };
+
+        Assert.ThrowsAsync<ArgumentException>(() =>
+            _servicio.Ejecutar(
+                "Electricidad",
+                "Texto",
+                emails,
+                CancellationToken.None));
+    }
+    
+    [Test]
+    public void Ejecutar_ConEmailInvalido_LanzaArgumentException()
+    {
+        var emails = new List<string> { "a@test.com", "atest.com" };
+
+        Assert.ThrowsAsync<ArgumentException>(() =>
+            _servicio.Ejecutar(
+                "Electricidad",
+                "Texto",
+                emails,
+                CancellationToken.None));
+    }
 }

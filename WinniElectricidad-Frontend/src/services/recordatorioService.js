@@ -27,7 +27,7 @@ export const enviarRecordatorios = async (payload) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...getAuthHeaders() // si ya usás auth
+        ...getAuthHeaders()
       },
       body: JSON.stringify(payload)
     }

@@ -67,7 +67,7 @@ const buildEmailPreviewHtml = ({ titulo, mensaje }) => `
       <div style="background-color:#1f3a5f; color:#ffffff; padding:16px 24px;">
         <h2 style="margin:0; font-size:20px;">Winni Electricidad</h2>
         <p style="margin:4px 0 0; font-size:13px; opacity:0.9;">
-          Servicios eléctricos y mantenimiento
+          Servicios técnicos y mantenimiento
         </p>
       </div>
 
@@ -107,7 +107,7 @@ const buildEmailPreviewHtml = ({ titulo, mensaje }) => `
         <hr style="margin:24px 0; border:none; border-top:1px solid #e0e0e0;" />
 
         <p style="font-size:12px; color:#777;">
-          Este mensaje fue enviado como recordatorio de mantenimiento.
+          Este es un recordatorio automático enviado por Winni Electricidad.
         </p>
       </div>
     </div>
