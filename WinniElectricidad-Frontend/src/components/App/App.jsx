@@ -18,6 +18,7 @@ import DashboardAdmin from "../../pages/Admin/Dashboard/DashboardAdmin.jsx"
 import PanelReservas from "../../pages/Admin/PanelReservas/PanelReservas.jsx"
 
 import AdminCrearReservaPage from "../../pages/Admin/CrearCliente/AdminCrearReserva.jsx";
+import RecordatorioMantenimiento from "../../pages/Admin/Recordatorio/RecordatorioMantenimiento.jsx";
 
 import FichaClientes from "../../pages/Admin/FichaClientes/FichaClientes.jsx"
 
@@ -70,7 +71,8 @@ export default function App() {
         <Route path="panel-reservas" element={<PanelReservas />} />
         <Route path="crear-reserva" element={<AdminCrearReservaPage />} />
         <Route path="ficha-clientes" element={<FichaClientes />} />
-        <Route path="servicios" element={<ServiciosPage />} />       
+        <Route path="servicios" element={<ServiciosPage />} />
+        <Route path="recordatorios" element={<RecordatorioMantenimiento />} />       
       </Route>
 
       {/* Catch-all */}

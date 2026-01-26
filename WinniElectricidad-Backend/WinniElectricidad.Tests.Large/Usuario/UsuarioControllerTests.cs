@@ -1,7 +1,9 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using Microsoft.AspNetCore.Http;
 using WinniElectricidad.Compartido.DTOs.Direcciones;
+using WinniElectricidad.Compartido.DTOs.Usuarios.ListadoUsuarios;
 using WinniElectricidad.Tests.Large.Infraestructura;
 
 namespace WinniElectricidad.Tests.Large.Usuario;
@@ -80,6 +82,75 @@ public class UsuarioControllerTests : LargeTestBase
         var resp = await Client.GetAsync(endpoint);
 
         // Assert
+        Assert.That(resp.StatusCode, Is.EqualTo(HttpStatusCode.Forbidden));
+    }
+    
+    [Test]
+    public async Task GetClientesPorServicio_AdminValido_Devuelve200()
+    {
+        const string endpoint = EndpointBase + "admin/clientes/servicio/";
+        await DbSeeder.CleanDatabaseAsync(Factory);
+
+        var usuario = await DbSeeder.SeedUsuarioConDireccionesAsync(Factory);
+        var reserva = await DbSeeder.SeedReservaAsync(Factory);
+
+        var token = Jwt.GenerarTokenConRol(
+            usuario.IdUsuario,
+            usuario.Email,
+            "Administrador");
+
+        Client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", token);
+
+        var servicioId = reserva.Servicios.First().Id;
+
+        // Act
+        var resp = await Client.GetAsync(endpoint + servicioId);
+
+        // Assert
+        Assert.That(resp.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+        var clientes =
+            await resp.Content.ReadFromJsonAsync<List<ListadoUsuariosDto>>();
+
+        Assert.That(clientes, Is.Not.Null);
+        Assert.That(clientes!.Any(c => c.Email == usuario.Email), Is.True);
+    }
+
+    [Test]
+    public async Task GetClientesPorServicio_ServicioNoExiste_Devuelve400()
+    {
+        const string endpoint = EndpointBase + "admin/clientes/servicio/";
+        var token = Jwt.GenerarTokenConRol(1, "admin@test.com", "Administrador");
+        Client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", token);
+
+        var resp = await Client.GetAsync(endpoint + "999");
+
+        Assert.That(resp.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+    }
+
+    [Test]
+    public async Task GetClientesPorServicio_SinToken_Devuelve401()
+    {
+        const string endpoint = EndpointBase + "admin/clientes/servicio/";
+        Client.DefaultRequestHeaders.Authorization = null;
+
+        var resp = await Client.GetAsync(endpoint + "1");
+
+        Assert.That(resp.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+    }
+
+    [Test]
+    public async Task GetClientesPorServicio_RolIncorrecto_Devuelve403()
+    {
+        const string endpoint = EndpointBase + "admin/clientes/servicio/";
+        var token = Jwt.GenerarTokenConRol(1, "cliente@test.com", "Cliente");
+        Client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", token);
+
+        var resp = await Client.GetAsync(endpoint + "1");
+
         Assert.That(resp.StatusCode, Is.EqualTo(HttpStatusCode.Forbidden));
     }
 }

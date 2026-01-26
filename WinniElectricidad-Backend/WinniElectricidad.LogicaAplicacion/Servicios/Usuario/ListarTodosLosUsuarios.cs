@@ -19,5 +19,5 @@ public class ListarTodosLosUsuarios: IListarTodosLosUsuarios
         var clientes = await _repositorioUsuario.FindAll(ct);
         
         return UsuarioMapper.MapearAListadoUsuariosDto(clientes);
-}
+    }
 }

@@ -169,6 +169,7 @@ builder.Services.AddScoped<IRegistroUsuario, RegistroUsuario>();
 builder.Services.AddHttpClient<IHCaptchaVerifier, HCaptchaServicio>();
 builder.Services.AddScoped<IRecuperarContrasena, RecuperarContrasena>();
 builder.Services.AddScoped<IServicioOneTimeToken, ServicioOneTimeToken>();
+builder.Services.AddScoped<IObtenerUsuariosPorServicio, ObtenerUsuariosPorServicio>();
 // - Servicio -
 builder.Services.AddScoped<IObtenerServiciosSegunEstado, ObtenerServiciosSegunEstado>();
 builder.Services.AddScoped<IDesactivarServicio, DesactivarServicio>();
@@ -190,6 +191,7 @@ builder.Services.AddScoped<IObtenerMisReservasClienteConDetalle, ObtenerMisReser
 // - Notificacion -
 builder.Services.AddScoped<IEnviarEmail, EnviarEmail>();
 builder.Services.AddScoped<IServicioHash, ServicioHash>();
+builder.Services.AddScoped<IEnviarRecordatorioEstacional, EnviarRecordatorioEstacional>();
 // - Reseña -
 builder.Services.AddScoped<IAgregarReseña, AgregarReseña>();
 builder.Services.AddScoped<IServicioImagenes, ServicioImagenes>();

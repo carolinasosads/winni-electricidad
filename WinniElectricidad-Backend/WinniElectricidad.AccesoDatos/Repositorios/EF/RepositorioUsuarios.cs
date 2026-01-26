@@ -47,7 +47,22 @@ public class RepositorioUsuarios : IRepositorioUsuario
             .OfType<UsuarioCliente>()
             .AsNoTracking()
             .OrderBy(u => u.IdUsuario)
-            .ToListAsync(ct); }
+            .ToListAsync(ct); 
+    }
+    
+    public async Task<IReadOnlyList<UsuarioCliente>> FindAllFilteredByService(int idServicio, CancellationToken ct = default)
+    {
+        return await _db.Usuarios
+            .OfType<UsuarioCliente>()
+            .Where(u =>
+                u.Reservas.Any(r =>
+                    r.Servicios.Any(s => s.Id == idServicio)
+                )
+            )
+            .AsNoTracking()
+            .OrderBy(u => u.NombreCompleto)
+            .ToListAsync(ct); 
+    }
 
     public async Task<UsuarioBase?> FindbyEmail(string email, CancellationToken ct = default)
     {

@@ -13,6 +13,7 @@ import DateRangeIcon from '@mui/icons-material/DateRange';
 import GroupIcon from '@mui/icons-material/Group';
 import ViewAgendaIcon from '@mui/icons-material/ViewAgenda';
 import RateReviewIcon from '@mui/icons-material/RateReview';
+import EditNotificationsIcon from '@mui/icons-material/EditNotifications';
 import { matchPath, useLocation } from 'react-router-dom';
 
 import SidebarContext from './Context/SideBarContext';
@@ -207,6 +208,14 @@ function Sidebar({
                     icon={<DateRangeIcon />}
                     href="/admin/crear-reserva"
                     selected={pathname.startsWith("/admin/crear-reserva")}
+                  />
+
+                  <SidebarPageItem
+                    id="admin-crear-recordatorio-mantenimiento"
+                    title="Enviar recordatorio"
+                    icon={<EditNotificationsIcon />}
+                    href="/admin/recordatorios"
+                    selected={pathname.startsWith("/admin/recordatorios")}
                   />
                 </>
               )}

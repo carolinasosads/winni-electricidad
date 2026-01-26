@@ -12,4 +12,5 @@ public interface IRepositorioUsuario : IRepositorio<UsuarioBase>
     Task<ICollection<UsuarioCliente>> BuscarPorNombreEmailTelefono (string dato, CancellationToken ct = default);
     Task<IReadOnlyList<UsuarioBase>> FindByIds(List<int> ids, CancellationToken ct = default);
     Task<UsuarioCliente?> FindClienteDetalleById(int idUsuario, CancellationToken ct = default);
+    Task<IReadOnlyList<UsuarioCliente>> FindAllFilteredByService(int idServicio, CancellationToken ct = default);
 }

@@ -33,6 +33,7 @@ public class UsuarioController : ControllerBase
     private readonly IBuscarUsuarios _buscarUsuarios;
     private readonly IListarTodosLosUsuarios _listarTodosLosUsuarios;
     private readonly IObtenerDetalleUsuario _obtenerDetalleUsuario;
+    private readonly IObtenerUsuariosPorServicio _obtenerUsuariosPorServicio;
 
     /// <summary>
     /// Inicializa una nueva instancia del <see cref="UsuarioController"/> con las dependencias necesarias.
@@ -43,8 +44,13 @@ public class UsuarioController : ControllerBase
     /// <param name="recuperarContrasena">Servicio de recuperación de contraseña.</param>
     /// <param name="registroUsuario">Servicio para registrar usuarios.</param>
     /// <param name="obtenerDirecciones">Servicio para obtener las direcciones de un usuario.</param>
+    /// <param name="crearUsuarioDesdeAdmin">Servicio para crear un usuario siendo admin.</param>
+    /// <param name="buscarUsuarios">Buscar usuarios por email, nombre y teléfono.</param>
+    /// <param name="listarTodosLosUsuarios">Obtener todos los usuarios.</param>
+    /// <param name="obtenerDetalleUsuario">Servicio para obtener los detalles de un usuario.</param>
+    /// <param name="obtenerUsuariosPorServicio">Servicio para obtener los usuarios que contrataron determinado servicio.</param>
     public UsuarioController(ILoginUsuario loginUsuario, IServicioToken token, IRegistroUsuario registroUsuario, IHCaptchaVerifier captcha, IRecuperarContrasena recuperarContrasena, IObtenerDirecciones obtenerDirecciones,
-        ICrearUsuarioDesdeAdmin crearUsuarioDesdeAdmin, IBuscarUsuarios buscarUsuarios, IListarTodosLosUsuarios listarTodosLosUsuarios, IObtenerDetalleUsuario obtenerDetalleUsuario)
+        ICrearUsuarioDesdeAdmin crearUsuarioDesdeAdmin, IBuscarUsuarios buscarUsuarios, IListarTodosLosUsuarios listarTodosLosUsuarios, IObtenerDetalleUsuario obtenerDetalleUsuario, IObtenerUsuariosPorServicio obtenerUsuariosPorServicio)
     {
         _loginUsuario = loginUsuario;
         _token = token;
@@ -56,6 +62,7 @@ public class UsuarioController : ControllerBase
         _buscarUsuarios = buscarUsuarios;
         _listarTodosLosUsuarios = listarTodosLosUsuarios;
         _obtenerDetalleUsuario = obtenerDetalleUsuario;
+        _obtenerUsuariosPorServicio = obtenerUsuariosPorServicio;
     }
 
     /// <summary>
@@ -322,7 +329,7 @@ public class UsuarioController : ControllerBase
     /// - `409 Conflict` → El email ya está en uso.  
     /// - `500 Internal Server Error` → Error inesperado del servidor.
     /// </remarks>
-    /// <param name="usuarioRegistroDto">Datos del usuario a crear.</param>
+    /// <param name="usuarioRegistroAdminDto">Datos del usuario a crear.</param>
     /// <param name="ct">Token de cancelación.</param>
     /// <response code="201">Usuario creado correctamente.</response>
     /// <response code="409">El email ya está en uso.</response>
@@ -438,6 +445,58 @@ public class UsuarioController : ControllerBase
     {
         var lista = await _listarTodosLosUsuarios.Listar(ct);
         return Ok(lista);
+    }
+    
+    /// <summary>
+    /// Obtiene el listado de clientes asociados a un servicio específico.
+    /// </summary>
+    /// <remarks>
+    /// Este endpoint permite al administrador consultar todos los usuarios clientes
+    /// que hayan solicitado o contratado un servicio determinado.
+    ///
+    /// **Flujo:**
+    /// 1. Recibe el identificador del servicio como parámetro de ruta.  
+    /// 2. Ejecuta la consulta mediante el servicio <see cref="_obtenerUsuariosPorServicio"/>.  
+    /// 3. Devuelve una colección de objetos <see cref="ListadoUsuariosDto"/> con la información de los clientes.
+    ///
+    /// **Requiere autenticación:**  
+    /// - Solo disponible para usuarios con el rol <c>Administrador</c>.
+    ///
+    /// **Códigos de respuesta:**
+    /// - `200 OK` → Lista de clientes obtenida correctamente.  
+    /// - `400 Bad Request` → El servicio no existe o el identificador es inválido.  
+    /// - `500 Internal Server Error` → Error inesperado del servidor.
+    /// </remarks>
+    /// <param name="idServicio">
+    /// Identificador único del servicio por el cual se desean consultar los clientes asociados.
+    /// </param>
+    /// <param name="ct">
+    /// Token de cancelación para abortar la operación si es necesario.
+    /// </param>
+    /// <returns>
+    /// Una respuesta HTTP que contiene la colección de clientes asociados al servicio indicado.
+    /// </returns>
+    /// <response code="200">Lista de clientes obtenida correctamente.</response>
+    /// <response code="400">El servicio no existe o el identificador es inválido.</response>
+    /// <response code="500">Error inesperado del servidor.</response>
+    [HttpGet("admin/clientes/servicio/{idServicio:int}")]
+    [Authorize(Roles = "Administrador")]
+    [ProducesResponseType(typeof(IEnumerable<ListadoUsuariosDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetClientesSegunServicio([FromRoute] int idServicio, CancellationToken ct)
+    {
+        try
+        {
+            var usuarios = await _obtenerUsuariosPorServicio.Ejecutar(idServicio, ct);
+            return Ok(usuarios);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message});
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "Error inesperado." });
+        }
     }
     
     /// <summary>

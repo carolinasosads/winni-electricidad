@@ -18,6 +18,13 @@ public class EnviarEmail : IEnviarEmail
           </p>
         </div>";
     
+    private const string FooterRecordatorioHtml = @"
+        <hr style='margin:24px 0; border:none; border-top:1px solid #e0e0e0;' />
+
+        <p style='font-size:12px; color:#777; margin:0;'>
+            Este es un recordatorio automático enviado por Winni Electricidad.
+        </p>";
+    
     public EnviarEmail(IResend resend)
     {
         _resend = resend;
@@ -44,8 +51,46 @@ public class EnviarEmail : IEnviarEmail
         }
     }
     
+    public async Task EjecutarMultiple(List<string> destinatarios, string asunto, string cuerpo, CancellationToken ct = default)
+    {
+        
+        var emailMessage = new EmailMessage
+        {
+            From = "Winni Electricidad <no-replay@no-replay.winnielectricidad.tech>",
+            Subject = asunto,
+            HtmlBody = cuerpo,
+            To = new EmailAddressList
+            {
+                "no-replay@no-replay.winnielectricidad.tech"
+            },
+            Bcc = new EmailAddressList()
+        };
+
+        foreach (var mail in destinatarios)
+        {
+            emailMessage.Bcc.Add(mail);
+        }
+
+        try
+        {
+            await _resend.EmailSendAsync(emailMessage, ct);
+        }
+        catch (Exception ex)
+        {
+            throw new EmailNotificacionException(
+                "Error enviando correo de notificación.",
+                ex
+            );
+        }
+    }
+    
     public string GetFooter()
     {
         return FooterHtml;
+    }
+    
+    public string GetFooterRecordatorioEstacional()
+    {
+        return FooterRecordatorioHtml;
     }
 }
