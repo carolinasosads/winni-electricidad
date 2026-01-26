@@ -33,12 +33,12 @@ public class EnviarRecordatorioEstacionalTests
             CancellationToken.None);
 
         _enviarEmailMock.Verify(e =>
-            e.Ejecutar(
-                It.IsAny<string>(),
+            e.EjecutarMultiple(
+                It.IsAny<List<string>>(),
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<CancellationToken>()),
-            Times.Exactly(2));
+            Times.Exactly(1));
     }
 
     [Test]

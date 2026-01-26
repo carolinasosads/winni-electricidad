@@ -12,6 +12,15 @@ public class EnviarEmailFake : IEnviarEmail
     {
         return Task.CompletedTask;
     }
+    
+    public Task EjecutarMultiple(
+        List<string> emails,
+        string asunto,
+        string cuerpoHtml,
+        CancellationToken ct)
+    {
+        return Task.CompletedTask;
+    }
 
     public string GetFooter()
     {

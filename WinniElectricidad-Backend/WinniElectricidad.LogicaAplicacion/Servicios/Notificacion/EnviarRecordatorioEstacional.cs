@@ -81,14 +81,11 @@ public class EnviarRecordatorioEstacional : IEnviarRecordatorioEstacional
                 </div>
             </div>";
         
-        foreach (var email in emailClientesParaEnviar)
-        {
-            await _enviarEmail.Ejecutar(
-                email,
-                $"Winni Electricidad - Mantenimiento recomendado antes de la temporada",
-                cuerpoHtml,
-                ct
-            );
-        }
+        await _enviarEmail.EjecutarMultiple(
+            emailClientesParaEnviar,
+            $"Winni Electricidad - Mantenimiento recomendado antes de la temporada",
+            cuerpoHtml,
+            ct
+        );
     }
 }

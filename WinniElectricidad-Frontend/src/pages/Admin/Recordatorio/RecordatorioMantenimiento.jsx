@@ -14,9 +14,10 @@ import {
   DialogContent,
   DialogActions,
   Chip,
-  Alert
+  Alert,
+  CircularProgress,
+  Autocomplete
 } from "@mui/material";
-import { Autocomplete } from "@mui/material";
 import { createFilterOptions } from "@mui/material/Autocomplete";
 
 import { getServiciosActivos } from "../../../services/servicioService";
@@ -121,6 +122,7 @@ export default function RecordatorioMantenimiento() {
   const [autocompleteInput, setAutocompleteInput] = useState("");
   const [mensajeError, setMensajeError] = useState("");
   const [mensajeConfirmacion, setMensajeConfirmacion] = useState("");
+  const [enviando, setEnviando] = useState(false);
 
   // destinatarios
   const [modoEnvio, setModoEnvio] = useState("todosServicio");
@@ -145,8 +147,9 @@ export default function RecordatorioMantenimiento() {
         setServicios(data ?? []);
       } catch (err) {
         console.error(err);
+        setServicios([]);
         setMensajeError(
-          err?.message || "Ocurrió un error al cargar los servicios."
+          "No se pudieron cargar los servicios. Verificá tu conexión o intentá nuevamente."
         );
       }
     };
@@ -211,7 +214,6 @@ export default function RecordatorioMantenimiento() {
           }
 
           const idNum = Number(idServicio);
-          console.log(idNum)
 
           const clientes = await listarClientesAdminSegunServicio(idNum, ac.signal);
           setClientesDisponibles(clientes ?? []);
@@ -227,7 +229,7 @@ export default function RecordatorioMantenimiento() {
           console.error(err);
           setClientesDisponibles([]);
           setMensajeError(
-            err?.message || "Ocurrió un error al cargar los clientes."
+            "No se pudieron cargar los clientes. Intentá nuevamente más tarde."
           );
         }
       }
@@ -260,8 +262,8 @@ export default function RecordatorioMantenimiento() {
           console.error(err);
           setClientesServicio([]);
           setMensajeError(
-            err?.message || "No se pudieron cargar los clientes del servicio."
-          );
+            "No se pudieron cargar los clientes de este servicio. Intentá nuevamente."
+          )
         }
       }
     };
@@ -304,16 +306,23 @@ export default function RecordatorioMantenimiento() {
 
     try {
       setMensajeError("");
+      setEnviando(true);
+
       await enviarRecordatorios(payload);
+
       setConfirmOpen(false);
       setMensajeConfirmacion(
-        "¡Recordatorio enviado correctamente a todos los destinatarios!"
+        "¡Recordatorios enviados correctamente a todos los destinatarios!"
       );
     } catch (err) {
       console.error(err);
+
       setMensajeError(
-        err?.message || "No se pudo enviar el recordatorio. Intentá nuevamente."
+        err?.message ||
+          "Ocurrió un error al enviar el recordatorio. Intentá nuevamente."
       );
+    } finally {
+      setEnviando(false);
     }
   };
 
@@ -342,6 +351,12 @@ export default function RecordatorioMantenimiento() {
             {mensajeError}
           </Alert>
         </Box>
+      )}
+
+      {mensajeConfirmacion && (
+        <Alert severity="success" sx={{ mb: 3 }}>
+          {mensajeConfirmacion}
+        </Alert>
       )}
 
       <Divider sx={{ my: 2 }} />
@@ -641,13 +656,21 @@ export default function RecordatorioMantenimiento() {
         fullWidth
         sx={{ mt: 3 }}
         disabled={!servicioSeleccionado || cantidadDestinatarios === 0}
-        onClick={() => setConfirmOpen(true)}
+        onClick={() => {
+          setMensajeError("");
+          setConfirmOpen(true);
+        }}
       >
         Enviar
       </Button>
 
       <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
         <DialogTitle>Confirmar envío</DialogTitle>
+        {mensajeError && (
+          <Alert severity="error" onClose={() => setMensajeError("")}>
+            {mensajeError}
+          </Alert>
+        )}
         <DialogContent>
           <Typography mb={1}>
             Estás por enviar el siguiente recordatorio:
@@ -695,9 +718,9 @@ export default function RecordatorioMantenimiento() {
           <Button
             variant="contained"
             onClick={handleEnviar}
-            disabled={!mensaje.trim()}
+            disabled={enviando || !mensaje.trim()}
           >
-            Confirmar
+            {enviando ? <CircularProgress size={24} color="inherit" /> : "Confirmar"}
           </Button>
         </DialogActions>
       </Dialog>

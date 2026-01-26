@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using WinniElectricidad.Compartido.DTOs.Recordatorios;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Notificacion;
+using WinniElectricidad.LogicaNegocio.ExcepcionesPersonalizadas.Notificaciones;
 
 namespace WinniElectricidad.Api.Controllers;
 
@@ -74,6 +75,9 @@ public class NotificacionController : ControllerBase
         catch (ArgumentException ex)
         {
             return BadRequest(new { message = ex.Message });
+        } catch (EmailNotificacionException ex)
+        {
+            return StatusCode(500, new { message = "Ocurrió un error al enviar los correos." });
         }
         catch (Exception)
         {

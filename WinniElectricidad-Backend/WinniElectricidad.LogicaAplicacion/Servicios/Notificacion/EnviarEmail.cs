@@ -51,6 +51,39 @@ public class EnviarEmail : IEnviarEmail
         }
     }
     
+    public async Task EjecutarMultiple(List<string> destinatarios, string asunto, string cuerpo, CancellationToken ct = default)
+    {
+        
+        var emailMessage = new EmailMessage
+        {
+            From = "Winni Electricidad <no-replay@no-replay.winnielectricidad.tech>",
+            Subject = asunto,
+            HtmlBody = cuerpo,
+            To = new EmailAddressList
+            {
+                "no-replay@no-replay.winnielectricidad.tech"
+            },
+            Bcc = new EmailAddressList()
+        };
+
+        foreach (var mail in destinatarios)
+        {
+            emailMessage.Bcc.Add(mail);
+        }
+
+        try
+        {
+            await _resend.EmailSendAsync(emailMessage, ct);
+        }
+        catch (Exception ex)
+        {
+            throw new EmailNotificacionException(
+                "Error enviando correo de notificación.",
+                ex
+            );
+        }
+    }
+    
     public string GetFooter()
     {
         return FooterHtml;
