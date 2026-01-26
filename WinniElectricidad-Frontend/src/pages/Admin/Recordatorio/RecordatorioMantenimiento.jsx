@@ -281,7 +281,7 @@ export default function RecordatorioMantenimiento() {
 
   const cantidadDestinatarios = emailsParaEnviar.length;
 
-  const tituloPreview = "Mantenimiento recomendado antes de la temporada";
+  const tituloPreview = servicioSeleccionado ? servicioSeleccionado.titulo : "[nombre-del-servicio]";
 
   const handleEnviar = async () => {
     if (!servicioSeleccionado) return;
