@@ -33,6 +33,21 @@ export async function listarClientesAdmin(signal) {
   return await resp.json();
 }
 
+export async function listarClientesAdminSegunServicio(idServicio, signal) {
+  const resp = await fetch(`${urlAPIUsuario}admin/clientes/servicio/${idServicio}`, {
+    method: "GET",
+    headers: getAuthHeaders(),
+    signal,
+  });
+
+  if (!resp.ok) {
+    const data = await handleJsonOrText(resp);
+    throw new ApiError(data?.message || "Error obteniendo clientes.", resp.status);
+  }
+
+  return await resp.json();
+}
+
 export async function obtenerDetalleClienteAdmin(idUsuario, signal) {
   const resp = await fetch(`${urlAPIUsuario}admin/clientes/${idUsuario}`, {
     method: "GET",

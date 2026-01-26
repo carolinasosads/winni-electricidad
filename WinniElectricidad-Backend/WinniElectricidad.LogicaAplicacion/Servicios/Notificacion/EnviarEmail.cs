@@ -18,6 +18,13 @@ public class EnviarEmail : IEnviarEmail
           </p>
         </div>";
     
+    private const string FooterRecordatorioHtml = @"
+        <hr style='margin:24px 0; border:none; border-top:1px solid #e0e0e0;' />
+
+        <p style='font-size:12px; color:#777; margin:0;'>
+            Este es un recordatorio automático enviado por Winni Electricidad.
+        </p>";
+    
     public EnviarEmail(IResend resend)
     {
         _resend = resend;
@@ -47,5 +54,10 @@ public class EnviarEmail : IEnviarEmail
     public string GetFooter()
     {
         return FooterHtml;
+    }
+    
+    public string GetFooterRecordatorioEstacional()
+    {
+        return FooterRecordatorioHtml;
     }
 }

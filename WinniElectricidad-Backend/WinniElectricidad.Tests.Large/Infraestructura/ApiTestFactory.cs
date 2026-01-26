@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using WinniElectricidad.AccesoDatos.Repositorios.EF;
 using WinniElectricidad.Api.Servicios;
+using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Notificacion;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Reseña;
 using WinniElectricidad.Tests.Large.Mocks;
 
@@ -61,15 +62,20 @@ public class ApiTestFactory : WebApplicationFactory<Program>
                 d => d.ServiceType == typeof(IModeracionOpenAi));
             var imagenesDescriptor = services.SingleOrDefault(
                 d => d.ServiceType == typeof(IServicioImagenes));
+            var enviarEmailDescriptor = services.SingleOrDefault(
+                d => d.ServiceType == typeof(IEnviarEmail));
 
             if (moderacionDescriptor != null)
                 services.Remove(moderacionDescriptor);
             if (imagenesDescriptor != null)
                 services.Remove(imagenesDescriptor);
+            if (enviarEmailDescriptor != null)
+                services.Remove(enviarEmailDescriptor);
 
             services.AddSingleton<IModeracionOpenAi, ModeracionOpenAiFake>();
             services.AddSingleton<IServicioImagenes, ServicioImagenesFake>();
             services.AddSingleton<IEvaluarPuntajeResenia, EvaluarPuntajeReseniaFake>();
+            services.AddSingleton<IEnviarEmail, EnviarEmailFake>();
             
             var sp = services.BuildServiceProvider();
             using var scope = sp.CreateScope();
