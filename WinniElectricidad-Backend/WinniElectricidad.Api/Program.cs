@@ -207,7 +207,6 @@ builder.Services.AddScoped<ICrearPresupuesto, CrearPresupuesto>();
 builder.Services.AddScoped<IRegistrarReservaHistoricaAdmin, RegistrarReservaHistoricaAdmin>();
 builder.Services.AddScoped<IListarTodosLosUsuarios, ListarTodosLosUsuarios>();
 builder.Services.AddScoped<IObtenerDetalleUsuario, ObtenerDetalleUsuario>();
-builder.Services.AddScoped<IObtenerPresupuestoPorReserva, ObtenerPresupuestoPorReserva>();
 builder.Services.AddScoped<IObtenerPresupuesto, ObtenerPresupuesto>();
 builder.Services.AddScoped<IRegistrarPagoPresupuesto, RegistrarPagoPresupuesto>();
 

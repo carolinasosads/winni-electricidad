@@ -180,7 +180,7 @@ function Sidebar({
                 <>
                   <SidebarPageItem
                     id="admin-dashboard"
-                    title="Dashboard"
+                    title="Panel Principal"
                     icon={<BarChartIcon />}
                     href="/admin"
                     selected={pathname === "/admin" || pathname === "/admin/"}

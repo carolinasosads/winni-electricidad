@@ -652,17 +652,30 @@ export default function AgendaPage({ onReserve }) {
   );
 }
 
-// ---- helpers ----
 function combinarFechaYHora(fecha, horaStr) {
   const [hours, minutes] = horaStr.split(":").map(Number);
 
-  const year = fecha.getFullYear();
-  const month = String(fecha.getMonth() + 1).padStart(2, "0");
-  const day = String(fecha.getDate()).padStart(2, "0");
-  const hh = String(hours).padStart(2, "0");
-  const mm = String(minutes).padStart(2, "0");
+  const d = new Date(
+    fecha.getFullYear(),
+    fecha.getMonth(),
+    fecha.getDate(),
+    hours,
+    minutes,
+    0,
+    0
+  );
 
-  return `${year}-${month}-${day}T${hh}:${mm}:00`;
+  const offsetMin = -d.getTimezoneOffset();
+  const sign = offsetMin >= 0 ? "+" : "-";
+  const abs = Math.abs(offsetMin);
+  const offH = String(Math.floor(abs / 60)).padStart(2, "0");
+  const offM = String(abs % 60).padStart(2, "0");
+
+  const pad = (n) => String(n).padStart(2, "0");
+
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
+    d.getHours()
+  )}:${pad(d.getMinutes())}:00${sign}${offH}:${offM}`;
 }
 
 function normalizarDisponibilidad(dataDisponibilidad) {

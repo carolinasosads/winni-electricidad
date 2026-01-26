@@ -3,6 +3,7 @@ import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import RateReviewIcon from "@mui/icons-material/RateReview";
 import BuildIcon from "@mui/icons-material/Build";
 import { useNavigate } from "react-router-dom";
+import ListAltIcon from "@mui/icons-material/ListAlt";
 
 export default function ClienteDashboard() {
   const navigate = useNavigate();
@@ -27,6 +28,13 @@ export default function ClienteDashboard() {
       icono: RateReviewIcon,
       ruta: "/cliente/resenas",
     },
+    {
+      titulo: "Mis reservas",
+      descripcion: "Consultá el estado y el historial de tus reservas.",
+      icono: ListAltIcon,
+      ruta: "/cliente/mis-reservas",
+    },
+
   ];
 
   return (

@@ -150,8 +150,9 @@ public class RepositorioReservas : IRepositorioReserva
             );
         }
 
-        return await query.ToListAsync(ct);
-    }
+        return await query
+            .OrderByDescending(r => r.FechaReserva)
+            .ToListAsync(ct);    }
 
     public async Task<IReadOnlyList<Reserva>> FindAllSegunEstado(EstadoReserva estado, string? filtro, CancellationToken ct = default)
     {
@@ -175,7 +176,9 @@ public class RepositorioReservas : IRepositorioReserva
                 )
             );
         }
-        return await query.ToListAsync(ct);
+        return await query
+            .OrderByDescending(r => r.FechaReserva)
+            .ToListAsync(ct);
     }
     public async Task<Reserva?> ObtenerReservaPorId(int id, CancellationToken ct = default)
     {
