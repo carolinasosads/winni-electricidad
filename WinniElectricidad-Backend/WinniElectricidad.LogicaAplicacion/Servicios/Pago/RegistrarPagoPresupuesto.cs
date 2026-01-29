@@ -33,7 +33,9 @@ public class RegistrarPagoPresupuesto : IRegistrarPagoPresupuesto
         if (presupuesto is null)
             throw new KeyNotFoundException("No existe presupuesto para esa reserva.");
 
-        var pagadoActual = presupuesto.Pagos?.Sum(p => p.Monto) ?? 0m;
+        var pagadoActual = presupuesto.Pagos?
+            .Where(p => p.EstadoPago == EstadoPago.Confirmado)
+            .Sum(p => p.Monto) ?? 0m;
         var nuevoTotalPagado = pagadoActual + dto.Monto;
 
         if (nuevoTotalPagado > presupuesto.Monto)

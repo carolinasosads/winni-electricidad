@@ -221,6 +221,7 @@ builder.Services.AddScoped<IRegistrarPagoPresupuesto, RegistrarPagoPresupuesto>(
 builder.Services.AddScoped<IObtenerPresupuestoConReserva, ObtenerPresupuestoConReserva>();
 // - Pago -
 builder.Services.AddScoped<ICrearPreferenciaPago, CrearPreferenciaPago>();
+builder.Services.AddScoped<IProcesarWebhookPagoMercadoPago, ProcesarWebhookPagoMercadoPago>();
 
 // - Publico - 
 builder.Services.AddScoped<ICrearConsulta, CrearConsulta>();

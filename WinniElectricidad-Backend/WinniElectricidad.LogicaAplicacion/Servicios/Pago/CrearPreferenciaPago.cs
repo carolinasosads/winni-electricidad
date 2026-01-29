@@ -9,7 +9,7 @@ using WinniElectricidad.LogicaNegocio.InterfacesRepositorios;
 
 namespace WinniElectricidad.LogicaAplicacion.Servicios.Pago;
 
-public class CrearPreferenciaPago:ICrearPreferenciaPago
+public class CrearPreferenciaPago : ICrearPreferenciaPago
 {
     private readonly IRepositorioPago _repoPago;
 
@@ -20,23 +20,22 @@ public class CrearPreferenciaPago:ICrearPreferenciaPago
 
     public async Task<PagoPendienteDevueltoDto> Ejecutar(PagoPendienteDto pagoPendienteDto, int idUsuario, CancellationToken ct = default)
     {
-        if (pagoPendienteDto.Monto > pagoPendienteDto.MontoTotal - pagoPendienteDto.MontoPagado)
-        {
+        var montoPagado = pagoPendienteDto.MontoPagado ?? 0m;
+        if (pagoPendienteDto.Monto > pagoPendienteDto.MontoTotal - montoPagado)
             throw new PagoException("El monto ingresado supera el monto restante a pagar.");
-        }
 
-        if (pagoPendienteDto.MontoTotal - pagoPendienteDto.MontoPagado == 0)
-        {
+        if (pagoPendienteDto.MontoTotal - montoPagado == 0)
             throw new PagoException("El presupuesto seleccionado ya fue pagado por completo.");
-        }
-        
+
         var servicios = pagoPendienteDto.NombresServicios switch
         {
-            null or { Count: 0 } => "trabajo",
+            null or { Count: 0 } => "Servicios varios",
             { Count: 1 } => pagoPendienteDto.NombresServicios[0],
             _ => string.Join(", ", pagoPendienteDto.NombresServicios)
         };
 
+        var pago = PagoMapper.MapearAPagoPendiente(pagoPendienteDto, idUsuario);
+        await _repoPago.Add(pago, ct);
         var request = new PreferenceRequest
         {
             Items = new List<PreferenceItemRequest>
@@ -52,22 +51,27 @@ public class CrearPreferenciaPago:ICrearPreferenciaPago
             
             BackUrls =  new PreferenceBackUrlsRequest
             {
-                Success = "https://icy-flower-09db15f0f.3.azurestaticapps.net/success",
-                Failure = "https://icy-flower-09db15f0f.3.azurestaticapps.net/failure",
-                Pending = "https://icy-flower-09db15f0f.3.azurestaticapps.net/pending"
+                Success = "https://icy-flower-09db15f0f.3.azurestaticapps.net/cliente/success",
+                Failure = "https://icy-flower-09db15f0f.3.azurestaticapps.net/cliente/failure",
+                Pending = "https://icy-flower-09db15f0f.3.azurestaticapps.net/cliente/pending"
             },
             
             AutoReturn = "approved",
+            ExternalReference = pago.IdPago.ToString(),
+            NotificationUrl = "https://winnielectricidadbe-dev-adgqcbd7gvbgg7fy.eastus2-01.azurewebsites.net/WinniElectricidadApi/mercadopago/webhook"
         };
 
-        var client = new PreferenceClient();
-        Preference preference = await client.CreateAsync(request);
-        
-        var pago = PagoMapper.MapearAPagoPendiente(pagoPendienteDto,idUsuario);
-        await _repoPago.Add(pago, ct);
+        try
+        {
+            var client = new PreferenceClient();
+            Preference preference = await client.CreateAsync(request, null, ct);
 
-        var pagoDevuelto = PagoMapper.MapearPagoAPagoDevuelto(preference.Id, pago);
-        
-        return pagoDevuelto;
+            return PagoMapper.MapearPagoAPagoDevuelto(preference.Id, pago);
+        }
+        catch (MercadoPagoApiException ex)
+        {
+            Console.WriteLine($"Error de MP: {ex.ApiError.Message}");
+            throw;
+        }
     }
 }

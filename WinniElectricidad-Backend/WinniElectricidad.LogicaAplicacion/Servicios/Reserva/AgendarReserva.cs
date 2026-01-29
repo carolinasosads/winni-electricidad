@@ -172,6 +172,7 @@ public class AgendarReserva : IAgendarReserva
             </div>";
 
         await _enviarEmail.Ejecutar(emailCliente, "Winni Electricidad - Reserva de presupuesto", cuerpoEmailCliente, ct);
+        await Task.Delay(TimeSpan.FromSeconds(2), ct);
         await _enviarEmail.Ejecutar(admin.Email, "Nueva reserva de presupuesto agendada", cuerpoEmailAdmin, ct);
     }
 }

@@ -1,12 +1,45 @@
-export default function PagoFallidoConBoton({ onReintentar }) {
+import { Box, Button, Card, CardContent, Container, Typography } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+
+export default function Failure() {
+  const navigate = useNavigate();
+
+  const handleVolver = () => {
+    const returnTo = sessionStorage.getItem("mp:returnTo") || "/cliente/pago/crear";
+    navigate(returnTo, { replace: true });
+  };
+
   return (
-    <div style={{ padding: 16 }}>
-      <h2>Pago no realizado ❌</h2>
-      <p>No se pudo completar el pago con Mercado Pago.</p>
-      <p>Por favor, intentá nuevamente.</p>
-      <button onClick={onReintentar} style={{ marginTop: 12 }}>
-        Reintentar pago
-      </button>
-    </div>
+    <Box sx={{ minHeight: "calc(100vh - 64px)", backgroundColor: "#f7f8fb", py: { xs: 4, sm: 6 } }}>
+      <Container maxWidth="sm">
+        <Card
+          sx={{
+            borderRadius: 4,
+            border: "1px solid #eef0f4",
+            boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
+            overflow: "hidden",
+          }}
+        >
+          <Box sx={{ p: 3 }}>
+            <Typography variant="h5" sx={{ fontWeight: 900 }}>
+              Pago rechazado ❌
+            </Typography>
+
+            <Typography color="text.secondary" sx={{ mt: 1, lineHeight: 1.6 }}>
+              No se pudo completar el pago. Podés intentar nuevamente desde la sección de pagos.
+            </Typography>
+
+            <Button
+              onClick={handleVolver}
+              variant="contained"
+              fullWidth
+              sx={{ mt: 2.5, py: 1.2, fontWeight: 800 }}
+            >
+              Volver a pagos
+            </Button>
+          </Box>
+        </Card>
+      </Container>
+    </Box>
   );
 }

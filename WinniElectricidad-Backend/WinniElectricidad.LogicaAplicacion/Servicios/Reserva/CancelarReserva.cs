@@ -78,8 +78,7 @@ public class CancelarReserva : ICancelarReserva
             </div>";
 
         await _enviarEmail.Ejecutar(cliente.Email, "Winni Electricidad - Reserva cancelada", cuerpoCliente, cancellationToken);
-
- 
+        await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
         var admin = await _repositorioUsuario.ObtenerAdministrador(cancellationToken);
         
         var cuerpoAdmin = $@"

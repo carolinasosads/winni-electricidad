@@ -12,6 +12,7 @@ public class Pago
     public decimal Monto { get; set; }
     public DateTime FechaHoraRealizado { get; set; } = DateTime.UtcNow;
     public EstadoPago EstadoPago { get; set; }
+    public long? MercadoPagoPaymentId { get; set; }
     #endregion
 
     #region EF
