@@ -65,7 +65,7 @@ builder.Configuration
 // --- MercadoPago ---
 var mpToken = builder.Configuration["MercadoPago:AccessToken"]; 
 if (string.IsNullOrWhiteSpace(mpToken))
-    throw new InvalidOperationException("MercadoPago AccesToken no configurado. Verificar appsettings o variables de entorno.");
+    throw new InvalidOperationException("MercadoPago AccessToken no configurado. Verificar appsettings o variables de entorno.");
 
 MercadoPagoConfig.AccessToken = mpToken;
 

@@ -20,7 +20,8 @@ public class ObtenerPresupuestoConReserva : IObtenerPresupuestoConReserva
         if (idUsuario <= 0) throw new ArgumentException("Id de reserva inválido.");
 
         var presupuestos = await _repositorioPresupuesto.ObtenerPresupuestosConReservaPorUsuario(idUsuario, ct);
-        if (presupuestos is null) return null;
+        if (presupuestos is null)
+            return Enumerable.Empty<PresupuestoConReservaDto>();
 
         return presupuestos
             .Select(PresupuestoMapper.MapearAPresupuestoConReservaDto)

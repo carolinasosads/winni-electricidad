@@ -1,12 +1,11 @@
-import { Box, Button, Card, CardContent, Container, LinearProgress, Typography } from "@mui/material";
+import { Box, Button, Card, Container, LinearProgress, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 export default function Pending() {
   const navigate = useNavigate();
 
   const handleVolver = () => {
-    const returnTo = sessionStorage.getItem("mp:returnTo") || "/cliente/pago/crear";
-    navigate(returnTo, { replace: true });
+    navigate("/cliente/pago/crear");
   };
 
   return (

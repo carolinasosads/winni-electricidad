@@ -38,7 +38,7 @@ export default function Pago() {
       setPresupuestos(data);
     } catch (err) {
       if (err.name === "AbortError") return;
-      setErrorMsg(err?.message || "Error al cargar los servicios.");
+      setErrorMsg(err?.message || "Error al cargar los presupuestos.");
     }
   };
 

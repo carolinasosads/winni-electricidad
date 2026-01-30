@@ -1,12 +1,11 @@
-import { Box, Button, Card, CardContent, Container, Typography } from "@mui/material";
+import { Box, Button, Card, Container, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 export default function Failure() {
   const navigate = useNavigate();
 
   const handleVolver = () => {
-    const returnTo = sessionStorage.getItem("mp:returnTo") || "/cliente/pago/crear";
-    navigate(returnTo, { replace: true });
+    navigate("/cliente/pago/crear");
   };
 
   return (

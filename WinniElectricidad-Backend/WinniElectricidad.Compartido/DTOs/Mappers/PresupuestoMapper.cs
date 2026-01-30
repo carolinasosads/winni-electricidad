@@ -44,7 +44,9 @@ public static class PresupuestoMapper
             throw new InvalidOperationException("No se puede mapear PresupuestoConReservaDto si la reserva no está cargada.");
 
         var montoPagadoCalculado =
-            (presupuesto.Pagos?.Sum(p => p.Monto)) ?? presupuesto.MontoPagado;
+            (presupuesto.Pagos?
+                .Where(p => p.EstadoPago == EstadoPago.Confirmado)
+                .Sum(p => p.Monto)) ?? presupuesto.MontoPagado;
 
         return new PresupuestoConReservaDto
         {

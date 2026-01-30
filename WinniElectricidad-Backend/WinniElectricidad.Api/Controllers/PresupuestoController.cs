@@ -241,8 +241,26 @@ public class PresupuestoController : ControllerBase
         }
     }
     
+    /// <summary>
+    /// Crea una preferencia de pago para un presupuesto pendiente del cliente autenticado.
+    /// </summary>
+    /// <param name="pagoPendienteDto">
+    /// Datos del pago pendiente, incluyendo la información necesaria del presupuesto y el monto a abonar.
+    /// </param>
+    /// <param name="ct">Token de cancelación para abortar la operación de forma anticipada.</param>
+    /// <returns>
+    /// Un resultado HTTP que contiene la preferencia de pago creada si la operación es exitosa.
+    /// </returns>
+    /// <response code="200">Devuelve la preferencia de pago creada.</response>
+    /// <response code="400">El pedido no es válido o los datos del pago son incorrectos.</response>
+    /// <response code="401">El token del usuario es inválido o ha expirado.</response>
+    /// <response code="500">Ocurrió un error inesperado al intentar crear el pago.</response>
     [HttpPost("pagar")]
     [Authorize(Roles = "Cliente")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CrearPago(PagoPendienteDto pagoPendienteDto, CancellationToken ct)
     {
         try

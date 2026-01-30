@@ -62,6 +62,9 @@ public class RepositorioPresupuestos : IRepositorioPresupuesto
         var presupuestos = await _db.Presupuestos
             .AsNoTracking()
             .Include(p => p.Reserva)
+            .Where(p => p.IdUsuario == idUsuario
+                        && p.Reserva.EstadoReserva == EstadoReserva.Confirmada
+                        && p.MontoPagado < p.Monto)
             .Include(p => p.Pagos.Where(pago => pago.EstadoPago == EstadoPago.Confirmado))
             .Include(p => p.Reserva.Direccion)
             .Include(p => p.Reserva.Servicios)
@@ -70,6 +73,5 @@ public class RepositorioPresupuestos : IRepositorioPresupuesto
             .ToListAsync(ct);
 
         return presupuestos;
-        // TODO, filtrar los que ya se pagaron por completo y que la reserva no este cancealada creo
     }
 }

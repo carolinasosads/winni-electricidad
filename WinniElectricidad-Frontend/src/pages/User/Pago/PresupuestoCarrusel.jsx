@@ -29,7 +29,7 @@ export default function PresupuestoCarrusel({
   if (!presupuestos || presupuestos.length === 0) return null;
 
   const presupuesto = presupuestos[index];
-  const saldoPendiente = presupuesto.montoTotal - presupuesto.montoPagado;
+  const saldoPendiente = presupuesto.montoTotal - (presupuesto.montoPagado ?? 0);
 
   const formatearFecha = (isoDate) => {
     if (!isoDate) return "";
@@ -59,7 +59,14 @@ export default function PresupuestoCarrusel({
     if (bloqueado) return;
     if (touchStartX.current === null) return;
     const delta = e.changedTouches[0].clientX - touchStartX.current;
-    if (Math.abs(delta) > 50) delta > 0 ? goPrev() : goNext();
+    if (Math.abs(delta) > 50) {
+      if (delta > 0) {
+        goPrev();
+      } else {
+        goNext();
+      }
+    }
+
     touchStartX.current = null;
   };
 

@@ -5,8 +5,7 @@ export default function Success() {
   const navigate = useNavigate();
 
   const handleVolver = () => {
-    const returnTo = sessionStorage.getItem("mp:returnTo") || "/cliente/pago/crear";
-    navigate(returnTo, { replace: true });
+    navigate("/cliente/pago/crear");
   };
 
   return (
