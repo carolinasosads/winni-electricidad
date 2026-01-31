@@ -4,6 +4,7 @@ import RateReviewIcon from "@mui/icons-material/RateReview";
 import BuildIcon from "@mui/icons-material/Build";
 import { useNavigate } from "react-router-dom";
 import ListAltIcon from "@mui/icons-material/ListAlt";
+import DateRangeIcon from '@mui/icons-material/DateRange';
 
 export default function ClienteDashboard() {
   const navigate = useNavigate();
@@ -13,7 +14,7 @@ export default function ClienteDashboard() {
       titulo: "Agendar presupuesto",
       descripcion:
         "Solicitá una visita de presupuesto.",
-      icono: EventAvailableIcon,
+      icono: DateRangeIcon,
       ruta: "/cliente/agenda",
     },
     {

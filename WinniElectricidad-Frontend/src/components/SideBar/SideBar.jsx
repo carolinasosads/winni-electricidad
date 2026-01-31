@@ -7,13 +7,15 @@ import Drawer from '@mui/material/Drawer';
 import List from '@mui/material/List';
 import Toolbar from '@mui/material/Toolbar';
 
-import BarChartIcon from '@mui/icons-material/BarChart';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import DateRangeIcon from '@mui/icons-material/DateRange';
 import GroupIcon from '@mui/icons-material/Group';
-import ViewAgendaIcon from '@mui/icons-material/ViewAgenda';
+import ListAltIcon from '@mui/icons-material/ListAlt';
 import RateReviewIcon from '@mui/icons-material/RateReview';
 import EditNotificationsIcon from '@mui/icons-material/EditNotifications';
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import EventNoteIcon from "@mui/icons-material/EventNote";
+import HomeIcon from '@mui/icons-material/Home';
 import { matchPath, useLocation } from 'react-router-dom';
 
 import SidebarContext from './Context/SideBarContext';
@@ -144,7 +146,7 @@ function Sidebar({
                   <SidebarPageItem
                     id="dashboard-cliente"
                     title="Dashboard"
-                    icon={<AccountBoxIcon />}
+                    icon={<AccountBoxIcon sx={{ color: "#0288d1"}} />}
                     href="/cliente"
                     selected={pathname === "/cliente"}
                   />
@@ -152,7 +154,7 @@ function Sidebar({
                   <SidebarPageItem
                     id="agenda-cliente"
                     title="Agenda"
-                    icon={<DateRangeIcon />}
+                    icon={<DateRangeIcon sx={{ color: "#0288d1"}} />}
                     href="/cliente/agenda"
                     selected={pathname.startsWith("/cliente/agenda")}
                   />
@@ -160,7 +162,7 @@ function Sidebar({
                   <SidebarPageItem
                     id="resena-cliente"
                     title="Nueva reseña"
-                    icon={<RateReviewIcon />}
+                    icon={<RateReviewIcon sx={{ color: "#0288d1"}} />}
                     href="/cliente/resenas/crear"
                     selected={pathname.startsWith("/cliente/resenas/crear")}
                   />
@@ -168,7 +170,7 @@ function Sidebar({
                   <SidebarPageItem
                     id="panel-reservas-cliente"
                     title="Mis reservas"
-                    icon={<ViewAgendaIcon />}
+                    icon={<ListAltIcon sx={{ color: "#0288d1"}} />}
                     href="/cliente/mis-reservas"
                     selected={pathname.startsWith("/cliente/mis-reservas")}
                   />
@@ -181,7 +183,7 @@ function Sidebar({
                   <SidebarPageItem
                     id="admin-dashboard"
                     title="Panel Principal"
-                    icon={<BarChartIcon />}
+                    icon={<HomeIcon sx={{ color: "#0288d1" }} />}
                     href="/admin"
                     selected={pathname === "/admin" || pathname === "/admin/"}
                   />
@@ -189,7 +191,7 @@ function Sidebar({
                   <SidebarPageItem
                     id="admin-ficha-clientes"
                     title="Clientes"
-                    icon={<GroupIcon />}
+                    icon={<GroupIcon sx={{ color: "#0288d1" }}/>}
                     href="/admin/ficha-clientes"
                     selected={pathname.startsWith("/admin/ficha-clientes")}
                   />
@@ -197,7 +199,7 @@ function Sidebar({
                   <SidebarPageItem
                     id="admin-panel-reservas"
                     title="Reservas"
-                    icon={<ViewAgendaIcon />}
+                    icon={<EventNoteIcon sx={{ color: "#0288d1" }} />}
                     href="/admin/panel-reservas"
                     selected={pathname.startsWith("/admin/panel-reservas")}
                   />
@@ -205,7 +207,7 @@ function Sidebar({
                   <SidebarPageItem
                     id="admin-crear-cliente-reserva"
                     title="Presupuestos"
-                    icon={<DateRangeIcon />}
+                    icon={<AddCircleOutlineIcon sx={{ color: "#0288d1" }} />}
                     href="/admin/crear-reserva"
                     selected={pathname.startsWith("/admin/crear-reserva")}
                   />
@@ -213,7 +215,7 @@ function Sidebar({
                   <SidebarPageItem
                     id="admin-crear-recordatorio-mantenimiento"
                     title="Enviar recordatorio"
-                    icon={<EditNotificationsIcon />}
+                    icon={<EditNotificationsIcon sx={{ color: "#0288d1" }} />}
                     href="/admin/recordatorios"
                     selected={pathname.startsWith("/admin/recordatorios")}
                   />

@@ -181,7 +181,7 @@ export default function ServicioCard({
         onClick={() => onOpenGaleria?.(index)}
       >
         <Box
-          key={index}
+          key={34}
           component="img"
           src={imageUrl}
           alt={servicio.titulo}
