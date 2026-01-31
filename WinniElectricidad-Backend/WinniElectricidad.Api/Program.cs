@@ -34,14 +34,37 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<HCaptchaOptions>(
     builder.Configuration.GetSection("HCaptcha"));
 
-//TODO: BORRAR ESTO PARA PRODUCCION
-builder.Services.AddCors(o =>
+// --- CORS Configuration ---
+builder.Services.AddCors(options =>
 {
-    o.AddPolicy("Dev", p =>
-        p
+    // --- Development ---
+    options.AddPolicy("Dev", policy =>
+        policy
             .AllowAnyOrigin()
             .AllowAnyHeader()
-            .AllowAnyMethod());
+            .AllowAnyMethod()
+    );
+
+    // --- Production ---
+    options.AddPolicy("Production", policy =>
+            policy
+                .SetIsOriginAllowed(origin =>
+                {
+                    if (string.IsNullOrWhiteSpace(origin))
+                        return false;
+
+                    if (origin == "https://icy-flower-09db15f0f.3.azurestaticapps.net")
+                        return true;
+
+                    if (origin.StartsWith("https://icy-flower-09db15f0f-") &&
+                        origin.Contains(".eastus2.3.azurestaticapps.net"))
+                        return true;
+
+                    return false;
+                })
+                .WithHeaders("Content-Type", "Authorization", "Accept")
+                .WithMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
+    );
 });
 
 // --- Azure Blob Storage ---
@@ -235,8 +258,15 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-//TODO: borrar antes de subir a prod
-app.UseCors("Dev");
+// Apply appropriate CORS policy based on environment
+if (app.Environment.IsDevelopment())
+{
+    app.UseCors("Dev");
+}
+else
+{
+    app.UseCors("Production");
+}
 
 app.UseAuthentication(); 
 app.UseAuthorization();
