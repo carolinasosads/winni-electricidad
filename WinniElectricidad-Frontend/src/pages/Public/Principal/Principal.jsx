@@ -1,4 +1,3 @@
-// === imports (SIN CAMBIOS) ===
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -136,7 +135,7 @@ export default function PaginaPrincipal() {
       .then((data) => setServiciosRaw(data ?? []))
       .catch((e) => {
         if (e?.name === "AbortError") return;
-        setError(e?.message);
+        setError("Error al cargar servicios.");
       });
     return () => controller.abort();
   }, []);
@@ -147,7 +146,7 @@ export default function PaginaPrincipal() {
       .then((data) => setResenasRaw(data ?? []))
       .catch((e) => {
         if (e?.name === "AbortError") return;
-        setErrorResenas(e?.message);
+        setErrorResenas("Error al cargar reseñas.");
       });
 
     return () => controller.abort();
@@ -159,24 +158,87 @@ export default function PaginaPrincipal() {
     setConsultaError(null);
 
     const mensaje = consultaMensaje.trim();
-    if (!mensaje) {
-      setConsultaError("Completá el Mensaje.");
+
+    if (estaLogueado) {
+      const idCliente = localStorage.getItem("idCliente");
+
+      if (!idCliente) {
+        setConsultaError(
+          "No pude identificar tu usuario logueado (idCliente). Cerrá sesión e iniciá de nuevo."
+        );
+        return;
+      }
+
+      if (!mensaje) {
+        setConsultaError("Completá el Mensaje.");
+        return;
+      }
+
+      setEnviandoConsulta(true);
+      try {
+        await crearConsulta({
+          idCliente: Number(idCliente),
+          mensaje,
+        });
+
+        setConsultaOk("¡Listo! Tu consulta fue enviada. Te vamos a responder a la brevedad.");
+        setConsultaMensaje("");
+      } catch (err) {
+        setConsultaError(err?.message || "Ocurrió un error al enviar la consulta.");
+      } finally {
+        setEnviandoConsulta(false);
+      }
+
+      return;
+    }
+
+    const nombre = consultaNombre.trim();
+    const email = consultaEmail.trim();
+
+    const telefonoSoloDigitos = (consultaTelefono ?? "").replace(/\D/g, "").trim();
+
+    if (!nombre || !email || !mensaje) {
+      setConsultaError("Completá nombre, email, teléfono y mensaje.");
+      return;
+    }
+
+    const emailRegex = /\S+@\S+\.\S+/;
+    if (!emailRegex.test(email)) {
+      setConsultaError("Ingresá un email válido.");
+      return;
+    }
+
+    if (telefonoSoloDigitos.length < 8 || consultaTelefono == "") {
+      setConsultaError("Ingresá un teléfono válido (mínimo 8 dígitos).");
+      return;
+    }
+
+    if (telefonoSoloDigitos.length > 9) {
+      setConsultaError("Ingresá un teléfono válido (máximo 9 dígitos).");
       return;
     }
 
     setEnviandoConsulta(true);
     try {
-      await crearConsulta({ mensaje });
-      setConsultaOk("¡Listo! Tu consulta fue enviada.");
+      await crearConsulta({
+        nombre,
+        email,
+        telefono: telefonoSoloDigitos,
+        mensaje,
+      });
+
+      setConsultaOk("¡Listo! Tu consulta fue enviada. Te vamos a responder a la brevedad.");
+      setConsultaNombre("");
+      setConsultaEmail("");
+      setConsultaTelefono("");
       setConsultaMensaje("");
     } catch (err) {
-      setConsultaError(err?.message || "Error al enviar la consulta.");
+      setConsultaError(err?.message || "Ocurrió un error al enviar la consulta.");
     } finally {
       setEnviandoConsulta(false);
     }
   };
 
-  // === RENDER ===
   return (
     <Box sx={{ display: "flex", width: "100%" }}>
       <CssBaseline />
@@ -205,7 +267,6 @@ export default function PaginaPrincipal() {
         />
         <Toolbar />
 
-        {/* ================= BANNER (ÚNICO CAMBIO) ================= */}
         <Box
           sx={{
             position: "relative",
@@ -214,14 +275,13 @@ export default function PaginaPrincipal() {
             alignItems: "center",
             justifyContent: "center",
             textAlign: "center",
-            backgroundImage: `url("/src/assets/banner-casa.png")`,
+            backgroundImage: `url("/banner/banner-casa.png")`,
             backgroundSize: "cover",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
           }}
         >
         
-          {/* animación SOLO del rayo */}
           <style>
             {`
               @keyframes boltGlow {
@@ -274,7 +334,6 @@ export default function PaginaPrincipal() {
                 mb: 3,
               }}
             >
-              {/* RAYO ANIMADO */}
               <Box
                 component="svg"
                 viewBox="0 0 64 64"
@@ -296,7 +355,6 @@ export default function PaginaPrincipal() {
                 />
               </Box>
 
-              {/* TEXTO LOGO */}
               <Box sx={{ textAlign: "center", mt: 1 }}>
                 <Typography
                   sx={{
@@ -718,7 +776,6 @@ export default function PaginaPrincipal() {
                 boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
               }}
             >
-              {/* Si NO está logueado, muestro todo */}
               {!estaLogueado && (
                 <>
                   <TextField
@@ -755,7 +812,6 @@ export default function PaginaPrincipal() {
                 </>
               )}
 
-              {/* Mensaje siempre visible */}
               <TextField
                 label="Mensaje"
                 value={consultaMensaje}
@@ -873,6 +929,7 @@ export default function PaginaPrincipal() {
         href={WHATSAPP_LINK}
         target="_blank"
         rel="noopener noreferrer"
+        aria-label="Contactar por WhatsApp"
         sx={{
           position: "fixed",
           bottom: 24,

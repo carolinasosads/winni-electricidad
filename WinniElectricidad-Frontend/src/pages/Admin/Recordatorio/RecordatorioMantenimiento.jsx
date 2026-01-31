@@ -116,7 +116,7 @@ const buildEmailPreviewHtml = ({ titulo, mensaje }) => `
             target="_blank"
             style="color:#0288d1; text-decoration:underline;"
           >
-            haga click aquí
+            clickea aquíclickea aquí
           </a>.
         </p>
       </div>

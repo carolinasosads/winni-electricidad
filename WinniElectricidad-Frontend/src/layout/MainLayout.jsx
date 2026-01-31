@@ -84,6 +84,7 @@ export default function MainLayout() {
           href="https://wa.me/59894224578?text=Hola%20Winni%20Electricidad,%20te%20contacto%20desde%20la%20web%20para%20..."
           target="_blank"
           rel="noopener noreferrer"
+          aria-label="Contactar por WhatsApp"
           sx={{
             position: "fixed",
             bottom: { xs: 16, sm: 24 },

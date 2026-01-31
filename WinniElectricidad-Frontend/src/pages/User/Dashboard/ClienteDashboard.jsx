@@ -1,5 +1,4 @@
 import { Box, Typography, Card, CardActionArea } from "@mui/material";
-import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import RateReviewIcon from "@mui/icons-material/RateReview";
 import BuildIcon from "@mui/icons-material/Build";
 import { useNavigate } from "react-router-dom";
