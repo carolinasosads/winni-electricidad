@@ -35,9 +35,12 @@ builder.Services.Configure<HCaptchaOptions>(
     builder.Configuration.GetSection("HCaptcha"));
 
 // --- CORS Configuration ---
+builder.Services.Configure<CorsOptions>(
+    builder.Configuration.GetSection("Cors")
+);
+
 builder.Services.AddCors(options =>
 {
-    // --- Development ---
     options.AddPolicy("Dev", policy =>
         policy
             .AllowAnyOrigin()
@@ -45,25 +48,33 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod()
     );
 
-    // --- Production ---
     options.AddPolicy("Production", policy =>
-            policy
-                .SetIsOriginAllowed(origin =>
-                {
-                    if (string.IsNullOrWhiteSpace(origin))
-                        return false;
-
-                    if (origin == "https://icy-flower-09db15f0f.3.azurestaticapps.net")
-                        return true;
-
-                    if (origin.StartsWith("https://icy-flower-09db15f0f-") &&
-                        origin.Contains(".eastus2.3.azurestaticapps.net"))
-                        return true;
-
+        policy
+            .SetIsOriginAllowed(origin =>
+            {
+                if (!Uri.TryCreate(origin, UriKind.Absolute, out var uri))
                     return false;
-                })
-                .WithHeaders("Content-Type", "Authorization", "Accept")
-                .WithMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
+
+                var corsOptions = builder.Configuration
+                    .GetSection("Cors")
+                    .Get<CorsOptions>();
+
+                if (corsOptions is null)
+                    return false;
+
+                // Exact match for stable production domains
+                if (corsOptions.AllowedOrigins.Contains(uri.GetLeftPart(UriPartial.Authority)))
+                    return true;
+
+                // Preview environments (validate hostname suffix)
+                if (corsOptions.AllowedPreviewHostSuffixes
+                    .Any(suffix => uri.Host.EndsWith(suffix)))
+                    return true;
+
+                return false;
+            })
+            .AllowAnyHeader()
+            .WithMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
     );
 });
 
