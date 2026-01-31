@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import { styled, useTheme } from "@mui/material/styles";
-import {  AppBar as MuiAppBar,  Toolbar,  IconButton,  Tooltip,  Typography,  Stack,  Button} from "@mui/material";
+import {  AppBar as MuiAppBar,  Toolbar,  IconButton,  Tooltip,  Typography,  Stack,  Button, Box} from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import RateReviewIcon from "@mui/icons-material/RateReview";
@@ -68,25 +68,82 @@ export default function AppHeader({
   navigate(homeHref, { replace: true });
 };
 
+const mobileIconButtonSx = {
+  width: 36,
+  height: 36,
+  borderRadius: "50%",
+  border: "1.5px solid #0288d1",
+  color: "#0288d1",
+  backgroundColor: "transparent",
+  transition: "all .2s ease",
+  "&:hover": {
+    backgroundColor: "#0288d1",
+    color: "white",
+  },
+  "&:active": {
+    transform: "scale(0.95)",
+  },
+};
+
  const authSlotDefault = estaLogueado ? (
   isMobile ? (
     <Tooltip title="Cerrar sesión">
-      <IconButton size="small" color="primary" onClick={handleLogout}>
-        <LogoutIcon />
+      <IconButton
+        onClick={handleLogout}
+        sx={mobileIconButtonSx}
+      >
+        <LogoutIcon fontSize="small" />
       </IconButton>
     </Tooltip>
   ) : (
     <Button
       onClick={handleLogout}
       variant="outlined"
-      size="small"
       startIcon={<LogoutIcon />}
-      sx={{ textTransform: "none", borderRadius: 2 }}
+      sx={{
+        textTransform: "none",
+        borderRadius: 999,
+        px: 2.5,
+        py: 0.8,
+        fontWeight: 500,
+        color: "#0288d1",
+        borderColor: "#0288d1",
+        backgroundColor: "rgba(15, 42, 68, 0.04)",
+        transition: "all .2s ease",
+        "&:hover": {
+          backgroundColor: "#0288d1",
+          color: "white",
+          borderColor: "#0288d1",
+        },
+        "&:active": {
+          transform: "scale(0.97)",
+        },
+      }}
     >
       Cerrar sesión
     </Button>
   )
 ) : null;
+
+const actionButtonSx = {
+  textTransform: "none",
+  borderRadius: 999,
+  px: 2.5,
+  py: 0.8,
+  fontWeight: 500,
+  color: "#0288d1",
+  borderColor: "#0288d1",
+  backgroundColor: "rgba(15, 42, 68, 0.04)",
+  transition: "all .2s ease",
+  "&:hover": {
+    backgroundColor: "#0288d1",
+    color: "white",
+    borderColor: "#0288d1",
+  },
+  "&:active": {
+    transform: "scale(0.97)",
+  },
+};
 
   return (
     <AppBar color="inherit" position="absolute">
@@ -122,18 +179,24 @@ export default function AppHeader({
             <Link to={homeHref} style={{ textDecoration: "none" }}>
               <Stack direction="row" alignItems="center" ml={1}>
                 {logo && <LogoContainer>{logo}</LogoContainer>}
+
                 {title && (
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      color: theme.palette.primary.main,
-                      fontWeight: 700,
-                      ml: 1,
-                      whiteSpace: "nowrap"
-                    }}
-                  >
-                    {title}
-                  </Typography>
+                  <Box sx={{ ml: 1 }}>
+                    {typeof title === "string" ? (
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          color: theme.palette.primary.main,
+                          fontWeight: 700,
+                          whiteSpace: "nowrap"
+                        }}
+                      >
+                        {title}
+                      </Typography>
+                    ) : (
+                      title
+                    )}
+                  </Box>
                 )}
               </Stack>
             </Link>
@@ -142,42 +205,48 @@ export default function AppHeader({
           {/* DERECHA */}
           <Stack direction="row" spacing={0.5} alignItems="center">
             {isMobile ? (
-              <>
-                <Tooltip title="Reseñas">
-                  <IconButton size="small" color="primary" component={Link} to={resenasPath}>
-                    <RateReviewIcon />
-                  </IconButton>
-                </Tooltip>
+            <>
+              <Tooltip title="Servicios">
+              <IconButton
+                component={Link}
+                to={serviciosPath}
+                sx={mobileIconButtonSx}
+              >
+                <BuildIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
 
-                <Tooltip title="Servicios">
-                  <IconButton size="small" color="primary" component={Link} to={serviciosPath}>
-                    <BuildIcon />
-                  </IconButton>
-                </Tooltip>
-              </>
-            ) : (
+            <Tooltip title="Reseñas">
+              <IconButton
+                component={Link}
+                to={resenasPath}
+                sx={mobileIconButtonSx}
+              >
+                <RateReviewIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            </>
+          ) : (
               <>
-                <Link to={resenasPath} style={{ textDecoration: "none" }}>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    startIcon={<RateReviewIcon />}
-                    sx={{ textTransform: "none", borderRadius: 2 }}
-                  >
-                    Reseñas
-                  </Button>
-                </Link>
-
                 <Link to={serviciosPath} style={{ textDecoration: "none" }}>
                   <Button
                     variant="outlined"
-                    size="small"
                     startIcon={<BuildIcon />}
-                    sx={{ textTransform: "none", borderRadius: 2 }}
+                    sx={actionButtonSx}
                   >
                     Servicios
                   </Button>
                 </Link>
+
+              <Link to={resenasPath} style={{ textDecoration: "none" }}>
+                <Button
+                  variant="outlined"
+                  startIcon={<RateReviewIcon />}
+                  sx={actionButtonSx}
+                >
+                  Reseñas
+                </Button>
+              </Link>
               </>
             )}
 

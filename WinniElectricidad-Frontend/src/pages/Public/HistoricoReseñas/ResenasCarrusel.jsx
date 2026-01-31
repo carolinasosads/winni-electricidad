@@ -45,6 +45,7 @@ export default function ResenasCarrusel({ resenas, onSelect }) {
                 overflow: "hidden",
                 boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
                 cursor: "pointer",
+                position: "relative"
               }}
             >
               <Box
@@ -136,6 +137,7 @@ export default function ResenasCarrusel({ resenas, onSelect }) {
                   overflow: "hidden",
                   boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
                   cursor: "pointer",
+                  position: "relative"
                 }}
               >
                 <Box

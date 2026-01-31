@@ -19,7 +19,7 @@ public class ReservaController : ControllerBase
 {
     private readonly IObtenerHorariosDisponibles _obtenerHorariosDisponibles;
     private readonly IAgendarReserva _agendarReserva;
-    private readonly IObtenerHistoricoMensualReservas _obtenerHistoricoMensualReservas;
+    private readonly IObtenerHistoricoTrimensualReservas _obtenerHistoricoTrimensualReservas;
     private readonly IObtenerHistoricoFinalizadas _obtenerHistoricoFinalizadas;
     private readonly IObtenerReservasPorEstado _obtenerReservasPorEstado;
     private readonly IAprobarReserva _aprobarReserva;
@@ -32,12 +32,12 @@ public class ReservaController : ControllerBase
     /// <summary>
     /// Inicializa una nueva instancia del <see cref="ReservaController"/> con las dependencias necesarias.
     /// </summary>
-    public ReservaController(IObtenerHorariosDisponibles obtenerHorariosDisponibles, IAgendarReserva agendarReserva, IObtenerHistoricoMensualReservas obtenerHistoricoMensualReservas, IObtenerHistoricoFinalizadas obtenerHistoricoFinalizadas,IObtenerReservasPorEstado obtenerReservasPorEstado,  IAprobarReserva aprobarReserva,
+    public ReservaController(IObtenerHorariosDisponibles obtenerHorariosDisponibles, IAgendarReserva agendarReserva, IObtenerHistoricoTrimensualReservas obtenerHistoricoTrimensualReservas, IObtenerHistoricoFinalizadas obtenerHistoricoFinalizadas,IObtenerReservasPorEstado obtenerReservasPorEstado,  IAprobarReserva aprobarReserva,
         ICancelarReserva cancelarReserva, IModificarReserva modificarReserva, IObtenerReservasPorCliente obtenerReservasPorCliente, IRegistrarReservaHistoricaAdmin registrarReservaHistoricaAdmin, IObtenerMisReservasClienteConDetalle obtenerMisReservasClienteConDetalle)
     {
         _obtenerHorariosDisponibles = obtenerHorariosDisponibles;
         _agendarReserva = agendarReserva;
-        _obtenerHistoricoMensualReservas = obtenerHistoricoMensualReservas;
+        _obtenerHistoricoTrimensualReservas = obtenerHistoricoTrimensualReservas;
         _obtenerHistoricoFinalizadas = obtenerHistoricoFinalizadas;
         _obtenerReservasPorEstado = obtenerReservasPorEstado;
         _cancelarReserva = cancelarReserva;
@@ -174,7 +174,7 @@ public class ReservaController : ControllerBase
     ///
     /// **Flujo:**
     /// 1. Se valida que el mes y el año sean valores válidos.  
-    /// 2. Se consulta el servicio <see cref="IObtenerHistoricoMensualReservas"/> con los parámetros recibidos.  
+    /// 2. Se consulta el servicio <see cref="IObtenerHistoricoTrimensualReservas"/> con los parámetros recibidos.  
     /// 3. Se retorna una colección de <see cref="HistoricoReservaDto"/> con la información de las reservas.
     ///
     /// **Requiere autenticación:**  
@@ -197,19 +197,19 @@ public class ReservaController : ControllerBase
     /// <returns>
     /// Una respuesta HTTP que contiene la lista de reservas del mes y año especificados.
     /// </returns>
-    /// <response code="200">Historial mensual obtenido correctamente.</response>
+    /// <response code="200">Historial trimestral obtenido correctamente.</response>
     /// <response code="400">Parámetros de mes o año inválidos.</response>
     /// <response code="500">Error inesperado del servidor.</response>
-    [HttpGet("historico-mensual/{mes:int}/{anio:int}")]
+    [HttpGet("historico-trimestral/{mes:int}/{anio:int}")]
     [Authorize(Roles = "Administrador")]
     [ProducesResponseType(typeof(IEnumerable<HistoricoReservaDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
 
-    public async Task<IActionResult> GetHistoricoMensual(int mes, int anio, [FromQuery] string? filtro, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetHistoricoTrimestral(int mes, int anio, [FromQuery] string? filtro, CancellationToken cancellationToken)
     {
         try
         {
-            var resultado = await _obtenerHistoricoMensualReservas.Ejecutar( mes, anio, filtro, cancellationToken);
+            var resultado = await _obtenerHistoricoTrimensualReservas.Ejecutar( mes, anio, filtro, cancellationToken);
 
             return Ok(resultado);
         }

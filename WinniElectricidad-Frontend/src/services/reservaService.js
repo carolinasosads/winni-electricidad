@@ -23,7 +23,7 @@ export async function getReservasPorMesYAnio(mes, anio, filtro = "") {
   const qs = new URLSearchParams();
   if (filtro?.trim()) qs.set("filtro", filtro.trim());
 
-  const url = `${urlAPIReserva}historico-mensual/${mes}/${anio}${
+  const url = `${urlAPIReserva}historico-trimestral/${mes}/${anio}${
     qs.toString() ? `?${qs.toString()}` : ""
   }`;
 

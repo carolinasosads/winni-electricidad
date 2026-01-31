@@ -109,6 +109,16 @@ const buildEmailPreviewHtml = ({ titulo, mensaje }) => `
         <p style="font-size:12px; color:#777;">
           Este es un recordatorio automático enviado por Winni Electricidad.
         </p>
+        <p style="font-size:12px; color:#6f8fa8; margin-top:24px; text-align:center;">
+          Si no desea recibir más recordatorios estacionales,
+          <a
+            href="https://wa.me/59894224578?text=Hola%20Winni%20Electricidad,%20env%C3%ADo%20este%20mensaje%20para%20desuscribirme%20de%20los%20recordatorios%20estacionales."
+            target="_blank"
+            style="color:#0288d1; text-decoration:underline;"
+          >
+            clickea aquí
+          </a>.
+        </p>
       </div>
     </div>
   </div>

@@ -32,7 +32,7 @@ public class ReservaControllerTests : LargeTestBase
         var mes = DateTime.Today.Month;
         var anio = DateTime.Today.Year;
 
-        var endpoint = $"{EndpointBase}historico-mensual/{mes}/{anio}?filtro=___no_existe___";
+        var endpoint = $"{EndpointBase}historico-trimestral/{mes}/{anio}?filtro=___no_existe___";
 
         // Act
         var resp = await Client.GetAsync(endpoint);
@@ -63,7 +63,7 @@ public class ReservaControllerTests : LargeTestBase
         var anio = DateTime.Today.Year;
 
         var filtro = Uri.EscapeDataString(admin.Email);
-        var endpoint = $"{EndpointBase}historico-mensual/{mes}/{anio}?filtro={filtro}";
+        var endpoint = $"{EndpointBase}historico-trimestral/{mes}/{anio}?filtro={filtro}";
 
         // Act
         var resp = await Client.GetAsync(endpoint);

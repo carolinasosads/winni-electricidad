@@ -39,15 +39,16 @@ export default function ServicioCreateCard({ onCrear }) {
 
   const [imagenes, setImagenes] = useState([]);
   const [imagenActiva, setImagenActiva] = useState(0);
-  const [previews, setPreviews] = useState([]);
 
   const [creando, setCreando] = useState(false);
 
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    return () => previews.forEach(URL.revokeObjectURL);
-  }, [previews]);
+    return () => {
+      imagenes.forEach(img => URL.revokeObjectURL(img.preview));
+    };
+  }, []);
 
   const handleImageClick = () => {
     fileInputRef.current?.click();
@@ -57,13 +58,14 @@ export default function ServicioCreateCard({ onCrear }) {
     const files = Array.from(e.target.files);
     if (!files.length) return;
 
-    setImagenes((prev) => [...prev, ...files]);
-    setPreviews((prev) => [
-      ...prev,
-      ...files.map((f) => URL.createObjectURL(f))
-    ]);
+    const nuevas = files.map((file) => ({
+      id: crypto.randomUUID(),
+      file,
+      preview: URL.createObjectURL(file)
+    }));
 
-    setImagenActiva((prev) => (prev === null ? 0 : prev));
+    setImagenes((prev) => [...prev, ...nuevas]);
+    setImagenActiva(0);
   };
 
   const handleSubmit = async () => {
@@ -73,7 +75,7 @@ export default function ServicioCreateCard({ onCrear }) {
         titulo,
         descripcion,
         icono,
-        imagenes,
+        imagenes: imagenes.map(i => i.file),
         activo: true
       });
 
@@ -81,7 +83,6 @@ export default function ServicioCreateCard({ onCrear }) {
       setDescripcion("");
       setIcono("Otro");
       setImagenes([]);
-      setPreviews([]);
       setImagenActiva(0);
 
       if (fileInputRef.current) {
@@ -93,10 +94,9 @@ export default function ServicioCreateCard({ onCrear }) {
   };
 
   const handleRemoveImage = (index) => {
-    setImagenes((prev) => prev.filter((_, i) => i !== index));
-
-    setPreviews((prev) => {
-      URL.revokeObjectURL(prev[index]);
+    setImagenes((prev) => {
+      const img = prev[index];
+      if (img) URL.revokeObjectURL(img.preview);
       return prev.filter((_, i) => i !== index);
     });
 
@@ -142,10 +142,10 @@ export default function ServicioCreateCard({ onCrear }) {
           position: "relative"
         }}
       >
-        {previews.length > 0 ? (
+        {imagenes.length > 0 ? (
           <Box
             component="img"
-            src={previews[imagenActiva]}
+            src={imagenes[imagenActiva]?.preview}
             alt="Preview principal"
             sx={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
@@ -165,21 +165,21 @@ export default function ServicioCreateCard({ onCrear }) {
         />
       </Box>
 
-      {previews.length > 1 && (
+      {imagenes.length > 1 && (
           <Stack
             direction="row"
             spacing={1}
             justifyContent="center"
             sx={{ px: 2, pt: 1, pb: 0 }}
           >
-            {previews.map((src, i) => (
+            {imagenes.map((img, i) => (
               <Box
-                key={i}
+                key={img.id}
                 sx={{ position: "relative" }}
               >
                 <Box
                   component="img"
-                  src={src}
+                  src={img.preview}
                   onClick={() => setImagenActiva(i)}
                   sx={{
                     width: 44,
@@ -222,8 +222,9 @@ export default function ServicioCreateCard({ onCrear }) {
           </Stack>
         )}
 
-      {previews.length === 0 && (
+      {imagenes.length === 0 && (
       <Box
+        onClick={handleImageClick}
         sx={{
           position: "absolute",
           top: 180 - 28,
@@ -238,7 +239,8 @@ export default function ServicioCreateCard({ onCrear }) {
           justifyContent: "center",
           color: "white",
           boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
-          zIndex: 2
+          zIndex: 2,
+          cursor: "pointer"
         }}
       >
         <AddOutlinedIcon />

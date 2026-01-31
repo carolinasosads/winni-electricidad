@@ -181,7 +181,7 @@ builder.Services.AddScoped<IObtenerDirecciones, ObtenerDirecciones>();
 // - Reserva -
 builder.Services.AddScoped<IObtenerHorariosDisponibles, ObtenerHorariosDisponibles>();
 builder.Services.AddScoped<IAgendarReserva, AgendarReserva>();
-builder.Services.AddScoped<IObtenerHistoricoMensualReservas, ObtenerHistoricoMensualReservas>();
+builder.Services.AddScoped<IObtenerHistoricoTrimensualReservas, ObtenerHistoricoTrimestralReservas>();
 builder.Services.AddScoped<IObtenerHistoricoFinalizadas, ObtenerHistoricoFinalizadas>();
 builder.Services.AddScoped<IObtenerReservasPorEstado, ObtenerReservasPorEstado>();
 builder.Services.AddScoped<IAprobarReserva, AprobarReserva>();
