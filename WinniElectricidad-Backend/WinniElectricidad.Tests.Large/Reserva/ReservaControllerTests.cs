@@ -1,8 +1,8 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using WinniElectricidad.AccesoDatos.Repositorios.EF;
 using WinniElectricidad.Compartido.DTOs.Reservas;
 using WinniElectricidad.Compartido.DTOs.Usuarios.Reserva;
 using WinniElectricidad.Tests.Large.Infraestructura;
@@ -55,9 +55,55 @@ public class ReservaControllerTests : LargeTestBase
         var token = Jwt.GenerarTokenConRol(admin.IdUsuario, admin.Email, "Administrador");
         Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-        // Seed: reserva en el mes actual asociada al usuario seed (usamos su email como filtro)
-        var fechaReserva = DateTime.Today.AddDays(3).Date.AddHours(9);
-        await DbSeeder.SeedReservaAsync(Factory, fechaReserva);
+        const int servicioIdValido = 999;
+
+        using (var scope = Factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<WinniElectricidadContext>();
+
+            var existe = db.Servicios.Any(s => s.Id == servicioIdValido);
+            if (!existe)
+            {
+                db.Servicios.Add(new WinniElectricidad.LogicaNegocio.Entidades.Servicio
+                {
+                    Id = servicioIdValido,
+                    Titulo = "ServicioTestMensual_" + Guid.NewGuid().ToString("N"),
+                    Descripcion = "Servicio para test historico mensual",
+                    Activo = true,
+                    Icono = "Otro"
+                });
+
+                db.SaveChanges();
+            }
+        }
+
+        var hoy = DateTime.Today;
+        var dia = Math.Max(1, hoy.Day - 2);
+        var fechaHistoricaMismoMes = new DateTime(hoy.Year, hoy.Month, dia).AddHours(9);
+
+        var idDireccion = admin.Direcciones.First().IdDireccion;
+
+        var respCrear = await PostRegistrarHistoricoAsync(
+            admin.IdUsuario,
+            fechaHistoricaMismoMes,
+            idDireccion,
+            servicioIdValido,
+            tipoEnumInt: 0
+        );
+
+        if (respCrear.StatusCode == HttpStatusCode.BadRequest)
+        {
+            respCrear = await PostRegistrarHistoricoAsync(
+                admin.IdUsuario,
+                fechaHistoricaMismoMes,
+                idDireccion,
+                servicioIdValido,
+                tipoEnumInt: 1
+            );
+        }
+
+        Assert.That(respCrear.StatusCode, Is.EqualTo(HttpStatusCode.OK),
+            $"RegistrarHistorico falló. Body: {await respCrear.Content.ReadAsStringAsync()}");
 
         var mes = DateTime.Today.Month;
         var anio = DateTime.Today.Year;
@@ -74,6 +120,31 @@ public class ReservaControllerTests : LargeTestBase
         var reservas = await resp.Content.ReadFromJsonAsync<List<HistoricoReservaDto>>();
         Assert.That(reservas, Is.Not.Null);
         Assert.That(reservas!, Is.Not.Empty);
+
+        // ---------------- local helper ----------------
+        async Task<HttpResponseMessage> PostRegistrarHistoricoAsync(
+            int idUsuario,
+            DateTime fecha,
+            int idDir,
+            int idServicio,
+            int tipoEnumInt)
+        {
+            var json = $$"""
+                       {
+                         "fechaReserva": "{{fecha:O}}",
+                         "idDireccion": {{idDir}},
+                         "idServicios": [{{idServicio}}],
+                         "tipoServicio": {{tipoEnumInt}},
+                         "comentario": "seed historico mensual"
+                       }
+                       """;
+
+            var postEndpoint = $"{EndpointBase}admin/registrar-historico/{idUsuario}";
+            return await Client.PostAsync(
+                postEndpoint,
+                new StringContent(json, System.Text.Encoding.UTF8, "application/json")
+            );
+        }
     }
 
     [Test]
@@ -116,10 +187,9 @@ public class ReservaControllerTests : LargeTestBase
         // 1) Asegurar un servicio válido (IdServicios debe existir)
         const int servicioIdValido = 999;
 
-        using (var scope = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.CreateScope(Factory.Services))
+        using (var scope = Factory.Services.CreateScope())
         {
-            var db = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions
-                .GetRequiredService<WinniElectricidad.AccesoDatos.Repositorios.EF.WinniElectricidadContext>(scope.ServiceProvider);
+            var db = scope.ServiceProvider.GetRequiredService<WinniElectricidadContext>();
 
             var existe = db.Servicios.Any(s => s.Id == servicioIdValido);
             if (!existe)
@@ -185,8 +255,6 @@ public class ReservaControllerTests : LargeTestBase
             int idServicio,
             int tipoEnumInt)
         {
-            // Enviar tipoServicio como INT (enum) para evitar el error:
-            // "The JSON value could not be converted to ... TipoServicioReserva"
             var json = $$"""
                        {
                          "fechaReserva": "{{fecha:O}}",
@@ -200,7 +268,7 @@ public class ReservaControllerTests : LargeTestBase
             var postEndpoint = $"{EndpointBase}admin/registrar-historico/{idUsuario}";
             return await Client.PostAsync(
                 postEndpoint,
-                new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json")
+                new StringContent(json, System.Text.Encoding.UTF8, "application/json")
             );
         }
     }

@@ -118,6 +118,7 @@ public class ModificarReserva : IModificarReserva
             </div>";
 
         await _enviarEmail.Ejecutar(cliente.Email, "Winni Electricidad - Reserva reprogramada", cuerpoCliente, cancellationToken);
+        await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
 
         var admin = await _repositorioUsuario.ObtenerAdministrador(cancellationToken);
 

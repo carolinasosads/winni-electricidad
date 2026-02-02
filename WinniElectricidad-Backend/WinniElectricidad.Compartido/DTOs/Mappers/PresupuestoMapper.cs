@@ -37,4 +37,25 @@ public static class PresupuestoMapper
             DescripcionTrabajo = presupuesto.DescripcionTrabajo,
         };
     }
+    
+    public static PresupuestoConReservaDto MapearAPresupuestoConReservaDto(LogicaNegocio.Entidades.Presupuesto presupuesto)
+    {
+        if (presupuesto.Reserva == null)
+            throw new InvalidOperationException("No se puede mapear PresupuestoConReservaDto si la reserva no está cargada.");
+
+        var montoPagadoCalculado =
+            (presupuesto.Pagos?
+                .Where(p => p.EstadoPago == EstadoPago.Confirmado)
+                .Sum(p => p.Monto)) ?? presupuesto.MontoPagado;
+
+        return new PresupuestoConReservaDto
+        {
+            Id = presupuesto.Id,
+            Reserva = ReservaMapper.MapearAReservaCreadaDto(presupuesto.Reserva),
+            MontoTotal = presupuesto.Monto,
+            MontoPagado = montoPagadoCalculado,
+            DescripcionTrabajo = presupuesto.DescripcionTrabajo,
+            FechaCreacion = presupuesto.FechaPresupuesto
+        };
+    }
 }

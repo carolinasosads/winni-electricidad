@@ -54,7 +54,24 @@ public class RepositorioPresupuestos : IRepositorioPresupuesto
     public async Task<Presupuesto?> FindByReservaId(int idReserva, CancellationToken ct = default)
     {
         return await _db.Presupuestos
-            .Include(p => p.Pagos)
+            .Include(p => p.Pagos.Where(pago => pago.EstadoPago == EstadoPago.Confirmado))
             .FirstOrDefaultAsync(p => p.IdReserva == idReserva, ct);
+    }
+    public async Task<IEnumerable<Presupuesto>> ObtenerPresupuestosConReservaPorUsuario(int idUsuario, CancellationToken ct = default)
+    {
+        var presupuestos = await _db.Presupuestos
+            .AsNoTracking()
+            .Include(p => p.Reserva)
+            .Where(p => p.IdUsuario == idUsuario
+                        && p.Reserva.EstadoReserva == EstadoReserva.Confirmada
+                        && p.MontoPagado < p.Monto)
+            .Include(p => p.Pagos.Where(pago => pago.EstadoPago == EstadoPago.Confirmado))
+            .Include(p => p.Reserva.Direccion)
+            .Include(p => p.Reserva.Servicios)
+            .Where(p => p.IdUsuario == idUsuario)
+            .OrderByDescending(p => p.FechaPresupuesto)
+            .ToListAsync(ct);
+
+        return presupuestos;
     }
 }

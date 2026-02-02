@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using WinniElectricidad.LogicaNegocio.Entidades;
 using WinniElectricidad.LogicaNegocio.InterfacesRepositorios;
 
@@ -18,14 +19,16 @@ public class RepositorioPagos : IRepositorioPago
         return obj;
     }
 
-    public Task<Pago?> FindById(int id, CancellationToken ct = default)
+    public async Task<Pago?> FindById(int id, CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        return await _db.Pagos
+            .FirstOrDefaultAsync(p => p.IdPago == id, ct);
     }
 
-    public Task Update(Pago obj, CancellationToken ct = default)
+    public async Task Update(Pago obj, CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        _db.Pagos.Update(obj);
+        await _db.SaveChangesAsync(ct);
     }
 
     public Task Delete(int id, CancellationToken ct = default)

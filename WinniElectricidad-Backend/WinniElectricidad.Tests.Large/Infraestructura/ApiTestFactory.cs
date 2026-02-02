@@ -29,9 +29,20 @@ namespace WinniElectricidad.Tests.Large.Infraestructura;
 /// </remarks>
 public class ApiTestFactory : WebApplicationFactory<Program>
 {
+    static ApiTestFactory()
+    {
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Testing");
+        Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", "Testing");
+
+        Environment.SetEnvironmentVariable("MercadoPago__AccessToken", "TEST_ACCESS_TOKEN");
+
+        Environment.SetEnvironmentVariable("MercadoPago_AccessToken", "TEST_ACCESS_TOKEN");
+        Environment.SetEnvironmentVariable("MERCADOPAGO_ACCESSTOKEN", "TEST_ACCESS_TOKEN");
+    }
+
     private SqliteConnection? _connection;
     public IConfiguration Configuration { get; private set; } = null!;
-    
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
@@ -41,7 +52,12 @@ public class ApiTestFactory : WebApplicationFactory<Program>
             config.Sources.Clear();
             config.AddJsonFile("appsettings.Testing.json", optional: true);
             config.AddEnvironmentVariables();
-            
+
+            config.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["MercadoPago:AccessToken"] = "TEST_ACCESS_TOKEN"
+            });
+
             Configuration = config.Build();
         });
 
@@ -57,7 +73,7 @@ public class ApiTestFactory : WebApplicationFactory<Program>
 
             services.AddDbContext<WinniElectricidadContext>(options =>
                 options.UseSqlite(_connection));
-            
+
             var moderacionDescriptor = services.SingleOrDefault(
                 d => d.ServiceType == typeof(IModeracionOpenAi));
             var imagenesDescriptor = services.SingleOrDefault(
@@ -76,14 +92,14 @@ public class ApiTestFactory : WebApplicationFactory<Program>
             services.AddSingleton<IServicioImagenes, ServicioImagenesFake>();
             services.AddSingleton<IEvaluarPuntajeResenia, EvaluarPuntajeReseniaFake>();
             services.AddSingleton<IEnviarEmail, EnviarEmailFake>();
-            
+
             var sp = services.BuildServiceProvider();
             using var scope = sp.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<WinniElectricidadContext>();
             db.Database.EnsureCreated();
         });
     }
-    
+
     protected override void Dispose(bool disposing)
     {
         base.Dispose(disposing);

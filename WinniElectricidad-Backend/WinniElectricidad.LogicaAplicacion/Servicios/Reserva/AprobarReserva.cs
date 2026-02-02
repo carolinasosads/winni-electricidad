@@ -78,6 +78,7 @@ public class AprobarReserva : IAprobarReserva
           </div>";
 
         await _enviarEmail.Ejecutar(cliente.Email, "Winni Electricidad - Reserva confirmada", cuerpoEmailCliente, cancellationToken);
+        await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
 
         var admin = await _repositorioUsuario.ObtenerAdministrador(cancellationToken);
 

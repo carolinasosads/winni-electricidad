@@ -13,6 +13,7 @@ import MainLayout from "../../layout/MainLayout.jsx";
 import AgendaPage from "../../pages/User/Agenda/AgendaPage.jsx";
 import CrearResena from "../../pages/User/Reseña/CrearResena.jsx";
 import ClienteDashboard from "../../pages/User/Dashboard/ClienteDashboard.jsx";
+import Pago from "../../pages/User/Pago/Pago.jsx";
 
 import DashboardAdmin from "../../pages/Admin/Dashboard/DashboardAdmin.jsx"
 import PanelReservas from "../../pages/Admin/PanelReservas/PanelReservas.jsx"
@@ -26,6 +27,9 @@ import PaginaPrincipal from "../../pages/Public/Principal/Principal.jsx"
 import ServiciosPage from "../../pages/Public/Servicio/ServiciosPage.jsx";
 import PanelReservasCliente from "../../pages/User/PanelReservas/PanelReservasCliente.jsx";
 
+import Success from "../../pages/User/Pago/Success.jsx";
+import Failure from "../../pages/User/Pago/Failure.jsx";
+import Pending from "../../pages/User/Pago/Pending.jsx"
 
 export default function App() {
   return (
@@ -55,6 +59,11 @@ export default function App() {
         <Route path="resenas/crear" element={<CrearResena />} />
         <Route path="servicios" element={<ServiciosPage />} /> 
         <Route path="mis-reservas" element={<PanelReservasCliente />} />
+        <Route path="pago/crear" element={<Pago />} />
+        <Route path="success" element={<Success />} />
+        <Route path="pending" element={<Pending />} />
+        <Route path="failure" element={<Failure />} />
+
       </Route>
 
       {/* Usuario Administrador */}

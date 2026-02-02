@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WinniElectricidad.AccesoDatos.Repositorios.EF;
 
@@ -11,9 +12,11 @@ using WinniElectricidad.AccesoDatos.Repositorios.EF;
 namespace WinniElectricidad.AccesoDatos.Migrations
 {
     [DbContext(typeof(WinniElectricidadContext))]
-    partial class WinniElectricidadContextModelSnapshot : ModelSnapshot
+    [Migration("20260119230757_EstadoPago")]
+    partial class EstadoPago
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -153,9 +156,6 @@ namespace WinniElectricidad.AccesoDatos.Migrations
 
                     b.Property<int>("IdUsuario")
                         .HasColumnType("int");
-
-                    b.Property<long?>("MercadoPagoPaymentId")
-                        .HasColumnType("bigint");
 
                     b.Property<decimal>("Monto")
                         .HasPrecision(18, 2)

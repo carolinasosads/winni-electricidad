@@ -12,6 +12,7 @@ import DateRangeIcon from '@mui/icons-material/DateRange';
 import GroupIcon from '@mui/icons-material/Group';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import RateReviewIcon from '@mui/icons-material/RateReview';
+import PaymentIcon from '@mui/icons-material/Payment';
 import EditNotificationsIcon from '@mui/icons-material/EditNotifications';
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import EventNoteIcon from "@mui/icons-material/EventNote";
@@ -173,6 +174,14 @@ function Sidebar({
                     icon={<ListAltIcon sx={{ color: "#0288d1"}} />}
                     href="/cliente/mis-reservas"
                     selected={pathname.startsWith("/cliente/mis-reservas")}
+                  />
+
+                  <SidebarPageItem
+                    id="pago-cliente"
+                    title="Pagar"
+                    icon={<PaymentIcon />}
+                    href="/cliente/pago/crear"
+                    selected={pathname.startsWith("/cliente/pago/crear")}
                   />
                 </>
               )}

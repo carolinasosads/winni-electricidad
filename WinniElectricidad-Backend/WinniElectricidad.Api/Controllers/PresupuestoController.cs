@@ -1,10 +1,12 @@
 using System.Security.Claims;
+using MercadoPago.Error;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WinniElectricidad.Compartido.DTOs.Pago;
 using WinniElectricidad.Compartido.DTOs.Presupuesto;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Pago;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Presupuesto;
+using WinniElectricidad.LogicaNegocio.ExcepcionesPersonalizadas.Pago;
 
 namespace WinniElectricidad.Api.Controllers;
 
@@ -18,12 +20,16 @@ public class PresupuestoController : ControllerBase
     private readonly ICrearPresupuesto _crearPresupuesto;
     private readonly IObtenerPresupuesto _obtenerPresupuesto;
     private readonly IRegistrarPagoPresupuesto _registrarPagoPresupuesto;
-
-    public PresupuestoController(ICrearPresupuesto crearPresupuesto, IObtenerPresupuesto obtenerPresupuesto,IRegistrarPagoPresupuesto registrarPagoPresupuesto)
+    private readonly IObtenerPresupuestoConReserva _obtenerPresupuestosConReserva;
+    private readonly ICrearPreferenciaPago _crearPreferenciaPago;
+    
+    public PresupuestoController(ICrearPresupuesto crearPresupuesto, IObtenerPresupuesto obtenerPresupuesto,IRegistrarPagoPresupuesto registrarPagoPresupuesto, IObtenerPresupuestoConReserva obtenerPresupuestosConReserva, ICrearPreferenciaPago crearPreferenciaPago)
     {
         _crearPresupuesto = crearPresupuesto;
         _obtenerPresupuesto = obtenerPresupuesto;
         _registrarPagoPresupuesto = registrarPagoPresupuesto;
+        _obtenerPresupuestosConReserva = obtenerPresupuestosConReserva;
+        _crearPreferenciaPago = crearPreferenciaPago;
     }
 
     /// <summary>
@@ -184,6 +190,107 @@ public class PresupuestoController : ControllerBase
         {
             return StatusCode(StatusCodes.Status500InternalServerError,
                 new { message = "Ocurrió un error inesperado al registrar el pago." });
+        }
+    }
+
+    /// <summary>
+    /// Obtiene todos los presupuestos de un usuario, incluyendo la información de la reserva asociada.
+    /// </summary>
+    /// <remarks>
+    /// Este endpoint permite consultar el listado de presupuestos pertenecientes a un usuario.
+    /// Cada ítem incluye los datos del presupuesto y la reserva asociada (si corresponde),
+    /// listo para ser consumido por el frontend.
+    ///
+    /// **Códigos de respuesta:**
+    /// - `200 OK` → Lista de presupuestos obtenida correctamente (puede ser vacía).
+    /// - `400 Bad Request` → Id de usuario inválido.
+    /// - `500 Internal Server Error` → Error inesperado.
+    /// </remarks>
+    /// <param name="ct">Token de cancelación.</param>
+    /// <returns>
+    /// Retorna una lista de <see cref="PresupuestoConReservaDto"/> con los presupuestos del usuario y su reserva.
+    /// </returns>
+    /// <response code="200">Lista obtenida correctamente.</response>
+    /// <response code="400">El idUsuario es inválido.</response>
+    /// <response code="500">Ocurrió un error inesperado.</response>
+    [HttpGet("mis-presupuestos")]
+    [Authorize(Roles = "Cliente")]
+    [ProducesResponseType(typeof(IEnumerable<PresupuestoConReservaDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> ObtenerPresupuestosConReservaPorUsuario( CancellationToken ct)
+    {
+        try
+        {
+            var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(idClaim)) return Unauthorized(new { message = "Token inválido o expirado." });
+
+            var idUsu = int.Parse(idClaim);
+            
+            var presupuestos = await _obtenerPresupuestosConReserva.Ejecutar(idUsu, ct);
+            return Ok(presupuestos ?? Enumerable.Empty<PresupuestoConReservaDto>());
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                new { message = "Ocurrió un error inesperado al obtener los presupuestos del usuario." });
+        }
+    }
+    
+    /// <summary>
+    /// Crea una preferencia de pago para un presupuesto pendiente del cliente autenticado.
+    /// </summary>
+    /// <param name="pagoPendienteDto">
+    /// Datos del pago pendiente, incluyendo la información necesaria del presupuesto y el monto a abonar.
+    /// </param>
+    /// <param name="ct">Token de cancelación para abortar la operación de forma anticipada.</param>
+    /// <returns>
+    /// Un resultado HTTP que contiene la preferencia de pago creada si la operación es exitosa.
+    /// </returns>
+    /// <response code="200">Devuelve la preferencia de pago creada.</response>
+    /// <response code="400">El pedido no es válido o los datos del pago son incorrectos.</response>
+    /// <response code="401">El token del usuario es inválido o ha expirado.</response>
+    /// <response code="500">Ocurrió un error inesperado al intentar crear el pago.</response>
+    [HttpPost("pagar")]
+    [Authorize(Roles = "Cliente")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> CrearPago(PagoPendienteDto pagoPendienteDto, CancellationToken ct)
+    {
+        try
+        {
+            var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(idClaim)) return Unauthorized(new { message = "Token inválido o expirado." });
+
+            var idUsu = int.Parse(idClaim);
+            
+            var pagoPendiente = await _crearPreferenciaPago.Ejecutar(pagoPendienteDto, idUsu, ct);
+            
+            return Ok(pagoPendiente);
+        } 
+        catch (PagoException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (MercadoPagoApiException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                new { message = "Ocurrió un error inesperado al pagar" });
+        }
+        catch (Exception)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                new { message = "Ocurrió un error inesperado al pagar" });
         }
     }
 }
