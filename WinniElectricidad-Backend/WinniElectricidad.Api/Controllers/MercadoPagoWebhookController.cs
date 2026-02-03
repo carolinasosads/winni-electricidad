@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Security.Cryptography;
 using System.Text;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Pago;
+namespace WinniElectricidad.Api.Controllers;
 
 [ApiController]
 [Route("WinniElectricidadApi/mercadopago")]
