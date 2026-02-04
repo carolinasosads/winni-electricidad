@@ -65,8 +65,9 @@ public class MercadoPagoWebhookController : ControllerBase
             return Ok();
         }
 
+        var validarFirma = _config.GetValue<bool>("MercadoPago:ValidarFirma", true);
 
-        if (!_env.IsDevelopment())
+        if (validarFirma && !_env.IsDevelopment())
         {
             if (!ValidarFirma(dataId)) return Unauthorized();
         }
