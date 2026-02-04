@@ -179,7 +179,7 @@ function Sidebar({
                   <SidebarPageItem
                     id="pago-cliente"
                     title="Pagar"
-                    icon={<PaymentIcon />}
+                    icon={<PaymentIcon sx={{ color: "#0288d1"}} />}
                     href="/cliente/pago/crear"
                     selected={pathname.startsWith("/cliente/pago/crear")}
                   />
