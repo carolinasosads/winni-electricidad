@@ -134,7 +134,7 @@ Generador de tokens JWT para simular autenticación en los tests.
 ##### 5. Mocks y Fakes
 Implementaciones simplificadas de servicios externos utilizados en los tests:
 
-- **ModeracionOpenAiFake**: Siempre retorna `false` (contenido no ofensivo) para evitar llamadas a OpenAI
+- **ModeracionOpenAiFake**: Implementa el método `EsOfensiva()` retornando siempre `false` (es decir, el contenido NO es ofensivo) para evitar llamadas a OpenAI durante los tests
 - **ServicioImagenesFake**: Simula subida de imágenes sin interactuar con sistemas de almacenamiento real
 - **EvaluarPuntajeReseniaFake**: Proporciona evaluaciones predefinidas de reseñas
 - **EnviarEmailFake**: Simula envío de correos sin SMTP real
