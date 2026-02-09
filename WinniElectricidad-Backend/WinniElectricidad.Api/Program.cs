@@ -35,7 +35,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<HCaptchaOptions>(
     builder.Configuration.GetSection("HCaptcha"));
 
-//TODO: BORRAR ESTO PARA PRODUCCION
 builder.Services.AddCors(o =>
 {
     o.AddPolicy("Dev", p =>
