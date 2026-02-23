@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Moq;
 using WinniElectricidad.Api.Controllers;
-using WinniElectricidad.Api.Servicios;
 using WinniElectricidad.Compartido.DTOs.Servicios;
+using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Imagenes;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Servicio;
 
 namespace WinniElectricidad.Tests.Small.Controllers;

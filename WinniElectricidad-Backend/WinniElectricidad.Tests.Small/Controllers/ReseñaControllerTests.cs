@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using WinniElectricidad.Api.Controllers;
-using WinniElectricidad.Api.Servicios;
 using WinniElectricidad.Compartido.DTOs.Reseñas;
 using WinniElectricidad.Compartido.DTOs.Servicios;
 using WinniElectricidad.Compartido.DTOs.Usuarios.Reserva;
+using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Imagenes;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Reseña;
 using WinniElectricidad.LogicaNegocio.ExcepcionesPersonalizadas.Reseñas;
 

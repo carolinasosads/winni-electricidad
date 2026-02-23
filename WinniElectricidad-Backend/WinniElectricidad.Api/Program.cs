@@ -12,6 +12,7 @@ using WinniElectricidad.AccesoDatos.Repositorios.EF;
 using WinniElectricidad.Api.Servicios;
 using WinniElectricidad.Compartido.Configuracion;
 using WinniElectricidad.LogicaAplicacion.CasosDeUso.Reservas;
+using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Imagenes;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Consulta;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Notificacion;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Pago;

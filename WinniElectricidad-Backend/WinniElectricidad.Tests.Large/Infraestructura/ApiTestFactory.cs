@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using WinniElectricidad.AccesoDatos.Repositorios.EF;
-using WinniElectricidad.Api.Servicios;
+using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Imagenes;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Notificacion;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Reseña;
 using WinniElectricidad.Tests.Large.Mocks;

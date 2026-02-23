@@ -1,23 +1,36 @@
 ﻿using System.Text.RegularExpressions;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Imagenes;
 
 namespace WinniElectricidad.Api.Servicios;
 
 /// <summary>
-/// Servicio encargado de gestionar el almacenamiento de imágenes en el servidor.
+/// Servicio encargado de gestionar el almacenamiento de imágenes en Azure Blob Storage.
 /// </summary>
 /// <remarks>
-/// Este servicio forma parte de la capa de infraestructura de la API, ya que su función es
-/// interactuar con el sistema de archivos para guardar imágenes asociadas a reseñas u otras entidades.
+/// Este servicio se encuentra en la capa de <b>infraestructura</b> (proyecto API) porque depende de
+/// dos tecnologías externas propias de esta capa:
+/// <list type="bullet">
+///   <item>
+///     <description>
+///       <b>Azure Blob Storage</b>: se utiliza el SDK de Azure para subir y eliminar blobs.
+///       Es un detalle de infraestructura que no debe filtrarse a la lógica de aplicación o de negocio.
+///     </description>
+///   </item>
+///   <item>
+///     <description>
+///       <b><see cref="IFormFile"/></b>: tipo de ASP.NET Core que representa un archivo recibido
+///       en una solicitud HTTP multipart. Solo está disponible en proyectos web y no debe ser
+///       referenciado desde capas más internas.
+///     </description>
+///   </item>
+/// </list>
 ///
-/// No contiene lógica de negocio:  
-/// - Valida formato y tamaño de los archivos recibidos.  
-/// - Genera un nombre único para cada imagen.  
-/// - Almacena los archivos en <c>wwwroot/resenias</c>.  
-/// - Devuelve una URL relativa para su posterior uso desde el frontend.
-///
-/// Implementa <see cref="IServicioImagenes"/> como contrato para su uso en controladores y servicios.
+/// Al igual que <c>HCaptchaServicio</c>, la <b>interfaz</b> (<see cref="IServicioImagenes"/>) reside
+/// en la capa de lógica de aplicación (para ser consumida desde controladores sin acoplarse a la
+/// implementación concreta), mientras que la <b>implementación</b> permanece en la capa de
+/// infraestructura (API).
 /// </remarks>
 public class ServicioImagenes : IServicioImagenes
 {
