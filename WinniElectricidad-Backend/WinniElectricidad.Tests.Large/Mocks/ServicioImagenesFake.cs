@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using Microsoft.AspNetCore.Http;
-using WinniElectricidad.Api.Servicios;
+using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Imagenes;
 
 namespace WinniElectricidad.Tests.Large.Mocks;
 

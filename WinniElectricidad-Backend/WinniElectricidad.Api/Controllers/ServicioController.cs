@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using WinniElectricidad.Api.Servicios;
 using WinniElectricidad.Compartido.DTOs.Servicios;
+using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Imagenes;
 using WinniElectricidad.LogicaAplicacion.InterfacesServicios.Servicio;
 using WinniElectricidad.LogicaNegocio.ExcepcionesPersonalizadas.Servicios;
 
